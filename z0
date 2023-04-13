@@ -1,0 +1,179 @@
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./webserv sources/server.conf2
+Can't open file error.html using default error page
+Can't open file e using default error page
+Ports 0 : 8083
+Ports 0 : 8087
+Ports 0 : 8080
+Ports 0 : 8083
+Ports 0 : 8084
+events[n].data.fd : 7
+events[n].data.fd : 7
+events[n].data.fd : 7
+events[n].data.fd : 7
+conn_sock : 9
+events[n].data.fd : 7
+Request :
+GET /site HTTP/1.1
+Host: localhost:8084
+User-Agent: insomnia/2022.7.0
+webserv:
+Accept: */*
+
+
+
+body_start : 94 body_end : 18446744073709551615
+
+Méthode : GET
+Chemin : /site
+Type : html
+Version : HTTP/1.1
+Host : localhost:8084
+Connection : 
+MIME : */*
+Content Type : 
+Content Length : 
+
+Body : 
+
+PORT TEST : 8084
+server_response int Constructor called
+BIG TEST 0: /site
+BIG TEST : /site
+RealPath : ./site
+RealPathIndex : ./site/index.html
+PathToStore : ./
+ BOOL TRUE is_dir 1
+FinalPath : ./site/index.html
+JE SUIS DANS SUCCESS
+TEST : html
+
+SERVER RESPONSE CONSTRUITE -> 
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 1068
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebServ</title>
+    <style>
+        body {
+            background-color: #FFC0CB; /* fond rose */
+        }
+        
+        h1 {
+            text-align: center; /* titre centré */
+            font-size: 5em; /* taille du texte */
+            color: white; /* couleur du texte */
+        }
+        
+        img {
+            display: block;
+            margin: 0 auto; /* centrage de l'image */
+            animation: rotate 2s linear infinite; /* animation rotation */
+        }
+        
+        img:hover {
+            animation-play-state: paused; /* pause de l'animation au survol */
+            transform: scale(1.1); /* agrandissement de l'image au survol */
+        }
+        
+        @keyframes rotate { /* définition de l'animation rotation */
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>WebServ</h1>
+    <img src="happysheep.gif" alt="Sheep Happy">
+</body>
+</html>
+
+
+
+server_request Destructor called
+server_response Destructor called
+events[n].data.fd : 9
+events[n].data.fd : 9
+events[n].data.fd : 9
+events[n].data.fd : 9
+events[n].data.fd : 9
+events[n].data.fd : 9
+events[n].data.fd : 9
+events[n].data.fd : 9
+events[n].data.fd : 9
+events[n].data.fd : 9
+events[n].data.fd : 7
+events[n].data.fd : 7
+events[n].data.fd : 7
+events[n].data.fd : 7
+conn_sock : 10
+events[n].data.fd : 7
+Request :
+GET /happysheep.gif HTTP/1.1
+Host: localhost:8084
+Connection: keep-alive
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US
+Sec-Fetch-Dest: image
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Site: cross-site
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Insomnia/2022.7.0 Chrome/108.0.5359.62 Electron/22.0.0 Safari/537.36
+sec-ch-ua: "Not?A_Brand";v="8", "Chromium";v="108"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+
+
+
+body_start : 540 body_end : 18446744073709551615
+
+Méthode : GET
+Chemin : /happysheep.gif
+Type : gif
+Version : HTTP/1.1
+Host : localhost:8084
+Connection : keep-alive
+MIME : image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Content Type : 
+Content Length : 
+
+Body : 
+
+PORT TEST : 8084
+server_response int Constructor called
+BIG TEST 0: /happysheep.gif
+BIG TEST : /happysheep.gif
+RealPath : ./happysheep.gif
+RealPathIndex : ./happysheep.gif/index.html
+PathToStore : ./
+ BOOL FALSE
+FinalPath : 
+JE SUIS DANS CLIENT
+TEST : gif
+
+SERVER RESPONSE CONSTRUITE -> 
+HTTP/1.1 404 Not Found
+Content-Type: text/html
+Content-Length: 335
+
+<html><head><meta name="viewport" content="width=device-width, minimum-scale=0.1"><title>404 Not Found</title></head><body style="background: #0e0e0e; height: 100%;text-align:center;color:white;"><h1>404 Not Found</h1><img src="https://http.cat/404" style="display: block;margin: auto;" alt="404 Not Found"><p>webserv</p></body></html>
+
+
+server_request Destructor called
+server_response Destructor called
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10

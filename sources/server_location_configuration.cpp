@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/04 17:08:06 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/08 15:51:03 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/13 17:26:12 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,7 @@ std::string server_location_configuration::findDirectoryListing(std::string loca
 			return (root.substr(0, space_pos));
 		}
 	}
-	return ("");
+	return ("off");
 }
 
 std::string server_location_configuration::findHttpRedirection(std::string location_conf)
