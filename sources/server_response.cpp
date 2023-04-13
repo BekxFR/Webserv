@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 19:19:44 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/13 19:29:55 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -435,6 +435,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 						std::ifstream file(FinalPath.c_str());
 						if (!file.is_open())
 						{
+							/* cela ne marche pas car il ne rentre pas mm si file est un dir*/
 							std::cout << "d0.1" << std::endl;
 							_status_code = 403;
 						}
