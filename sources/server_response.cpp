@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 14:58:57 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/13 15:41:42 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,7 @@ std::string	server_response::list_dir(std::string path)
 	std::string	content;
 	std::stringstream	response;
 
+	std::cout << "PATH : '" << path << "'" << std::endl;
 	dir = opendir(path.c_str());
 	if (errno == EACCES || errno == EMFILE || errno == ENFILE || errno == ENOENT || errno == ENOMEM || errno == ENOTDIR)
 	{
@@ -103,11 +104,11 @@ std::string	server_response::list_dir(std::string path)
 		closedir(dir);
 		return ("");
 	}
-	path.erase(0,1);
+//	path.erase(0,1);
 	response << "<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>" << path << "</title></head><body style=\"height: 100%;\"><h1 style=\"padding-top:0.5em;font-size:3em;\">Index of " << path << "/</h1></br><ul style=\"margin-top:10px;margin-bottom:10px;padding-top:10px;padding-bottom:10px;border-size:0.5em;border-top-style:solid;border-bottom-style:solid;\">";
 	while (send)
 	{
-		response << "<li><a href=\"" << path << "/" << send->d_name << "\">" << send->d_name << "</a></li>";
+		response << "<li><a href=\"" << path << send->d_name << "\">" << send->d_name << "</a></li>";
 		send = readdir(dir);
 	}
 	closedir(dir);
