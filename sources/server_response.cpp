@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 20:36:20 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 20:44:33 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,6 +157,10 @@ int server_response::isMethodAuthorised(std::string MethodUsed, server_configura
 			}
 		}
 	}
+	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
+	dans une location */
+	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
+		return (200);
 	// s'il passe ici c'est qu'aucune loc n'a éte trouvée et que donc c'est possible, meme ds le principal
 	return (405);
 }
@@ -188,6 +192,10 @@ std::string server_response::getRealPath(std::string MethodUsed, server_configur
 			}
 		}
 	}
+	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
+	dans une location */
+	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
+		return (server->getRoot() + "/" + RequestURI);
 	return ("");
 }
 

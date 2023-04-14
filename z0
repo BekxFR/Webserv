@@ -115,16 +115,38 @@ Location :
 
 
 Request :
-GET /download/download/42.jpg HTTP/1.1
+GET /lol/ HTTP/1.1
 Host: localhost:8080
 User-Agent: insomnia/2022.7.0
 webserv:
 Accept: */*
 
 
-RealPath : 
-RealPathIndex : ./site/download/download/42.jpg/
+RealPath : ./site/lol/
+RealPathIndex : ./site/lol/index.html
+PathToStore : ./site/
+FinalPath : ./site/lol/index.html
+status code 200
+
+
+Request :
+GET /lol/happysheep.gif HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US
+Sec-Fetch-Dest: image
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Site: cross-site
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Insomnia/2022.7.0 Chrome/108.0.5359.62 Electron/22.0.0 Safari/537.36
+sec-ch-ua: "Not?A_Brand";v="8", "Chromium";v="108"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+
+
+RealPath : ./site/lol/happysheep.gif
+RealPathIndex : ./site/lol/happysheep.gif/
 PathToStore : ./site/
 FinalPath : 
-STATUS CODE405
-status code 405
+status code 404
