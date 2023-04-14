@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 17:46:55 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 20:10:24 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,75 +126,68 @@ std::string	server_response::list_dir(std::string path)
 	return (content);
 }
 
+bool	isGenerallyAuthorised(std::string MethodUsed, server_configuration *server, std::string ite)
+{
+	if (ite == "NOT INDICATED")
+	{
+		for (std::vector<std::string>::iterator ite2 = server->getHttpMethodAccepted().begin(); ite2 != server->getHttpMethodAccepted().end(); ite2++)
+			{
+				if (MethodUsed == *ite2)
+				{
+					return (1);
+				}
+			}
+	}
+	return (0);
+}
+
 int server_response::isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	std::cout << "METHOD : " << MethodUsed << std::endl;
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
 	{
-		// std::cout << "IT-FIRST : " << it->first << " Size : " << it->first.size() << std::endl;
-		// std::cout << "RequestURI.SUBSTR : " << RequestURI.substr(0, it->first.size()) << std::endl;
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
-			std::cout << "IT-FIRST : " << it->first << std::endl;
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				std::cout << "ITE* : " << *ite << std::endl;
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
-					std::cout << "c0.0" << std::endl;
 					// s'il passe ici c'est que la méthode est autorisée et qu'une loc a été trouvée
 					return (200);
-				}
-				else if (*ite == "NOT INDICATED")
-				{
-					std::cout << "c0.1" << std::endl;
-					for (std::vector<std::string>::iterator ite2 = server->getHttpMethodAccepted().begin(); ite2 != server->getHttpMethodAccepted().end(); ite2++)
-					{
-						std::cout << "c0.2" << *ite2 << std::endl;
-						if (MethodUsed == *ite2)
-						{
-							std::cout << "c0.3" << std::endl;
-							//cela veut dire que c'est réussi car c'est général;
-							return (200);
-						}
-					}
-					// CELA VEUT DIRE QU'ON SE REFAIRE A LA NORMAL
 				}
 			}
 		}
 	}
-	std::cout << "c0.4" << std::endl;
 	// s'il passe ici c'est qu'aucune loc n'a éte trouvée et que donc c'est possible, meme ds le principal
 	return (405);
 }
 
 std::string server_response::getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	// std::cout << "BIG TEST 0: " << RequestURI << std::endl;
-	if (RequestURI.size() > 2 && RequestURI.at(RequestURI.size() - 1) == '/')
-		RequestURI = RequestURI.substr(0, RequestURI.size() - 1);
-	// std::cout << "BIG TEST : " << RequestURI << std::endl;
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
 	{
-		if (it->first == RequestURI.substr(0, it->first.size()))
+		/* Ici, on compare le path donné dans location avec le début de la requestURI, car le path de la location part
+		du début de l'URI */
+		if (it->first == RequestURI.substr(0, it->first.size() + 1))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
+					/*	Ci dessous, si le getRoot de la location existe, alors on le donne.
+						Sinon, on donne le root general. QUID SI YA PAS DE ROOT GENERAL */
 					if (it->second->getRoot().size() > 0)
 					{
 						return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()));
 					}
 					else
 					{
-						return (server->getRoot() + "/" + RequestURI.substr(1));
+						return (server->getRoot() + "/" + RequestURI.substr(it->first.size()));
 					}
 				}
 			}
 		}
 	}
-	return (server->getRoot() + "/" + RequestURI.substr(1));
+	return ("");
 }
 
 std::string server_response::getRealPathIndex(std::string MethodUsed, server_configuration *server, std::string RequestURI)
@@ -203,16 +196,18 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 	
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
 	{
-		std::cout << "IT FIRST : " << it->first << std::endl;
-		std::cout << RequestURI.substr(0, it->first.size()) << std::endl;
+
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
 					if (it->second->getDirectoryRequest().size() > 0)
 					{
+						/*	Ci dessous, je rajoute l'index a IndexPath, puis, avec Access, je vois s'il existe.
+							S'il existe, je renvoie Index Path, s'il n'existe pas, je renvoie sans l'index car, alors,
+							il faudra afficher le dossier seulement, ou renvoyer une erreur si c'est interdit */
 						IndexPath = it->second->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + it->second->getDirectoryRequest();
 						if (access(IndexPath.c_str(), F_OK) == 0)
 							return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + it->second->getDirectoryRequest());
@@ -221,12 +216,13 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 					}
 					else
 					{
+						/* Ici, je fais la meme chose, mais dans le cas où aucun index ne serait indiqué dans la location,
+							alors je renvoie l'index général. FAUDRAIT-IL PREVOIR LE CAS OU IL N'Y A PAS D'INDEX GENERAL */
 						IndexPath = server->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + server->getIndex();
 						if (access(IndexPath.c_str(), F_OK) == 0)
 							return (server->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + server->getIndex());
 						else
 							return (server->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/");
-
 					}
 				}
 			}
@@ -240,6 +236,7 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 	
 }
 
+
 std::string server_response::getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
@@ -248,7 +245,7 @@ std::string server_response::getPathToStore(std::string MethodUsed, server_confi
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
 					if (it->second->getUploadStore().size() > 0)
 					{
@@ -263,6 +260,8 @@ std::string server_response::getPathToStore(std::string MethodUsed, server_confi
 	return (server->getRoot());
 }
 
+
+
 bool server_response::autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
@@ -271,7 +270,9 @@ bool server_response::autoindex_is_on(std::string MethodUsed, server_configurati
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				/*	Cela permet de verifier si l'autoindex est on, pour sinon renvoyer une erreur 403 car on 
+					ne peut pas lister le directory si c'est off, ds le cas où il n'y aurait pas d'index */
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
 					if (it->second->getDirectoryListing() == "on")
 						return (1);
@@ -291,8 +292,12 @@ bool server_response::isRedir(std::string MethodUsed, server_configuration *serv
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
+					/*	Ci-dessous, on considère que s'il la redirection est vide 
+						Exemple de config:
+							return 301 ;
+						Ici, on retourne 0, car on considère qu'aucune redirection n'est proposée */
 					if (it->second->getHttpRedirection().size() > 0)
 					{
 						return 1;
@@ -316,8 +321,9 @@ std::string server_response::getRedir(std::string MethodUsed, server_configurati
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
+					/*	Ici, on renverra forcément ci-dessous, cela a ete verifiee ci-dessous */
 					if (it->second->getHttpRedirection().size() > 0)
 					{
 						return (it->second->getHttpRedirection());
@@ -326,7 +332,7 @@ std::string server_response::getRedir(std::string MethodUsed, server_configurati
 			}
 		}
 	}
-	return ("ERROR");
+	return ("NE RENVERRA JAMAIS RIEN");
 }
 
 void	server_response::todo(const server_request& Server_Request, int conn_sock, server_configuration *server)
@@ -337,17 +343,17 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	{
 		_status_code = 413;
 	}
+	/*********************************************************************/
 	
 	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
 	car sinon un code erreur peut être renvoyé */
-	std::cout << "TEST" << std::endl;
 	_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
-	std::cout << "STATUS CODE : " << _status_code << std::endl;
 	/********************************************/
 	
 	enum imethod {GET, POST, DELETE};
 	std::stringstream response;
 	
+	/*	Dans les fonctions ci-dessous, je recupere des path et ensuite je supprime les double / si necessaire */
 	std::string RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPath.find("//") != std::string::npos)
 		RealPath = RealPath.erase(RealPath.find("//"), 1);
@@ -363,12 +369,12 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
 		std::cout << "PathToStore : " << PathToStore << std::endl;
 	}
+	/*************************************************************/
 
+	
 	/*Ici, on check si c'est le path donné est un directory ou non.
 	Une fosis que l'on sait cela, on peut renvoyer un index ou 
 	un message erreur */
-
-	
 	struct stat path_info;
 	bool dir;
 	std::string FinalPath;
@@ -377,7 +383,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		/* => VOIR AVEC NICO */
 		_status_code = 404;
-        if (1)
+        if (0)
 			std::cout << " BOOL FALSE" << std::endl;
     }
 	else
@@ -385,7 +391,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
 		C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
 		dir = S_ISDIR(path_info.st_mode);
-		if (1)
+		if (0)
 			std::cout << " BOOL TRUE is_dir " << dir << std::endl;
 		if (dir) // A FAIRE MARCHER
 		{
@@ -398,11 +404,11 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	
 	std::cout << "FinalPath : " << FinalPath << std::endl;
 	/************************************************/
-
 	/*Si l'on se situe, ds une location et qu'il y a une HTTP redir alors
 	il faut pouvoir renvoyer la redir */
 	if (isRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) > 0)
 	{
+		std::cout << "IS REDIIIIIIIIIIIIIIIR" << std::endl;
 		std::stringstream response;
 			response << "HTTP/1.1 301 Moved Permanently\r\nLocation: " \
 			<< getRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) << "\r\n";
@@ -440,7 +446,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 					}
 					else if (is_dir(FinalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
 					{
-						_status_code = 404;
+						_status_code = 403;
 					}
 					else if (_status_code == 200)
 					{

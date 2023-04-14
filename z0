@@ -14,89 +14,16 @@ CGI (first = extension, second = root):
 
 Location : 
 
-Location configurations  for /download/
-HttpMethodAccepted : POST
-HttpMethodAccepted : GET
-HttpMethodAccepted : 
+Location configurations  for /upload/
+HttpMethodAccepted : NOT INDICATED
 HttpRedirection 
 Root : ./site/
 DirectoryListing : off
-DirectoryRequest : indexr.html
-UploadStore : 
-
-Location configurations  for /password/
-HttpMethodAccepted : NOT INDICATED
-HttpRedirection https://www.example.com/new-page.html
-Root : ./site/
-DirectoryListing : on
-DirectoryRequest : index2.html
+DirectoryRequest : index.html
 CGI : 
 path : .php
 conf : /usr/bin/php-cgi
 UploadStore : /var/www/uploads
-
-Location configurations  for /upload/
-HttpMethodAccepted : 
-HttpRedirection 
-Root : ./site/
-DirectoryListing : on
-DirectoryRequest : index2.html
-CGI : 
-path : .php
-conf : /usr/bin/php-cgi
-UploadStore : /var/www/uploads
-
-***
-
-
-Server 1:
-Server name : webserv2.com
-Root : ./test
-Port : 8080
-Host : 0.0.0.0
-Cliend Body Limit : 1048576
-CGI (first = extension, second = root):
-
-
-***
-
-Location : 
-
-***
-
-
-Server 2:
-Server name : webserv2
-Root : ./test
-Port : 8083
-Host : 0.0.0.0
-Cliend Body Limit : 1048576
-CGI (first = extension, second = root):
-- first = '.php' && second = '/usr/bin/php-cgi'
-- first = '.py' && second = '/usr/bin/python3'
-
-
-***
-
-Location : 
-
-***
-
-
-Server 3:
-Server name : webserv2.com
-Root : ./site/
-Port : 8084
-Port : 8099
-Host : localhost
-Host : 127.0.0.1
-Cliend Body Limit : 1048576
-CGI (first = extension, second = root):
-
-
-***
-
-Location : 
 
 ***
 
@@ -105,39 +32,45 @@ Location :
 
 [1;32mPort 8080 is listening[0m
 
-[1;31mPort 8080 is already listening[0m
-
-[1;31mPort 8083 is already listening[0m
-
-[1;32mPort 8084 is listening[0m
-
-[1;32mPort 8099 is listening[0m
-
 
 
 Request :
-GET /upload/teSTEUR.txt HTTP/1.1
-Host: localhost:8083
+GET /upload/ HTTP/1.1
+Host: localhost:8080
 User-Agent: insomnia/2022.7.0
 webserv:
 Accept: */*
 
 
 TEST
-METHOD : GET
-IT-FIRST : /upload/
-ITE* : 
-c0.4
-STATUS CODE : 405
-IT FIRST : /upload/
-/upload/
-IT FIRST : /password/
-/upload/te
-IT FIRST : /download/
-/upload/te
-RealPath : ./site/upload/teSTEUR.txt
-RealPathIndex : ./site/upload/teSTEUR.txt/
-PathToStore : ./site/
- BOOL TRUE is_dir 0
-FinalPath : ./site/upload/teSTEUR.txt
-status code 405
+STATUS CODE : 200
+RealPath : ./site/
+RealPathIndex : ./site/index.html
+PathToStore : ./site/var/www/uploads
+FinalPath : ./site/index.html
+status code 200
+
+
+Request :
+GET /upload/happysheep.gif HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US
+Sec-Fetch-Dest: image
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Site: cross-site
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Insomnia/2022.7.0 Chrome/108.0.5359.62 Electron/22.0.0 Safari/537.36
+sec-ch-ua: "Not?A_Brand";v="8", "Chromium";v="108"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+
+
+TEST
+STATUS CODE : 200
+RealPath : 
+RealPathIndex : ./site/happysheep.gif/
+PathToStore : ./site/var/www/uploads
+FinalPath : 
+status code 404
