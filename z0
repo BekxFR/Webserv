@@ -15,7 +15,6 @@ CGI (first = extension, second = root):
 Location : 
 
 Location configurations  for /download/
-HttpMethodAccepted : GET
 HttpMethodAccepted : POST
 HttpMethodAccepted : 
 HttpRedirection 
@@ -123,18 +122,9 @@ webserv:
 Accept: */*
 
 
-c0
-c0
-c0
-c0
-c0.1
-c0.1
-c0.1
-c0.2
-c0.3
-RealPath : ./site/download/42.jpg
-RealPathIndex : ./site/download/42.jpg/
+RealPath : 
+RealPathIndex : ./site/download/download/42.jpg/
 PathToStore : ./site/
-FinalPath : ./site/download/42.jpg
-STATUS CODE200
-status code 200
+FinalPath : 
+STATUS CODE405
+status code 405

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 20:34:53 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 20:36:20 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -409,7 +409,6 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	il faut pouvoir renvoyer la redir */
 	if (isRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) > 0)
 	{
-		std::cout << "IS REDIIIIIIIIIIIIIIIR" << std::endl;
 		std::stringstream response;
 			response << "HTTP/1.1 301 Moved Permanently\r\nLocation: " \
 			<< getRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) << "\r\n";
@@ -423,7 +422,6 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
 	
-	std::cout << "STATUS CODE" << _status_code << std::endl;
 	for (; n < 4; n++)
 	{
 		if (n != 3 && ftab[n] == Server_Request.getMethod()) // OK 
