@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 20:16:25 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 20:29:13 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -332,7 +332,7 @@ std::string server_response::getRedir(std::string MethodUsed, server_configurati
 			}
 		}
 	}
-	return ("NE RENVERRA JAMAIS RIEN");
+	return ("CE RETURN NE SERA JAMAIS EMPRUNTE");
 }
 
 void	server_response::todo(const server_request& Server_Request, int conn_sock, server_configuration *server)
@@ -344,12 +344,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		_status_code = 413;
 	}
 	/*********************************************************************/
-	
-	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
-	car sinon un code erreur peut être renvoyé */
-	_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
-	/********************************************/
-	
+		
 	enum imethod {GET, POST, DELETE};
 	std::stringstream response;
 	
@@ -401,6 +396,12 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			FinalPath = RealPath;
 	}
 	
+	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
+	car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
+	sur que le status code n'est pas modifié par la suite */
+	_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
+	
+	/********************************************/
 	
 	std::cout << "FinalPath : " << FinalPath << std::endl;
 	/************************************************/
@@ -422,6 +423,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
 	
+	std::cout << "STATUS CODE" << _status_code << std::endl;
 	for (; n < 4; n++)
 	{
 		if (n != 3 && ftab[n] == Server_Request.getMethod()) // OK 
