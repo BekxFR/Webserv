@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 15:34:19 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 16:52:32 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ _ConfigFile(ConfigFile),
 _ServerName(findServerName()),
 _Root(findRoot()),
 _Index(findIndex()),
+_HttpMethodAccepted(findHttpMethodAccepted()),
 _Port(findPort()),
 _Host(findHost()),
 _StatusCode(200),
@@ -244,6 +245,39 @@ void server_configuration::setDefErrorPage()
 	_DefErrorPage.insert(std::make_pair(STATUS505, std::make_pair("", HTML505)));
 //	for (std::map<std::string, std::string>::iterator it = _DefErrorPage.begin(); it != _DefErrorPage.end(); it++) // Print Def error pages
 //		std::cout << "Error code = '" << it->first << "' && Error HTML = '" << it->second << "'" << std::endl; // Print Def error pages
+}
+std::vector<std::string> server_configuration::findHttpMethodAccepted()
+{
+	std::vector<std::string> MethodAccepted;
+	std::string delimiter = " ;";
+	std::string methods;
+	size_t end_pos = 0;
+	
+	std::cout << "c0" << std::endl;
+	
+	size_t pos = _ConfigFile.find("	allow_methods ");
+	if (pos != std::string::npos) {
+		pos += strlen("	allow_methods ");
+		methods = _ConfigFile.substr(pos);
+		end_pos = methods.find_first_of(";");
+	}
+	else
+	{
+		MethodAccepted.push_back("");
+		return (MethodAccepted);
+	}
+	std::cout << "c0.1" << std::endl;
+	size_t i = 0;
+	std::string token;
+	while ((i = methods.find_first_of(delimiter)) != std::string::npos && methods.find_first_of(delimiter) <= end_pos)
+	{
+		token = methods.substr(0, i);
+		std::cout << "TOKEN : " << token << std::endl;
+		MethodAccepted.push_back(token);
+		methods.erase(0, i + 1);
+	}
+	MethodAccepted.push_back(methods);
+		return (MethodAccepted);
 }
 
 std::vector<std::string> server_configuration::findHost()

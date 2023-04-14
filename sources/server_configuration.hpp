@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 11:42:17 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 16:41:41 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ class server_configuration
 	std::string _ServerName;
 	std::string	_Root;
 	std::string _Index;
+	std::vector<std::string>	_HttpMethodAccepted;
 	std::map<std::string, std::string>	_cgi;
 	std::vector<int> _Port;
 	std::vector<std::string> _Host;
@@ -60,6 +61,8 @@ class server_configuration
 
 	std::string findIndex();
 	std::map<std::string, std::string> findLocation();
+	std::vector<std::string> findHttpMethodAccepted();
+
 	void	setCgi();
 	void	setErrorPage();
 	void	setDefErrorPage();
