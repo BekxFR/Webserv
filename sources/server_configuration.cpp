@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 16:52:32 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 17:52:45 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,9 +252,7 @@ std::vector<std::string> server_configuration::findHttpMethodAccepted()
 	std::string delimiter = " ;";
 	std::string methods;
 	size_t end_pos = 0;
-	
-	std::cout << "c0" << std::endl;
-	
+		
 	size_t pos = _ConfigFile.find("	allow_methods ");
 	if (pos != std::string::npos) {
 		pos += strlen("	allow_methods ");
@@ -266,13 +264,13 @@ std::vector<std::string> server_configuration::findHttpMethodAccepted()
 		MethodAccepted.push_back("");
 		return (MethodAccepted);
 	}
-	std::cout << "c0.1" << std::endl;
 	size_t i = 0;
 	std::string token;
 	while ((i = methods.find_first_of(delimiter)) != std::string::npos && methods.find_first_of(delimiter) <= end_pos)
 	{
 		token = methods.substr(0, i);
-		std::cout << "TOKEN : " << token << std::endl;
+		if (0)
+			std::cout << "TOKEN : " << token << std::endl;
 		MethodAccepted.push_back(token);
 		methods.erase(0, i + 1);
 	}
@@ -444,8 +442,7 @@ std::map<std::string, std::string> server_configuration::findLocation()
 		}
 		else
 		{
-			location_pair.first = "";
-			location_pair.second = "";
+			return (location_map);
 		}
 		location_map.insert(location_pair);
 	}
@@ -502,6 +499,7 @@ std::string server_configuration::getServerName() { return _ServerName;}
 std::string server_configuration::getRoot() { return _Root;}
 std::string server_configuration::getIndex() { return _Index;}
 std::vector<int> server_configuration::getPort() { return _Port;}
+std::vector<std::string>& server_configuration::getHttpMethodAccepted() {return _HttpMethodAccepted;}
 std::vector<std::string> server_configuration::getHost() { return _Host;}
 
 size_t server_configuration::getClientMaxBodySize() { return _ClientMaxBodySize;}

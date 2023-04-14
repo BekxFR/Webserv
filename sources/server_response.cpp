@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 15:53:34 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 17:46:55 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,34 +126,46 @@ std::string	server_response::list_dir(std::string path)
 	return (content);
 }
 
-int server_response::checkConfFile(std::string MethodUsed, server_configuration *server, std::string RequestURI)
+int server_response::isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	// std::cout << "METHOD : " << MethodUsed << std::endl;
+	std::cout << "METHOD : " << MethodUsed << std::endl;
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
 	{
 		// std::cout << "IT-FIRST : " << it->first << " Size : " << it->first.size() << std::endl;
 		// std::cout << "RequestURI.SUBSTR : " << RequestURI.substr(0, it->first.size()) << std::endl;
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
+			std::cout << "IT-FIRST : " << it->first << std::endl;
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				// std::cout << "ITE* : " << *ite << std::endl;
+				std::cout << "ITE* : " << *ite << std::endl;
 				if (MethodUsed == *ite)
 				{
-					// std::cout << "IL PASSE ICI" << std::endl;
+					std::cout << "c0.0" << std::endl;
 					// s'il passe ici c'est que la méthode est autorisée et qu'une loc a été trouvée
-					// return (200);
+					return (200);
 				}
-				else
+				else if (*ite == "NOT INDICATED")
 				{
-					// s'il passe ici, c'est qu'une loc a ete trouvee mais la methode n'est pas trouvee
-					// return (405);
+					std::cout << "c0.1" << std::endl;
+					for (std::vector<std::string>::iterator ite2 = server->getHttpMethodAccepted().begin(); ite2 != server->getHttpMethodAccepted().end(); ite2++)
+					{
+						std::cout << "c0.2" << *ite2 << std::endl;
+						if (MethodUsed == *ite2)
+						{
+							std::cout << "c0.3" << std::endl;
+							//cela veut dire que c'est réussi car c'est général;
+							return (200);
+						}
+					}
+					// CELA VEUT DIRE QU'ON SE REFAIRE A LA NORMAL
 				}
 			}
 		}
 	}
-	// s'il passe ici c'est qu'aucune loc n'a éte trouvée et que donc c'est possible (sauf interdiction mais non gere)
-	return (200);
+	std::cout << "c0.4" << std::endl;
+	// s'il passe ici c'est qu'aucune loc n'a éte trouvée et que donc c'est possible, meme ds le principal
+	return (405);
 }
 
 std::string server_response::getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI)
@@ -191,6 +203,8 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 	
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
 	{
+		std::cout << "IT FIRST : " << it->first << std::endl;
+		std::cout << RequestURI.substr(0, it->first.size()) << std::endl;
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
@@ -199,19 +213,19 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 				{
 					if (it->second->getDirectoryRequest().size() > 0)
 					{
-						IndexPath = it->second->getRoot() + "/" + RequestURI.substr(1) + "/" + it->second->getDirectoryRequest();
+						IndexPath = it->second->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + it->second->getDirectoryRequest();
 						if (access(IndexPath.c_str(), F_OK) == 0)
-							return (it->second->getRoot() + "/" + RequestURI.substr(1) + "/" + it->second->getDirectoryRequest());
+							return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + it->second->getDirectoryRequest());
 						else
-							return (it->second->getRoot() + "/" + RequestURI.substr(1) + "/");
+							return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/");
 					}
 					else
 					{
-						IndexPath = server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex();
+						IndexPath = server->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + server->getIndex();
 						if (access(IndexPath.c_str(), F_OK) == 0)
-							return (server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex());
+							return (server->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + server->getIndex());
 						else
-							return (server->getRoot() + "/" + RequestURI.substr(1) + "/");
+							return (server->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/");
 
 					}
 				}
@@ -326,7 +340,9 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	
 	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
 	car sinon un code erreur peut être renvoyé */
-	_status_code = checkConfFile(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
+	std::cout << "TEST" << std::endl;
+	_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
+	std::cout << "STATUS CODE : " << _status_code << std::endl;
 	/********************************************/
 	
 	enum imethod {GET, POST, DELETE};
@@ -361,7 +377,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		/* => VOIR AVEC NICO */
 		_status_code = 404;
-        if (0)
+        if (1)
 			std::cout << " BOOL FALSE" << std::endl;
     }
 	else
@@ -369,7 +385,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
 		C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
 		dir = S_ISDIR(path_info.st_mode);
-		if (0)
+		if (1)
 			std::cout << " BOOL TRUE is_dir " << dir << std::endl;
 		if (dir) // A FAIRE MARCHER
 		{

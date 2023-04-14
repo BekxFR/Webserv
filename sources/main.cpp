@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 15:54:16 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 17:48:42 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -387,7 +387,7 @@ int main(int argc, char const **argv)
 	signal(SIGINT, sigint_handler);
 
 	std::vector<server_configuration*> servers = SetupNewServers(argv[1]);
-	// PrintServer(servers);
+	PrintServer(servers);
 	StartServer(servers, getPorts(servers), getHosts(servers));
 	DeleteServers(servers);
 	return 0;

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/04 17:08:06 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 17:26:12 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 17:10:23 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ std::vector<std::string> server_location_configuration::findHttpMethodAccepted(s
 	}
 	else
 	{
-		MethodAccepted.push_back("");
+		MethodAccepted.push_back("NOT INDICATED");
 		return (MethodAccepted);
 	}
 	

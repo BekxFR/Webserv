@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 17:29:07 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 16:58:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ class server_response
 	std::string	list_dir(std::string path);
 	std::string	addHeader(std::string statusMsg, std::pair<std::string, std::string> statusContent, const server_request& Server_Request);
 	std::string	addBody(std::string body);
-	int checkConfFile(std::string MethodUsed, server_configuration *server, std::string RequestURI);
+	int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string getRealPathIndex(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI);

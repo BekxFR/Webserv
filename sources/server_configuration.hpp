@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 16:41:41 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 17:23:29 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,8 @@ class server_configuration
 	std::map<std::string, class server_location_configuration*>* getLoc();
 	std::string getRoot();
 	std::string getIndex();
-	
+	std::vector<std::string>& getHttpMethodAccepted();
+
 	
 	std::vector<int> getPort();
 	std::vector<std::string> getHost();

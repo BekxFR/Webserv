@@ -10,10 +10,22 @@ server {
 
 		location /upload/ {
 
-			limit_except POST GET {
+			limit_except {
 				deny all;
 			}
 			
+			root ./site/;
+
+			autoindex on;
+
+			index index2.html;
+
+			cgi .php /usr/bin/php-cgi ;
+
+			upload_store /var/www/uploads;
+		}
+
+		location /password/ {
 			return 301 https://www.example.com/new-page.html;
 
 			root ./site/;
