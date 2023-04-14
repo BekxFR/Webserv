@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 20:29:13 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 20:34:53 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,7 +167,7 @@ std::string server_response::getRealPath(std::string MethodUsed, server_configur
 	{
 		/* Ici, on compare le path donné dans location avec le début de la requestURI, car le path de la location part
 		du début de l'URI */
-		if (it->first == RequestURI.substr(0, it->first.size() + 1))
+		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
@@ -175,6 +175,7 @@ std::string server_response::getRealPath(std::string MethodUsed, server_configur
 				{
 					/*	Ci dessous, si le getRoot de la location existe, alors on le donne.
 						Sinon, on donne le root general. QUID SI YA PAS DE ROOT GENERAL */
+					
 					if (it->second->getRoot().size() > 0)
 					{
 						return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()));
@@ -376,7 +377,6 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	if (stat(RealPath.c_str(), &path_info) != 0) {
 		/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
-		/* => VOIR AVEC NICO */
 		_status_code = 404;
         if (0)
 			std::cout << " BOOL FALSE" << std::endl;
