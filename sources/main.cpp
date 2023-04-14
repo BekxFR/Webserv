@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 14:26:22 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/14 12:20:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,8 +162,9 @@ void ChangePort(std::map<int, int>& StorePort, int conn_sock, int listen_sock)
 	}
 }
 
-int StartServer(std::vector<server_configuration*> servers, std::vector<int> Ports)
+int StartServer(std::vector<server_configuration*> servers, std::vector<int> Ports, std::vector<std::string> Hosts)
 {
+	(void)Hosts;
 	struct sockaddr_in addr[Ports.size()];
 	socklen_t addrlen[Ports.size()];
 	int conn_sock, nfds, epollfd;
@@ -181,10 +182,14 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 		}
 		memset(&addr[i], 0, sizeof(addr[i]));
 		addr[i].sin_family = AF_INET;
-		// if ()
-		addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
+		
+		/****Ci-dessous, tentative de bien lier les adresses IP**********/
+		// if (Hosts[i].size() == 0)
+			addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
 		// else
-			// inet_pton(AF_INET, "", &addr[i].sin_addr);
+		// 	inet_pton(AF_INET, Hosts[i], &addr[i].sin_addr);
+		/****************************************************************/
+		
 		addr[i].sin_port = htons(Ports[i]);
 		StorePort.insert(std::pair<int, int>(Ports[i], listen_sock[i]));
 		int val = 1;
@@ -342,6 +347,25 @@ std::vector<int> getPorts(std::vector<server_configuration*> servers)
 	return Ports;
 }
 
+std::vector<std::string> getHosts(std::vector<server_configuration*> servers)
+{
+	std::vector<std::string> Hosts;
+	
+	for (std::vector<server_configuration*>::iterator it = servers.begin(); it != servers.end(); it++)
+	{		
+		std::vector<std::string> hosts = (*it)->getHost();
+		for (std::vector<std::string>::iterator ite = hosts.begin(); ite != hosts.end(); ite++)
+		{
+			int i = 0;
+			std::cout << "Host " << i << " : " << *ite << std::endl;
+			Hosts.push_back(*ite);
+			i++;
+		}
+	}
+	return Hosts;
+}
+
+
 int main(int argc, char const **argv)
 {
 	if (argc != 2)
@@ -352,8 +376,9 @@ int main(int argc, char const **argv)
 	signal(SIGINT, sigint_handler);
 
 	std::vector<server_configuration*> servers = SetupNewServers(argv[1]);
-	// PrintServer(servers);
-	StartServer(servers, getPorts(servers));
+	PrintServer(servers);
+	std::cout << "c0" << std::endl;
+	StartServer(servers, getPorts(servers), getHosts(servers));
 	DeleteServers(servers);
 	return 0;
 }

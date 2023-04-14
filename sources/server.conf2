@@ -1,7 +1,7 @@
 server {
 	server_name webserv.com;
 		listen 8083;
-		listen 8087;
+		listen [::]:8080;
 
 		root ./site/;
 		index index.html
@@ -63,7 +63,8 @@ server {
 
 server {
 	server_name webserv2.com;
-		listen 0.0.0.0:8084;
+		listen localhost:8084;
+		listen 127.0.0.1:8099;
 
 		root ./;
 		index inoodex.html;

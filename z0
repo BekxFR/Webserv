@@ -1,179 +1,159 @@
+[0;34m###[0mCreation du fichier objects/server_configuration.o[0;34m###[0;33m
+c++ -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/ -g3 -c sources/server_configuration.cpp -o objects/server_configuration.o
+[0m
+[0;34m###[0mCreation du fichier webserv[0;34m###[0;33m
+c++ objects/main.o objects/server_configuration.o objects/server_request.o objects/server_response.o objects/server_location_configuration.o objects/ErrorCorresp.o -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/ -g3 -o webserv
+[0m
 valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./webserv sources/server.conf2
+server_configuration::findPort() 1:8083
+server_configuration::findPort() 2:8080
+server_configuration::findhost() 2[::]
 Can't open file error.html using default error page
 Can't open file e using default error page
+server_configuration::findPort() 2:8080
+server_configuration::findhost() 20.0.0.0
+server_configuration::findPort() 2:8083
+server_configuration::findhost() 20.0.0.0
+server_configuration::findPort() 2:8084
+server_configuration::findPort() 2:8099
+server_configuration::findhost() 2localhost
+server_configuration::findhost() 2127.0.0.1
+Server 0:
+Server name : webserv.com
+Root : ./site/
+Port : 8083
+Port : 8080
+Host : 
+Host : [::]
+Cliend Body Limit : 2097152
+CGI (first = extension, second = root):
+- first = '.php' && second = '/usr/bin/php-cgi'
+
+
+***
+
+Location : 
+
+Location configurations  for 
+HttpMethodAccepted : 
+HttpRedirection 
+Root : 
+DirectoryListing : off
+DirectoryRequest : 
+UploadStore : 
+
+Location configurations  for /download/
+HttpMethodAccepted : POST
+HttpMethodAccepted : GET
+HttpMethodAccepted : 
+HttpRedirection 
+Root : ./site/
+DirectoryListing : off
+DirectoryRequest : indexr.html
+UploadStore : 
+
+Location configurations  for /upload/
+HttpMethodAccepted : POST
+HttpMethodAccepted : GET
+HttpMethodAccepted : 
+HttpRedirection https://www.example.com/new-page.html
+Root : ./site/
+DirectoryListing : on
+DirectoryRequest : index2.html
+CGI : 
+path : .php
+conf : /usr/bin/php-cgi
+UploadStore : /var/www/uploads
+
+***
+
+
+Server 1:
+Server name : webserv2.com
+Root : ./test
+Port : 8080
+Host : 0.0.0.0
+Cliend Body Limit : 1048576
+CGI (first = extension, second = root):
+
+
+***
+
+Location : 
+
+Location configurations  for 
+HttpMethodAccepted : 
+HttpRedirection 
+Root : 
+DirectoryListing : off
+DirectoryRequest : 
+UploadStore : 
+
+***
+
+
+Server 2:
+Server name : webserv2
+Root : ./test
+Port : 8083
+Host : 0.0.0.0
+Cliend Body Limit : 1048576
+CGI (first = extension, second = root):
+- first = '.php' && second = '/usr/bin/php-cgi'
+- first = '.py' && second = '/usr/bin/python3'
+
+
+***
+
+Location : 
+
+Location configurations  for 
+HttpMethodAccepted : 
+HttpRedirection 
+Root : 
+DirectoryListing : off
+DirectoryRequest : 
+UploadStore : 
+
+***
+
+
+Server 3:
+Server name : webserv2.com
+Root : ./
+Port : 8084
+Port : 8099
+Host : localhost
+Host : 127.0.0.1
+Cliend Body Limit : 1048576
+CGI (first = extension, second = root):
+
+
+***
+
+Location : 
+
+Location configurations  for 
+HttpMethodAccepted : 
+HttpRedirection 
+Root : 
+DirectoryListing : off
+DirectoryRequest : 
+UploadStore : 
+
+***
+
+
+c0
 Ports 0 : 8083
-Ports 0 : 8087
+Ports 0 : 8080
 Ports 0 : 8080
 Ports 0 : 8083
 Ports 0 : 8084
-events[n].data.fd : 7
-events[n].data.fd : 7
-events[n].data.fd : 7
-events[n].data.fd : 7
-conn_sock : 9
-events[n].data.fd : 7
-Request :
-GET /site HTTP/1.1
-Host: localhost:8084
-User-Agent: insomnia/2022.7.0
-webserv:
-Accept: */*
-
-
-
-body_start : 94 body_end : 18446744073709551615
-
-Méthode : GET
-Chemin : /site
-Type : html
-Version : HTTP/1.1
-Host : localhost:8084
-Connection : 
-MIME : */*
-Content Type : 
-Content Length : 
-
-Body : 
-
-PORT TEST : 8084
-server_response int Constructor called
-BIG TEST 0: /site
-BIG TEST : /site
-RealPath : ./site
-RealPathIndex : ./site/index.html
-PathToStore : ./
- BOOL TRUE is_dir 1
-FinalPath : ./site/index.html
-JE SUIS DANS SUCCESS
-TEST : html
-
-SERVER RESPONSE CONSTRUITE -> 
-HTTP/1.1 200 OK
-Content-Type: text/html
-Content-Length: 1068
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>WebServ</title>
-    <style>
-        body {
-            background-color: #FFC0CB; /* fond rose */
-        }
-        
-        h1 {
-            text-align: center; /* titre centré */
-            font-size: 5em; /* taille du texte */
-            color: white; /* couleur du texte */
-        }
-        
-        img {
-            display: block;
-            margin: 0 auto; /* centrage de l'image */
-            animation: rotate 2s linear infinite; /* animation rotation */
-        }
-        
-        img:hover {
-            animation-play-state: paused; /* pause de l'animation au survol */
-            transform: scale(1.1); /* agrandissement de l'image au survol */
-        }
-        
-        @keyframes rotate { /* définition de l'animation rotation */
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-    </style>
-</head>
-<body>
-    <h1>WebServ</h1>
-    <img src="happysheep.gif" alt="Sheep Happy">
-</body>
-</html>
-
-
-
-server_request Destructor called
-server_response Destructor called
-events[n].data.fd : 9
-events[n].data.fd : 9
-events[n].data.fd : 9
-events[n].data.fd : 9
-events[n].data.fd : 9
-events[n].data.fd : 9
-events[n].data.fd : 9
-events[n].data.fd : 9
-events[n].data.fd : 9
-events[n].data.fd : 9
-events[n].data.fd : 7
-events[n].data.fd : 7
-events[n].data.fd : 7
-events[n].data.fd : 7
-conn_sock : 10
-events[n].data.fd : 7
-Request :
-GET /happysheep.gif HTTP/1.1
-Host: localhost:8084
-Connection: keep-alive
-Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
-Accept-Encoding: gzip, deflate, br
-Accept-Language: en-US
-Sec-Fetch-Dest: image
-Sec-Fetch-Mode: no-cors
-Sec-Fetch-Site: cross-site
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Insomnia/2022.7.0 Chrome/108.0.5359.62 Electron/22.0.0 Safari/537.36
-sec-ch-ua: "Not?A_Brand";v="8", "Chromium";v="108"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "Linux"
-
-
-
-body_start : 540 body_end : 18446744073709551615
-
-Méthode : GET
-Chemin : /happysheep.gif
-Type : gif
-Version : HTTP/1.1
-Host : localhost:8084
-Connection : keep-alive
-MIME : image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
-Content Type : 
-Content Length : 
-
-Body : 
-
-PORT TEST : 8084
-server_response int Constructor called
-BIG TEST 0: /happysheep.gif
-BIG TEST : /happysheep.gif
-RealPath : ./happysheep.gif
-RealPathIndex : ./happysheep.gif/index.html
-PathToStore : ./
- BOOL FALSE
-FinalPath : 
-JE SUIS DANS CLIENT
-TEST : gif
-
-SERVER RESPONSE CONSTRUITE -> 
-HTTP/1.1 404 Not Found
-Content-Type: text/html
-Content-Length: 335
-
-<html><head><meta name="viewport" content="width=device-width, minimum-scale=0.1"><title>404 Not Found</title></head><body style="background: #0e0e0e; height: 100%;text-align:center;color:white;"><h1>404 Not Found</h1><img src="https://http.cat/404" style="display: block;margin: auto;" alt="404 Not Found"><p>webserv</p></body></html>
-
-
-server_request Destructor called
-server_response Destructor called
-events[n].data.fd : 10
-events[n].data.fd : 10
-events[n].data.fd : 10
-events[n].data.fd : 10
-events[n].data.fd : 10
-events[n].data.fd : 10
-events[n].data.fd : 10
-events[n].data.fd : 10
-events[n].data.fd : 10
-events[n].data.fd : 10
+Ports 0 : 8099
+Host 0 : 
+Host 0 : [::]
+Host 0 : 0.0.0.0
+Host 0 : 0.0.0.0
+Host 0 : localhost
+Host 0 : 127.0.0.1

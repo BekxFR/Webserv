@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_configuration.hpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 14:19:46 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/14 11:42:17 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class server_configuration
 	std::string _Index;
 	std::map<std::string, std::string>	_cgi;
 	std::vector<int> _Port;
+	std::vector<std::string> _Host;
 	int			_StatusCode;
 	size_t		_ClientMaxBodySize;
 	std::map<std::string, std::pair<std::string, std::string> >	_ErrorPage;
@@ -54,7 +55,9 @@ class server_configuration
 
 	std::string findServerName();
 	std::vector<int> findPort();
+	std::vector<std::string> findHost();
 	std::string findRoot();
+
 	std::string findIndex();
 	std::map<std::string, std::string> findLocation();
 	void	setCgi();
@@ -82,6 +85,8 @@ class server_configuration
 	
 	
 	std::vector<int> getPort();
+	std::vector<std::string> getHost();
+
 	
 	class CgiException: public std::exception {
 		public:
