@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/13 14:01:10 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/14 11:51:56 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ void	Cgi::print() const
 
 void	Cgi::dupping()
 {
-	std::string filename(".cgi-tmp.txt");
+	std::string filename("/tmp/cgi-tmp.txt");
 
 	FILE* fp = fopen(filename.c_str(), "w");
 	if (fp == NULL) {
@@ -118,6 +118,8 @@ void	Cgi::dupping()
 	close (fd);
 	close (_pdes[0]);
 	close (_pdes[1]);
+
+	
 }
 
 const char *	PipeException::what() const throw()
