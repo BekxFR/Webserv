@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 12:20:21 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 13:15:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 #include <utility>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "server_configuration.hpp"
 #include "server_response.hpp"
@@ -184,10 +185,10 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 		addr[i].sin_family = AF_INET;
 		
 		/****Ci-dessous, tentative de bien lier les adresses IP**********/
-		// if (Hosts[i].size() == 0)
+		if (Hosts[i].size() == 0 || Hosts[i] == "[::]")
 			addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
-		// else
-		// 	inet_pton(AF_INET, Hosts[i], &addr[i].sin_addr);
+		else
+			inet_pton(AF_INET, Hosts[i].c_str(), &addr[i].sin_addr);
 		/****************************************************************/
 		
 		addr[i].sin_port = htons(Ports[i]);
@@ -376,8 +377,7 @@ int main(int argc, char const **argv)
 	signal(SIGINT, sigint_handler);
 
 	std::vector<server_configuration*> servers = SetupNewServers(argv[1]);
-	PrintServer(servers);
-	std::cout << "c0" << std::endl;
+	// PrintServer(servers);
 	StartServer(servers, getPorts(servers), getHosts(servers));
 	DeleteServers(servers);
 	return 0;

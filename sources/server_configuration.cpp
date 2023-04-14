@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 13:06:18 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 13:15:38 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,7 +279,7 @@ std::vector<std::string> server_configuration::findHost()
 			}
 			else if (end_pos != std::string::npos && pos_colon != std::string::npos && pos_colon < end_pos)
 			{
-				if (1)
+				if (0)
 					std::cout << "server_configuration::findhost() 2" << host.substr(0, pos_colon) << std::endl;
 				Host.push_back(host.substr(0, pos_colon).c_str());
 			}
@@ -322,13 +322,13 @@ std::vector<int> server_configuration::findPort()
 			
 			if (end_pos != std::string::npos && (pos_colon == std::string::npos || pos_colon > end_pos))
 			{
-				if (1)
+				if (0)
 					std::cout << "server_configuration::findPort() 1:" << port.substr(0, end_pos).c_str() << std::endl;
 				Port.push_back(atoi(port.substr(0, end_pos).c_str()));
 			}
 			else if (end_pos != std::string::npos && pos_colon != std::string::npos && pos_colon < end_pos)
 			{
-				if (1)
+				if (0)
 					std::cout << "server_configuration::findPort() 2:" << port.substr(pos_colon + 1, (end_pos - (pos_colon + 1))).c_str() << std::endl;
 				Port.push_back(atoi(port.substr(pos_colon + 1, (end_pos - (pos_colon + 1))).c_str()));
 			}

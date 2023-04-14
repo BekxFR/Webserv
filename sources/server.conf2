@@ -66,8 +66,8 @@ server {
 		listen localhost:8084;
 		listen 127.0.0.1:8099;
 
-		root ./;
-		index inoodex.html;
+		root ./site/;
+		index index.html
 
 		allow_methods GET;
 }
