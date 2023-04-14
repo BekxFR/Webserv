@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 14:25:57 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/13 17:29:07 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,8 @@ class server_response
 	std::string getRealPathIndex(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
+	bool autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI);
+
 	std::string getRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	// Définition de la méthode pour obtenir le corps de la réponse
 	std::string get_body() const { return _body; }

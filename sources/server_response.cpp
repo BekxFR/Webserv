@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
 /*   Updated: 2023/04/13 17:55:54 by nflan            ###   ########.fr       */
@@ -86,11 +86,20 @@ std::string	server_response::list_dir(std::string path)
 	std::stringstream	response;
 
 	std::cout << "PATH : '" << path << "'" << std::endl;
+	while (path.find("//") != std::string::npos)
+		path = path.erase(path.find("//"), 1);
+	errno = 0;
 	dir = opendir(path.c_str());
+	if (dir == NULL)
+		std::cout << "c3.0" << std::endl;
 	if (errno == EACCES || errno == EMFILE || errno == ENFILE || errno == ENOENT || errno == ENOMEM || errno == ENOTDIR)
 	{
-		if (errno == ENOENT || errno == ENOTDIR)
+		std::cout << "c2" << std::endl;
+		if (errno == ENOENT)// || errno == ENOTDIR)
+		{
+			std::cout << "c2.1" << std::endl;
 			_status_code = 404;
+		}
 		else if (errno == EACCES)
 			_status_code = 403;
 		else if (errno == EMFILE || errno == ENFILE || errno == ENOMEM)
@@ -163,30 +172,23 @@ std::string server_response::getRealPath(std::string MethodUsed, server_configur
 				{
 					if (it->second->getRoot().size() > 0)
 					{
-						if (it->second->getRoot().at(it->second->getRoot().size() - 1 ) == '/')
-							return (it->second->getRoot() + RequestURI.substr(it->first.size()));
-						else
-							return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()));
+						return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()));
 					}
 					else
 					{
-						if (server->getRoot().at(server->getRoot().size() - 1 ) == '/') 
-							return (server->getRoot() + RequestURI.substr(1));
-						else
-							return (server->getRoot() + "/" + RequestURI.substr(1));
+						return (server->getRoot() + "/" + RequestURI.substr(1));
 					}
 				}
 			}
 		}
 	}
-	if (server->getRoot().at(server->getRoot().size() - 1 ) == '/') 
-		return (server->getRoot() + RequestURI.substr(1));
-	else
-		return (server->getRoot() + "/" + RequestURI.substr(1));
+	return (server->getRoot() + "/" + RequestURI.substr(1));
 }
 
 std::string server_response::getRealPathIndex(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
+{
+	std::string IndexPath;
+	
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
@@ -197,26 +199,35 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 				{
 					if (it->second->getDirectoryRequest().size() > 0)
 					{
-						if (it->second->getRoot().at(it->second->getRoot().size() - 1 ) == '/')
-							return (it->second->getRoot() + it->second->getDirectoryRequest());
+						IndexPath = it->second->getRoot() + "/" + RequestURI.substr(1) + "/" + it->second->getDirectoryRequest();
+						if (access(IndexPath.c_str(), F_OK) == 0)
+						{
+							return (it->second->getRoot() + "/" + RequestURI.substr(1) + "/" + it->second->getDirectoryRequest());
+						}
 						else
-							return (it->second->getRoot() + "/" + it->second->getDirectoryRequest());
+						{
+							return (it->second->getRoot() + "/" + RequestURI.substr(1) + "/");
+						}
 					}
 					else
 					{
-						if (server->getRoot().at(server->getRoot().size() - 1 ) == '/') 
-							return (server->getRoot() + server->getIndex());
+						IndexPath = server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex();
+						if (access(IndexPath.c_str(), F_OK) == 0)
+							return (server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex());
 						else
-							return (server->getRoot() + "/" + server->getIndex());
+							return (server->getRoot() + "/" + RequestURI.substr(1) + "/");
+
 					}
 				}
 			}
 		}
 	}
-	if (server->getRoot().at(server->getRoot().size() - 1 ) == '/') 
-		return (server->getRoot() + server->getIndex());
+	IndexPath = server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex();
+	if (access(IndexPath.c_str(), F_OK) == 0)
+		return (server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex());
 	else
-		return (server->getRoot() + "/" + server->getIndex());
+		return (server->getRoot() + "/" + RequestURI.substr(1) + "/");
+	
 }
 
 std::string server_response::getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI)
@@ -231,10 +242,7 @@ std::string server_response::getPathToStore(std::string MethodUsed, server_confi
 				{
 					if (it->second->getUploadStore().size() > 0)
 					{
-						if (it->second->getRoot().at(it->second->getRoot().size() - 1 ) == '/')
-							return (it->second->getRoot() + it->second->getUploadStore());
-						else
-							return (it->second->getRoot() + "/" + it->second->getUploadStore());
+						return (it->second->getRoot() + "/" + it->second->getUploadStore());
 					}
 					else
 						return (server->getRoot());
@@ -243,6 +251,26 @@ std::string server_response::getPathToStore(std::string MethodUsed, server_confi
 		}
 	}
 	return (server->getRoot());
+}
+
+bool server_response::autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI)
+{	
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	{
+		if (it->first == RequestURI.substr(0, it->first.size()))
+		{
+			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
+			{
+				if (MethodUsed == *ite)
+				{
+					if (it->second->getDirectoryListing() == "on")
+						return (1);
+				}
+			}
+		}
+	}
+	return (0);
+
 }
 
 bool server_response::isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI)
@@ -263,7 +291,6 @@ bool server_response::isRedir(std::string MethodUsed, server_configuration *serv
 					{
 						return 0;
 					}
-					
 				}
 			}
 		}
@@ -310,8 +337,14 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	std::stringstream response;
 	
 	std::string RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+	while (RealPath.find("//") != std::string::npos)
+		RealPath = RealPath.erase(RealPath.find("//"), 1);
 	std::string RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+	while (RealPathIndex.find("//") != std::string::npos)
+		RealPathIndex = RealPathIndex.erase(RealPathIndex.find("//"), 1);
 	std::string PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+	while (PathToStore.find("//") != std::string::npos)
+		PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
 	if (DEBUG1)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
@@ -322,6 +355,8 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	/*Ici, on check si c'est le path donné est un directory ou non.
 	Une fosis que l'on sait cela, on peut renvoyer un index ou 
 	un message erreur */
+
+	
 	struct stat path_info;
 	bool dir;
 	std::string FinalPath;
@@ -330,7 +365,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		/* => VOIR AVEC NICO */
 		_status_code = 404;
-        if (0)
+        if (1)
 			std::cout << " BOOL FALSE" << std::endl;
     }
 	else
@@ -338,17 +373,18 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
 		C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
 		dir = S_ISDIR(path_info.st_mode);
-		if (0)
+		if (1)
 			std::cout << " BOOL TRUE is_dir " << dir << std::endl;
-		if (dir && RealPath != server->getRoot()) // A FAIRE MARCHER
+		if (dir) // A FAIRE MARCHER
+		{
 			FinalPath = RealPathIndex;
+		}
 		else
 			FinalPath = RealPath;
 	}
 	
 	std::cout << "FinalPath : " << FinalPath << std::endl;
 	/************************************************/
-
 
 	/*Si l'on se situe, ds une location et qu'il y a une HTTP redir alors
 	il faut pouvoir renvoyer la redir */
@@ -361,6 +397,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			send(conn_sock, response_str.c_str() , response_str.size(), 0);
 	}
 	
+	/* si ya un index ds le dossier ou je*/
 	/*********************************************/
 
 	int n = 0;
@@ -384,15 +421,30 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 				else
 				{
 					std::stringstream buffer;
-					if (is_dir(FinalPath.c_str(), *this)) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
+					if (is_dir(FinalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
+					{
+						std::cout << "AUTOLISTING ON" << std::endl;
 						buffer << list_dir(FinalPath);
+					}
+					else if (is_dir(FinalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
+					{
+						_status_code = 403;
+					}
 					else if (_status_code == 200)
 					{
+						std::cout << "d0" << std::endl;
 						std::ifstream file(FinalPath.c_str());
 						if (!file.is_open())
+						{
+							/* cela ne marche pas car il ne rentre pas mm si file est un dir*/
+							std::cout << "d0.1" << std::endl;
 							_status_code = 403;
+						}
 						else
+						{
+							std::cout << "d0.2" << std::endl;
 							buffer << file.rdbuf();
+						}
 					}
 					_content = buffer.str();
 				}
@@ -549,6 +601,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	std::stringstream	response;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
 	int	n = 0;
+	std::cout << "status code " << _status_code << std::endl;
 	int	tmp = _status_code / 100 - 1;
 	for (; n != tmp && n < 5; n++) {}
 	switch (n)

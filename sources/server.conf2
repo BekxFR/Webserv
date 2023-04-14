@@ -16,7 +16,7 @@ server {
 			
 			return 301 https://www.example.com/new-page.html;
 
-			root ./files;
+			root ./site/;
 
 			autoindex on;
 
@@ -28,7 +28,13 @@ server {
 		}
 
 		location /download/ {
-			index index.html;
+			limit_except POST GET {
+				deny all;
+			}
+			index indexr.html;
+			root ./site/;
+			autoindex off;
+
 		}
 
 		allow_methods GET ;
@@ -60,7 +66,7 @@ server {
 		listen 0.0.0.0:8084;
 
 		root ./;
-		index index.php;
+		index inoodex.html;
 
 		allow_methods GET;
 }
