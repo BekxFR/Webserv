@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 20:10:24 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 20:16:25 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -228,11 +228,11 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 			}
 		}
 	}
-	IndexPath = server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex();
+	IndexPath = server->getRoot() + "/" + RequestURI.substr(0) + "/" + server->getIndex();
 	if (access(IndexPath.c_str(), F_OK) == 0)
-		return (server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex());
+		return (server->getRoot() + "/" + RequestURI.substr(0) + "/" + server->getIndex());
 	else
-		return (server->getRoot() + "/" + RequestURI.substr(1) + "/");
+		return (server->getRoot() + "/" + RequestURI.substr(0) + "/");
 	
 }
 
@@ -247,10 +247,10 @@ std::string server_response::getPathToStore(std::string MethodUsed, server_confi
 			{
 				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
+					/*	Ci-dessous, on renvoie directement le path au store, car ce path se suffit à lui-même. 
+						Si on ne le trouve pas, alors on renvoie le root car on enregistra à la racine du root. */
 					if (it->second->getUploadStore().size() > 0)
-					{
-						return (it->second->getRoot() + "/" + it->second->getUploadStore());
-					}
+						return (it->second->getUploadStore());
 					else
 						return (server->getRoot());
 				}
