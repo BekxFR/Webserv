@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 13:15:21 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 15:54:16 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			request.append(buffer);
 		}
 	}
-	std::cout << "Request :\n" << request << std::endl;
+	std::cout << "\n\nRequest :\n" << request << std::endl;
 	server_request* ServerRequest = new server_request(request);
 	ServerRequest->request_parser();
 	// ici on a la requete qui est parsé, je peux donc trouver le bon et en envoyer qu'un
@@ -124,7 +124,8 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		if (it->second == conn_sock)
 			Port = it->first;
 	}
-	std::cout << "PORT TEST : " << Port << std::endl;
+	if (0)
+		std::cout << "PORT TEST : " << Port << std::endl;
 	GoodServerConf = getGoodServer(servers, ServerRequest, Port);
 	server_response ServerResponse(GoodServerConf->getStatusCode());
 	ServerResponse.todo(*ServerRequest, conn_sock, GoodServerConf);
@@ -165,7 +166,6 @@ void ChangePort(std::map<int, int>& StorePort, int conn_sock, int listen_sock)
 
 int StartServer(std::vector<server_configuration*> servers, std::vector<int> Ports, std::vector<std::string> Hosts)
 {
-	(void)Hosts;
 	struct sockaddr_in addr[Ports.size()];
 	socklen_t addrlen[Ports.size()];
 	int conn_sock, nfds, epollfd;
@@ -201,10 +201,16 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 		if (bind(listen_sock[i], (struct sockaddr *) &addr[i], addrlen[i]) == -1)
 		{
 			if (errno == EADDRINUSE) // changer
-			{	
-				std::fprintf(stderr, "Error: bind failed: %s\n", strerror(errno));
+			{
+				if (1)
+					std::cout << "\033[1;31m" << "Port " << Ports[i] << " is already listening" << "\033[0m\n" << std::endl;
+				// std::fprintf(stderr, "Error: bind failed: %s\n", strerror(errno));
 				// return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
 			}
+		}
+		else
+		{
+			std::cout << "\033[1;32m" << "Port " << Ports[i] << " is listening" << "\033[0m\n" << std::endl;
 		}
 		if (listen(listen_sock[i], SOMAXCONN) == -1) {
 			std::fprintf(stderr, "Error: listen failed: %s\n", strerror(errno));
@@ -249,7 +255,8 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					// std::fprintf(stderr, "\nEVENTS I = %d ET N = %d\n", i, n);
 					conn_sock = accept(listen_sock[i], (struct sockaddr *) &addr[i], &addrlen[i]);
 					open_ports.push_back(conn_sock);
-					std::cout << "conn_sock : " << conn_sock << std::endl;
+					if (0)
+						std::cout << "conn_sock : " << conn_sock << std::endl;
 					StorePort.insert(std::pair<int, int>(Ports[i], listen_sock[i]));
 					ChangePort(StorePort, conn_sock, listen_sock[i]);
 					if (conn_sock == -1) {
@@ -270,7 +277,8 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					}
 				}
 				handle_connection(servers, events[n].data.fd, StorePort, CodeStatus);
-				std::cout << "events[n].data.fd : " << events[n].data.fd << std::endl;
+				if (0)
+					std::cout << "events[n].data.fd : " << events[n].data.fd << std::endl;
 			}
 		}
 	}
@@ -333,14 +341,15 @@ void PrintServer(std::vector<server_configuration*> servers)
 std::vector<int> getPorts(std::vector<server_configuration*> servers)
 {
 	std::vector<int> Ports;
+	int i = 0;
 	
 	for (std::vector<server_configuration*>::iterator it = servers.begin(); it != servers.end(); it++)
 	{		
 		std::vector<int> ports = (*it)->getPort();
 		for (std::vector<int>::iterator ite = ports.begin(); ite != ports.end(); ite++)
 		{
-			int i = 0;
-			std::cout << "Ports " << i << " : " << *ite << std::endl;
+			if (0)
+				std::cout << "Ports " << i << " : " << *ite << std::endl;
 			Ports.push_back(*ite);
 			i++;
 		}
@@ -351,14 +360,15 @@ std::vector<int> getPorts(std::vector<server_configuration*> servers)
 std::vector<std::string> getHosts(std::vector<server_configuration*> servers)
 {
 	std::vector<std::string> Hosts;
+	int i = 0;
 	
 	for (std::vector<server_configuration*>::iterator it = servers.begin(); it != servers.end(); it++)
 	{		
 		std::vector<std::string> hosts = (*it)->getHost();
 		for (std::vector<std::string>::iterator ite = hosts.begin(); ite != hosts.end(); ite++)
 		{
-			int i = 0;
-			std::cout << "Host " << i << " : " << *ite << std::endl;
+			if (0)
+				std::cout << "Host " << i << " : " << *ite << std::endl;
 			Hosts.push_back(*ite);
 			i++;
 		}

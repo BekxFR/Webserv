@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 19:29:55 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 15:53:34 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,15 @@
 server_response::server_response() : _status_code(200), _body(""), _content(""), _ServerResponse("")
 {
 	this->addType();
-	std::cout << "server_response Default Constructor called" << std::endl;
+	if (0)
+		std::cout << "server_response Default Constructor called" << std::endl;
 }
 
 server_response::server_response(int stat) : _status_code(stat), _body(""), _content(""), _ServerResponse("")
 {
 	this->addType();
-	std::cout << "server_response int Constructor called" << std::endl;
+	if (0)
+		std::cout << "server_response int Constructor called" << std::endl;
 }
 
 server_response::server_response(server_response const &obj)
@@ -32,13 +34,15 @@ server_response::server_response(server_response const &obj)
 
 server_response::~server_response()
 {
-	std::cout << "server_response Destructor called" << std::endl;
+	if (0)
+		std::cout << "server_response Destructor called" << std::endl;
 }
 
 server_response &server_response::operator=(server_response const &obj)
 {
 	(void)obj;
-	std::cout << "server_response Copy assignment operator called" << std::endl;
+	if (0)
+		std::cout << "server_response Copy assignment operator called" << std::endl;
 	return *this;
 }
 
@@ -50,7 +54,7 @@ void	server_response::addType()
 
 std::string server_response::getType(std::string type)
 {
-	std::cout << "TEST : " << type << std::endl;
+	// std::cout << "TEST : " << type << std::endl;
 	for (std::map<std::string, std::string>::iterator it = _contentType.begin(); it != _contentType.end(); it++)
 	{
 		if (type == it->first)
@@ -90,13 +94,10 @@ std::string	server_response::list_dir(std::string path)
 	errno = 0;
 	dir = opendir(path.c_str());
 	if (dir == NULL)
-		std::cout << "c3.0" << std::endl;
 	if (errno == EACCES || errno == EMFILE || errno == ENFILE || errno == ENOENT || errno == ENOMEM || errno == ENOTDIR)
 	{
-		std::cout << "c2" << std::endl;
-		if (errno == ENOENT)// || errno == ENOTDIR)
+		if (errno == ENOENT || errno == ENOTDIR)
 		{
-			std::cout << "c2.1" << std::endl;
 			_status_code = 404;
 		}
 		else if (errno == EACCES)
@@ -157,10 +158,10 @@ int server_response::checkConfFile(std::string MethodUsed, server_configuration 
 
 std::string server_response::getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	std::cout << "BIG TEST 0: " << RequestURI << std::endl;
+	// std::cout << "BIG TEST 0: " << RequestURI << std::endl;
 	if (RequestURI.size() > 2 && RequestURI.at(RequestURI.size() - 1) == '/')
 		RequestURI = RequestURI.substr(0, RequestURI.size() - 1);
-	std::cout << "BIG TEST : " << RequestURI << std::endl;
+	// std::cout << "BIG TEST : " << RequestURI << std::endl;
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
@@ -200,13 +201,9 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 					{
 						IndexPath = it->second->getRoot() + "/" + RequestURI.substr(1) + "/" + it->second->getDirectoryRequest();
 						if (access(IndexPath.c_str(), F_OK) == 0)
-						{
 							return (it->second->getRoot() + "/" + RequestURI.substr(1) + "/" + it->second->getDirectoryRequest());
-						}
 						else
-						{
 							return (it->second->getRoot() + "/" + RequestURI.substr(1) + "/");
-						}
 					}
 					else
 					{
@@ -364,7 +361,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		/* => VOIR AVEC NICO */
 		_status_code = 404;
-        if (1)
+        if (0)
 			std::cout << " BOOL FALSE" << std::endl;
     }
 	else
@@ -372,7 +369,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
 		C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
 		dir = S_ISDIR(path_info.st_mode);
-		if (1)
+		if (0)
 			std::cout << " BOOL TRUE is_dir " << dir << std::endl;
 		if (dir) // A FAIRE MARCHER
 		{
@@ -381,6 +378,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		else
 			FinalPath = RealPath;
 	}
+	
 	
 	std::cout << "FinalPath : " << FinalPath << std::endl;
 	/************************************************/
@@ -422,38 +420,34 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 					std::stringstream buffer;
 					if (is_dir(FinalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
 					{
-						std::cout << "AUTOLISTING ON" << std::endl;
 						buffer << list_dir(FinalPath);
 					}
 					else if (is_dir(FinalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
 					{
-						_status_code = 403;
+						_status_code = 404;
 					}
 					else if (_status_code == 200)
 					{
-						std::cout << "d0" << std::endl;
 						std::ifstream file(FinalPath.c_str());
 						if (!file.is_open())
 						{
 							/* cela ne marche pas car il ne rentre pas mm si file est un dir*/
-							std::cout << "d0.1" << std::endl;
 							_status_code = 403;
 						}
 						else
 						{
-							std::cout << "d0.2" << std::endl;
 							buffer << file.rdbuf();
 						}
 					}
 					_content = buffer.str();
 				}
 			}
-			std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
+			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
 			createResponse(server, _content, Server_Request);
-			std::cout << std::endl << "SERVER RESPONSE CONSTRUITE -> " << std::endl << _ServerResponse << std::endl << std::endl;
+			// std::cout << std::endl << "SERVER RESPONSE CONSTRUITE -> " << std::endl << _ServerResponse << std::endl << std::endl;
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			std::cerr << "\nREPONSE SEND :\n";
-			std::cerr << this->_ServerResponse << std::endl;			
+			// std::cerr << "\nREPONSE SEND :\n";
+			// std::cerr << this->_ServerResponse << std::endl;			
 			break ;
 
 		}
@@ -485,6 +479,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
             std::filebuf* pbuf = file.rdbuf();
             std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
             pbuf->pubseekpos (0,file.in);
+			
             char *buffer= new char[size];
             pbuf->sgetn(buffer, size);
             file.close();
@@ -607,7 +602,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	{
 		case INFO:
 		{
-			std::cout << "JE SUIS DANS INFO" << std::endl;
+			// std::cout << "JE SUIS DANS INFO" << std::endl;
 			switch (_status_code)
 				case 100:
 				{
@@ -625,7 +620,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case SUCCESS:
 		{
-			std::cout << "JE SUIS DANS SUCCESS" << std::endl;
+			// std::cout << "JE SUIS DANS SUCCESS" << std::endl;
 			switch (_status_code)
 			{
 				case 200:
@@ -675,7 +670,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case REDIRECTION:
 		{
-			std::cout << "JE SUIS DANS REDIRECTION" << std::endl;
+			// std::cout << "JE SUIS DANS REDIRECTION" << std::endl;
 			switch (_status_code)
 				case 300:
 				{
@@ -723,7 +718,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case CLIENT:
 		{
-			std::cout << "JE SUIS DANS CLIENT" << std::endl;
+			// std::cout << "JE SUIS DANS CLIENT" << std::endl;
 			switch (_status_code)
 			{
 				case 400:
@@ -839,7 +834,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case SERVER:
 		{
-			std::cout << "JE SUIS DANS SERVER" << std::endl;
+			// std::cout << "JE SUIS DANS SERVER" << std::endl;
 			switch (_status_code)
 			{
 				case 500:

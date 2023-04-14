@@ -1,15 +1,50 @@
-valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./webserv sources/server.conf2
-Can't open file error.html using default error page
-Can't open file e using default error page
-Ports 0 : 8083
-Ports 0 : 8080
-Ports 0 : 8080
-Ports 0 : 8083
-Ports 0 : 8084
-Ports 0 : 8099
-Host 0 : 
-Host 0 : [::]
-Host 0 : 0.0.0.0
-Host 0 : 0.0.0.0
-Host 0 : localhost
-Host 0 : 127.0.0.1
+[1;32mPort 8083 is listening[0m
+
+[1;32mPort 8080 is listening[0m
+
+[1;31mPort 8080 is already listening[0m
+
+[1;31mPort 8083 is already listening[0m
+
+[1;32mPort 8084 is listening[0m
+
+[1;32mPort 8099 is listening[0m
+
+
+
+Request :
+GET / HTTP/1.1
+Host: localhost:8083
+User-Agent: insomnia/2022.7.0
+webserv:
+Accept: */*
+
+
+RealPath : ./site/
+RealPathIndex : ./site/index.html
+PathToStore : ./site/
+FinalPath : ./site/index.html
+status code 200
+
+
+Request :
+GET /happysheep.gif HTTP/1.1
+Host: localhost:8083
+Connection: keep-alive
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US
+Sec-Fetch-Dest: image
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Site: cross-site
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Insomnia/2022.7.0 Chrome/108.0.5359.62 Electron/22.0.0 Safari/537.36
+sec-ch-ua: "Not?A_Brand";v="8", "Chromium";v="108"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+
+
+RealPath : ./site/happysheep.gif
+RealPathIndex : ./site/happysheep.gif/
+PathToStore : ./site/
+FinalPath : ./site/happysheep.gif
+status code 200

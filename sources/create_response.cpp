@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   create_response.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/05 17:55:04 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/05 18:44:16 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/14 15:53:11 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void	server_response::createResponse(server_configuration * server)
 		}
 		case SUCCESS:
 		{
-			std::cout << "JE SUIS DANS SUCCESS" << std::endl;
+			// std::cout << "JE SUIS DANS SUCCESS" << std::endl;
 			case 200:
 			{
 				break;

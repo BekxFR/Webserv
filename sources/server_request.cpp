@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 14:19:54 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/14 15:54:57 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,8 @@ server_request::server_request(server_request const &obj)
 
 server_request::~server_request()
 {
-	std::cout << "server_request Destructor called" << std::endl;
+	if (0)
+		std::cout << "server_request Destructor called" << std::endl;
 }
 
 server_request &server_request::operator=(server_request const &obj)
@@ -167,13 +168,16 @@ void server_request::request_parser()
 	
     std::string::size_type body_start = _ServerRequest.find("\r\n\r\n", method_end + 1);
 	std::string::size_type body_end = _ServerRequest.find("\r\n", body_start + 4);
-	std::cout << "\nbody_start : " << body_start << " body_end : " << body_end  << std::endl;
+	if (0)
+		std::cout << "\nbody_start : " << body_start << " body_end : " << body_end  << std::endl;
 	if (body_start != body_end)
     	this->_body = _ServerRequest.substr(body_start + 4);
 
 		
     // Afficher les résultats
-    std::cout << "\nMéthode : " << this->_method << std::endl;
+	if (0)
+	{	
+    std::cout << "\n\nMéthode : " << this->_method << std::endl;
     std::cout << "Chemin : " << this->_path << std::endl;
     std::cout << "Type : " << this->_type << std::endl;
     std::cout << "Version : " << this->_version << std::endl;
@@ -183,5 +187,6 @@ void server_request::request_parser()
     std::cout << "Content Type : " << this->_contentType <<  std::endl;
     std::cout << "Content Length : " << this->_contentLength << "\n" <<  std::endl;
     std::cout << "Body : " << this->_body << "\n" <<  std::endl;
+	}
 }
 

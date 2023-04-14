@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 13:15:38 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/14 15:34:19 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,8 @@ std::string	readingFileEP( std::string file )
 	std::ifstream input_file(file.c_str());
 
 	if (!input_file.is_open()) {
-		std::cout << "Can't open file " << file << " using default error page" << std::endl;
+		if (0)
+			std::cout << "Can't open file " << file << " using default error page" << std::endl;
 		return ("");
 	}
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/13 14:01:10 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/14 15:51:27 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,19 +168,19 @@ std::string	cgi_type(std::string const &type)
 	{
 		case PHP:
 		{
-			std::cout << "JE SUIS DANS CGI PHP" << std::endl;
+			// std::cout << "JE SUIS DANS CGI PHP" << std::endl;
 			return ("/usr/bin/php-cgi");
 			break;
 		}
 		case PYTHON:
 		{
-			std::cout << "JE SUIS DANS CGI PYTHON" << std::endl;
+			// std::cout << "JE SUIS DANS CGI PYTHON" << std::endl;
 			return ("/usr/bin/python3");
 			break;
 		}
 		case AUTRE:
 		{
-			std::cout << "JE SUIS DANS CGI AUTRE" << std::endl;
+			// std::cout << "JE SUIS DANS CGI AUTRE" << std::endl;
 			return ("/usr/bin/autre");
 			break;
 		}
