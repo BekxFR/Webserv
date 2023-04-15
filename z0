@@ -26,7 +26,7 @@ UploadStore :
 Location configurations  for /password/
 HttpMethodAccepted : NOT INDICATED
 HttpRedirection https://www.example.com/new-page.html
-Root : ./site/
+Root : ./site/upload/
 DirectoryListing : on
 DirectoryRequest : index2.html
 CGI : 
@@ -37,7 +37,7 @@ UploadStore : /var/www/uploads
 Location configurations  for /upload/
 HttpMethodAccepted : NOT INDICATED
 HttpRedirection 
-Root : ./site/
+Root : ./site/upload/
 DirectoryListing : off
 DirectoryRequest : index2.html
 CGI : 
@@ -115,38 +115,38 @@ Location :
 
 
 Request :
-GET /lol/ HTTP/1.1
-Host: localhost:8080
+GET /upload HTTP/1.1
+Host: localhost:8083
 User-Agent: insomnia/2022.7.0
 webserv:
 Accept: */*
 
 
-RealPath : ./site/lol/
-RealPathIndex : ./site/lol/index.html
+RealPath : ./site/upload
+RealPathIndex : ./site/upload
 PathToStore : ./site/
-FinalPath : ./site/lol/index.html
-status code 200
+ BOOL TRUE is_dir 1
+ BOOL TEST d
+ BOOL 404 1
+STATUS : 200
+FinalPath : 
+status code 404
 
 
 Request :
-GET /lol/happysheep.gif HTTP/1.1
-Host: localhost:8080
-Connection: keep-alive
-Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
-Accept-Encoding: gzip, deflate, br
-Accept-Language: en-US
-Sec-Fetch-Dest: image
-Sec-Fetch-Mode: no-cors
-Sec-Fetch-Site: cross-site
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Insomnia/2022.7.0 Chrome/108.0.5359.62 Electron/22.0.0 Safari/537.36
-sec-ch-ua: "Not?A_Brand";v="8", "Chromium";v="108"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "Linux"
+GET /upload/ HTTP/1.1
+Host: localhost:8083
+User-Agent: insomnia/2022.7.0
+webserv:
+Accept: */*
 
 
-RealPath : ./site/lol/happysheep.gif
-RealPathIndex : ./site/lol/happysheep.gif/
-PathToStore : ./site/
-FinalPath : 
-status code 404
+RealPath : ./site/upload/
+RealPathIndex : ./site/upload/
+PathToStore : /var/www/uploads
+ BOOL TRUE is_dir 1
+ BOOL TEST /
+ BOOL INDEX 1
+STATUS : 200
+FinalPath : ./site/upload/
+status code 403

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 20:44:33 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/15 16:05:41 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -221,7 +221,7 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 						if (access(IndexPath.c_str(), F_OK) == 0)
 							return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + it->second->getDirectoryRequest());
 						else
-							return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/");
+							return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()));
 					}
 					else
 					{
@@ -231,7 +231,7 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 						if (access(IndexPath.c_str(), F_OK) == 0)
 							return (server->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + server->getIndex());
 						else
-							return (server->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/");
+							return (server->getRoot() + "/" + RequestURI.substr(it->first.size()));
 					}
 				}
 			}
@@ -241,7 +241,7 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 	if (access(IndexPath.c_str(), F_OK) == 0)
 		return (server->getRoot() + "/" + RequestURI.substr(0) + "/" + server->getIndex());
 	else
-		return (server->getRoot() + "/" + RequestURI.substr(0) + "/");
+		return (server->getRoot() + "/" + RequestURI.substr(0));
 	
 }
 
@@ -381,12 +381,13 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	un message erreur */
 	struct stat path_info;
 	bool dir;
+	bool is_file;
 	std::string FinalPath;
 	if (stat(RealPath.c_str(), &path_info) != 0) {
 		/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		_status_code = 404;
-        if (0)
+        if (1)
 			std::cout << " BOOL FALSE" << std::endl;
     }
 	else
@@ -394,21 +395,32 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
 		C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
 		dir = S_ISDIR(path_info.st_mode);
-		if (0)
+		is_file = S_ISREG(path_info.st_mode);
+		if (1)
 			std::cout << " BOOL TRUE is_dir " << dir << std::endl;
-		if (dir) // A FAIRE MARCHER
+		std::cout << " BOOL TEST " << RealPath.at(RealPath.size() - 1) << std::endl;
+		if (dir && RealPath.at(RealPath.size() - 1) != '/')
 		{
+			std::cout << " BOOL 404 " << dir << std::endl;
+			_status_code = 404;
+		}
+		else if (dir)
+		{
+			std::cout << " BOOL INDEX " << dir << std::endl;
 			FinalPath = RealPathIndex;
 		}
 		else
+		{
+			std::cout << " BOOL DIR " << dir << std::endl;
 			FinalPath = RealPath;
+		}
 	}
 	
 	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
 	car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
 	sur que le status code n'est pas modifié par la suite */
 	_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
-	
+	std::cout << "STATUS : " << _status_code << std::endl;
 	/********************************************/
 	
 	std::cout << "FinalPath : " << FinalPath << std::endl;

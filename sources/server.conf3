@@ -10,7 +10,7 @@ server {
 
 		location /upload/ {
 
-			root ./site/;
+			root ./site/upload/;
 
 			autoindex off;
 
@@ -24,7 +24,7 @@ server {
 		location /password/ {
 			return 301 https://www.example.com/new-page.html;
 
-			root ./site/;
+			root ./site/upload/;
 
 			autoindex on;
 
