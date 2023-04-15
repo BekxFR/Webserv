@@ -1,67 +1,10 @@
-[0;34m###[0mCreation du fichier objects/server_response.o[0;34m###[0;33m
-c++ -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/ -g3 -c sources/server_response.cpp -o objects/server_response.o
-[0m
-[0;34m###[0mCreation du fichier webserv[0;34m###[0;33m
-c++ objects/main.o objects/server_configuration.o objects/server_request.o objects/server_response.o objects/server_location_configuration.o objects/ErrorCorresp.o -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/ -g3 -o webserv
-[0m
-valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./webserv sources/server.conf3
 Server 0:
 Server name : webserv.com
 Root : ./site/
-Port : 8083
 Port : 8080
 Host : 
-Host : [::]
 Cliend Body Limit : 2097152
 CGI (first = extension, second = root):
-- first = '.php' && second = '/usr/bin/php-cgi'
-
-
-***
-
-Location : 
-
-Location configurations  for /download/
-HttpMethodAccepted : POST
-HttpMethodAccepted : 
-HttpRedirection 
-Root : ./site/
-DirectoryListing : off
-DirectoryRequest : indexr.html
-UploadStore : 
-
-Location configurations  for /password/
-HttpMethodAccepted : NOT INDICATED
-HttpRedirection https://www.example.com/new-page.html
-Root : ./site/upload/
-DirectoryListing : on
-DirectoryRequest : index2.html
-CGI : 
-path : .php
-conf : /usr/bin/php-cgi
-UploadStore : /var/www/uploads
-
-Location configurations  for /upload/
-HttpMethodAccepted : NOT INDICATED
-HttpRedirection 
-Root : ./site/upload/
-DirectoryListing : on
-DirectoryRequest : index2.html
-CGI : 
-path : .php
-conf : /usr/bin/php-cgi
-UploadStore : /var/www/uploads/
-
-***
-
-
-Server 1:
-Server name : webserv2.com
-Root : ./test
-Port : 8080
-Host : 0.0.0.0
-Cliend Body Limit : 1048576
-CGI (first = extension, second = root):
 
 
 ***
@@ -70,73 +13,70 @@ Location :
 
 ***
 
-
-Server 2:
-Server name : webserv2
-Root : ./
-Port : 8083
-Host : 0.0.0.0
-Cliend Body Limit : 1048576
-CGI (first = extension, second = root):
-- first = '.php' && second = '/usr/bin/php-cgi'
-- first = '.py' && second = '/usr/bin/python3'
-
-
-***
-
-Location : 
-
-***
-
-
-Server 3:
-Server name : webserv2.com
-Root : ./site/
-Port : 8084
-Port : 8099
-Host : localhost
-Host : 127.0.0.1
-Cliend Body Limit : 1048576
-CGI (first = extension, second = root):
-
-
-***
-
-Location : 
-
-***
-
-
-[1;32mPort 8083 is listening[0m
 
 [1;32mPort 8080 is listening[0m
 
-[1;31mPort 8080 is already listening[0m
-
-[1;31mPort 8083 is already listening[0m
-
-[1;32mPort 8084 is listening[0m
-
-[1;32mPort 8099 is listening[0m
-
+EPOLL_WAIT : 
+CON SOCK : 5
+listen_sock[i] : 3
+Ports[i] : 8080
+e1
+EPOLL_WAIT : 
+CON SOCK : 6
+listen_sock[i] : 3
+Ports[i] : 8080
+ChangeOrKeep : 
+it->second : 5
+Port : 8080
+conn_sock : 6
+e1
+EPOLL_WAIT : 
+CON SOCK : 7
+listen_sock[i] : 3
+Ports[i] : 8080
+ChangeOrKeep : 
+it->second : 5
+Port : 8080
+conn_sock : 7
+e1
+e1
 
 
 Request :
-GET /test.txt HTTP/1.1
-Host: webserv2
-User-Agent: curl/7.81.0
+GET / HTTP/1.1
+Host: localhost:8080
 Accept: */*
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (pc-x86_64-linux-gnu) Siege/4.1.6
+Connection: close
 
 
+TROUVER LE BON PORT
+it->second : 5
+conn_sock : 5
+it->first : 8080
+PORT TEST : 8080
+e1.0
+c1.0.4
+c1.0.5 (*it)->getPort().size() 1
+c1.0.3
+PORT : 8080
+GOODSERVER : 8080
+SERVERNAME : webserv.com
+HOST : localhost:8080
+I : 0
+J : 0
+c1.0.6
+e1.1
+e1.2
+e3
 SERVER CONFIG
-Server name : webserv2
-Root : ./
-Port : 8083
-Host : 0.0.0.0
-Cliend Body Limit : 1048576
+Server name : webserv.com
+Root : ./site/
+Port : 8080
+Host : 
+Cliend Body Limit : 2097152
 CGI (first = extension, second = root):
-- first = '.php' && second = '/usr/bin/php-cgi'
-- first = '.py' && second = '/usr/bin/python3'
 
 
 ***
@@ -146,75 +86,37 @@ Location :
 ***
 
 
-RealPath : ./test.txt
-RealPathIndex : ./test.txt
-PathToStore : ./
+RealPath : ./site/
+RealPathIndex : ./site/index.html
+PathToStore : ./site/
+e4
+e5
 STATUS isMethodAuthorised : 200
-FinalPath : ./test.txt
-status code Create Response200
+FinalPath : ./site/index.html
+e6
+status code Create Response 200
+e2
+e1
 
 
 Request :
-GET /test.txt HTTP/1.1
-Host: webserv2
-User-Agent: curl/7.81.0
+GET / HTTP/1.1
+Host: localhost:8080
 Accept: */*
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (pc-x86_64-linux-gnu) Siege/4.1.6
+Connection: close
 
 
-SERVER CONFIG
-Server name : webserv2
-Root : ./
-Port : 8083
-Host : 0.0.0.0
-Cliend Body Limit : 1048576
-CGI (first = extension, second = root):
-- first = '.php' && second = '/usr/bin/php-cgi'
-- first = '.py' && second = '/usr/bin/python3'
-
-
-***
-
-Location : 
-
-***
-
-
-RealPath : ./test.txt
-RealPathIndex : ./test.txt
-PathToStore : ./
-STATUS isMethodAuthorised : 200
-FinalPath : ./test.txt
-status code Create Response200
-
-
-Request :
-GET /test.txt HTTP/1.1
-Host: webserv2
-User-Agent: curl/7.81.0
-Accept: */*
-
-
-SERVER CONFIG
-Server name : webserv2
-Root : ./
-Port : 8083
-Host : 0.0.0.0
-Cliend Body Limit : 1048576
-CGI (first = extension, second = root):
-- first = '.php' && second = '/usr/bin/php-cgi'
-- first = '.py' && second = '/usr/bin/python3'
-
-
-***
-
-Location : 
-
-***
-
-
-RealPath : ./test.txt
-RealPathIndex : ./test.txt
-PathToStore : ./
-STATUS isMethodAuthorised : 200
-FinalPath : ./test.txt
-status code Create Response200
+TROUVER LE BON PORT
+it->second : 5
+conn_sock : 6
+it->first : 8080
+PORT TEST : 0
+e1.0
+c1.0.4
+c1.0.5 (*it)->getPort().size() 1
+c1.0.3
+PORT : 0
+GOODSERVER : 8080
+c1.0.6

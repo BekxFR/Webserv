@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/15 18:13:15 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/15 18:41:25 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -346,6 +346,7 @@ std::string server_response::getRedir(std::string MethodUsed, server_configurati
 
 void	server_response::todo(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
+	std::cout << "e3" << std::endl;
 	std::cout << "SERVER CONFIG" << std::endl;
 	std::cout << *server << std::endl;
 	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
@@ -377,7 +378,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	}
 	/*************************************************************/
 
-	
+	std::cout << "e4" << std::endl;
 	/*Ici, on check si c'est le path donné est un directory ou non.
 	Une fosis que l'on sait cela, on peut renvoyer un index ou 
 	un message erreur */
@@ -414,7 +415,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			FinalPath = RealPath;
 		}
 	}
-	
+	std::cout << "e5" << std::endl;
 	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
 	car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
 	sur que le status code n'est pas modifié par la suite */
@@ -437,7 +438,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	
 	/* si ya un index ds le dossier ou je*/
 	/*********************************************/
-
+	std::cout << "e6" << std::endl;
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
 	

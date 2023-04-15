@@ -1,25 +1,10 @@
 server {
 	server_name webserv.com;
-		listen 8083;
-		listen [::]:8080;
+		listen 8080;
 
 		root ./site/;
 		index index.html;
 		client_max_body_size 2M
-		error_page 404 site/42.jpg 405 error.html 406 e;
-
-		location /upload/ {
-
-			root ./site/;
-			return 301 https://www.example.com/new-page.html;
-			autoindex off;
-
-			index index.html;
-
-			cgi .php /usr/bin/php-cgi ;
-
-			upload_store /var/www/uploads;
-		}
 
 		allow_methods GET POST;
 }
