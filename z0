@@ -38,7 +38,7 @@ Location configurations  for /upload/
 HttpMethodAccepted : NOT INDICATED
 HttpRedirection 
 Root : ./site/upload/
-DirectoryListing : off
+DirectoryListing : on
 DirectoryRequest : index2.html
 CGI : 
 path : .php
@@ -115,25 +115,6 @@ Location :
 
 
 Request :
-GET /upload HTTP/1.1
-Host: localhost:8083
-User-Agent: insomnia/2022.7.0
-webserv:
-Accept: */*
-
-
-RealPath : ./site/upload
-RealPathIndex : ./site/upload
-PathToStore : ./site/
- BOOL TRUE is_dir 1
- BOOL TEST d
- BOOL 404 1
-STATUS : 200
-FinalPath : 
-status code 404
-
-
-Request :
 GET /upload/ HTTP/1.1
 Host: localhost:8083
 User-Agent: insomnia/2022.7.0
@@ -149,4 +130,23 @@ PathToStore : /var/www/uploads
  BOOL INDEX 1
 STATUS : 200
 FinalPath : ./site/upload/
-status code 403
+status code 200
+
+
+Request :
+GET /upload/ HTTP/1.1
+Host: localhost:8083
+User-Agent: insomnia/2022.7.0
+webserv:
+Accept: */*
+
+
+RealPath : ./site/upload/
+RealPathIndex : ./site/upload/index2.html
+PathToStore : /var/www/uploads
+ BOOL TRUE is_dir 1
+ BOOL TEST /
+ BOOL INDEX 1
+STATUS : 200
+FinalPath : ./site/upload/index2.html
+status code 200

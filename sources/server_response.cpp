@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/15 16:05:41 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/15 16:21:15 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -381,37 +381,34 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	un message erreur */
 	struct stat path_info;
 	bool dir;
-	bool is_file;
 	std::string FinalPath;
 	if (stat(RealPath.c_str(), &path_info) != 0) {
 		/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		_status_code = 404;
-        if (1)
-			std::cout << " BOOL FALSE" << std::endl;
+		// std::cout << " BOOL FALSE" << std::endl;
     }
 	else
 	{
 		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
 		C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
 		dir = S_ISDIR(path_info.st_mode);
-		is_file = S_ISREG(path_info.st_mode);
-		if (1)
-			std::cout << " BOOL TRUE is_dir " << dir << std::endl;
-		std::cout << " BOOL TEST " << RealPath.at(RealPath.size() - 1) << std::endl;
+		
+		// std::cout << " BOOL TRUE is_dir " << dir << std::endl;
+		// std::cout << " BOOL TEST " << RealPath.at(RealPath.size() - 1) << std::endl;
 		if (dir && RealPath.at(RealPath.size() - 1) != '/')
 		{
-			std::cout << " BOOL 404 " << dir << std::endl;
+			// std::cout << " BOOL 404 " << dir << std::endl;
 			_status_code = 404;
 		}
 		else if (dir)
 		{
-			std::cout << " BOOL INDEX " << dir << std::endl;
+			// std::cout << " BOOL INDEX " << dir << std::endl;
 			FinalPath = RealPathIndex;
 		}
 		else
 		{
-			std::cout << " BOOL DIR " << dir << std::endl;
+			// std::cout << " BOOL DIR " << dir << std::endl;
 			FinalPath = RealPath;
 		}
 	}

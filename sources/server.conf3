@@ -12,7 +12,7 @@ server {
 
 			root ./site/upload/;
 
-			autoindex off;
+			autoindex on;
 
 			index index2.html;
 
