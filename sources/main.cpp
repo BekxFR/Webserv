@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/15 18:07:23 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/15 18:12:13 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,19 +76,16 @@ server_configuration* getGoodServer(std::vector<server_configuration*> servers, 
 {
 	std::vector<server_configuration*> SamePort;
 	int j = 0;
-	std::cout << "c1.0.1" << std::endl;
 
 	for (std::vector<server_configuration*>::iterator it = servers.begin(); it != servers.end(); it++)
 	{
-		std::cout << "c1.0.2" << std::endl;
 		for (size_t i = 0; i < (*it)->getPort().size(); i++)
 		{
-			std::cout << "c1.0.3" << std::endl;
-			std::cout << "PORT : " << Port << std::endl;
-			std::cout << "GOODSERVER : " << (*it)->getPort()[i] << std::endl;
+			// std::cout << "c1.0.3" << std::endl;
+			// std::cout << "PORT : " << Port << std::endl;
+			// std::cout << "GOODSERVER : " << (*it)->getPort()[i] << std::endl;
 			if ((*it)->getPort()[i] == Port)
 			{
-				std::cout << "c1.0.4" << std::endl;
 				SamePort.push_back(*it);
 				// std::cout << "SERVERNAME : " << (*it)->getServerName() << std::endl;
 				// std::cout << "HOST : " << ServerRequest->getHost() << std::endl;
@@ -96,7 +93,6 @@ server_configuration* getGoodServer(std::vector<server_configuration*> servers, 
 				// std::cout << "J : " << j << std::endl;
 				if ((*it)->getServerName() == ServerRequest->getHost())
 				{
-					std::cout << "c1.0.5" << std::endl;
 					return (SamePort.at(j));
 				}
 				j++;
@@ -137,20 +133,16 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	// ici on a la requete qui est parsé, je peux donc trouver le bon et en envoyer qu'un
 	for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
 	{
-		std::cout << "it->second : " << it->second << std::endl;
-		std::cout << "conn_sock : " << conn_sock << std::endl;
+		// std::cout << "it->second : " << it->second << std::endl;
+		// std::cout << "conn_sock : " << conn_sock << std::endl;
 		if (it->second == conn_sock)
 			Port = it->first;
 	}
 	if (0)
 		std::cout << "PORT TEST : " << Port << std::endl;
-	std::cout << "c1" << std::endl;
 	GoodServerConf = getGoodServer(servers, ServerRequest, Port);
-	std::cout << "c1.1" << std::endl;
 	server_response ServerResponse(GoodServerConf->getStatusCode());
-	std::cout << "c1.2" << std::endl;
 	ServerResponse.todo(*ServerRequest, conn_sock, GoodServerConf);
-	std::cout << "c1.3" << std::endl;
 	delete ServerRequest;
 }
 
@@ -181,10 +173,10 @@ void ChangePort(std::map<int, int>& StorePort, int conn_sock, int listen_sock)
 {
 	for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
 	{
-		std::cout << "CHANGE_PORT : " << std::endl;
-		std::cout << "it->second : " << it->second << std::endl;
-		std::cout << "listen_sock : " << listen_sock << std::endl;
-		std::cout << "conn_sock : " << conn_sock << std::endl;
+		// std::cout << "CHANGE_PORT : " << std::endl;
+		// std::cout << "it->second : " << it->second << std::endl;
+		// std::cout << "listen_sock : " << listen_sock << std::endl;
+		// std::cout << "conn_sock : " << conn_sock << std::endl;
 		if (it->second == listen_sock)
 			it->second = conn_sock;
 	}
@@ -194,10 +186,10 @@ void ChangeOrKeepPort(std::map<int, int>& StorePort, int conn_sock, int Port)
 {
 	for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
 	{
-		std::cout << "ChangeOrKeep : " << std::endl;
-		std::cout << "it->second : " << it->second << std::endl;
-		std::cout << "Port : " << Port << std::endl;
-		std::cout << "conn_sock : " << conn_sock << std::endl;
+		// std::cout << "ChangeOrKeep : " << std::endl;
+		// std::cout << "it->second : " << it->second << std::endl;
+		// std::cout << "Port : " << Port << std::endl;
+		// std::cout << "conn_sock : " << conn_sock << std::endl;
 		if (it->first == Port)
 		{
 			it->second = conn_sock;
@@ -261,12 +253,12 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 		}
 	}
 
-	std::cout << "STOREMAP" << std::endl;
-	for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
-	{
-		std::cout << "first" << it->first << std::endl;
-		std::cout << "second" << it->second << std::endl;
-	}
+	// std::cout << "STOREMAP" << std::endl;
+	// for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
+	// {
+	// 	std::cout << "first" << it->first << std::endl;
+	// 	std::cout << "second" << it->second << std::endl;
+	// }
 	epollfd = epoll_create1(0);
 	if (epollfd == -1) {
 		std::fprintf(stderr, "Error: epoll_create1: %s\n", strerror(errno));
@@ -327,8 +319,7 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					}
 				}
 				handle_connection(servers, events[n].data.fd, StorePort, CodeStatus);
-				if (1)
-					std::cout << "events[n].data.fd : " << events[n].data.fd << std::endl;
+				// std::cout << "events[n].data.fd : " << events[n].data.fd << std::endl;
 			}
 		}
 	}

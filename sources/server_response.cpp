@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/15 16:55:19 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/15 18:13:15 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -419,7 +419,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
 	sur que le status code n'est pas modifié par la suite */
 	_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
-	std::cout << "STATUS : " << _status_code << std::endl;
+	std::cout << "STATUS isMethodAuthorised : " << _status_code << std::endl;
 	/********************************************/
 	
 	std::cout << "FinalPath : " << FinalPath << std::endl;
@@ -636,7 +636,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	std::stringstream	response;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
 	int	n = 0;
-	std::cout << "status code " << _status_code << std::endl;
+	std::cout << "status code Create Response " << _status_code << std::endl;
 	int	tmp = _status_code / 100 - 1;
 	for (; n != tmp && n < 5; n++) {}
 	switch (n)
