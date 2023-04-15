@@ -18,7 +18,7 @@ server {
 
 			cgi .php /usr/bin/php-cgi ;
 
-			upload_store /var/www/uploads;
+			upload_store /var/www/uploads/;
 		}
 
 		location /password/ {
@@ -62,7 +62,7 @@ server {
 	server_name webserv2;
 	listen 0.0.0.0:8083;
 
-	root ./test;
+	root ./;
 	index index.html;
 
 	allow_methods GET;

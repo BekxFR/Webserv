@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/15 16:21:15 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/15 16:55:19 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -346,6 +346,8 @@ std::string server_response::getRedir(std::string MethodUsed, server_configurati
 
 void	server_response::todo(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
+	std::cout << "SERVER CONFIG" << std::endl;
+	std::cout << *server << std::endl;
 	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
 		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
 	if (Server_Request.getContentLength() > server->getClientMaxBodySize())

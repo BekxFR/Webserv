@@ -1,3 +1,10 @@
+[0;34m###[0mCreation du fichier objects/main.o[0;34m###[0;33m
+c++ -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/ -g3 -c sources/main.cpp -o objects/main.o
+[0m
+[0;34m###[0mCreation du fichier webserv[0;34m###[0;33m
+c++ objects/main.o objects/server_configuration.o objects/server_request.o objects/server_response.o objects/server_location_configuration.o objects/ErrorCorresp.o -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/ -g3 -o webserv
+[0m
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./webserv sources/server.conf3
 Server 0:
 Server name : webserv.com
 Root : ./site/
@@ -43,7 +50,7 @@ DirectoryRequest : index2.html
 CGI : 
 path : .php
 conf : /usr/bin/php-cgi
-UploadStore : /var/www/uploads
+UploadStore : /var/www/uploads/
 
 ***
 
@@ -66,7 +73,7 @@ Location :
 
 Server 2:
 Server name : webserv2
-Root : ./test
+Root : ./
 Port : 8083
 Host : 0.0.0.0
 Cliend Body Limit : 1048576
@@ -112,41 +119,240 @@ Location :
 
 [1;32mPort 8099 is listening[0m
 
+STOREMAP
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
 
 
 Request :
-GET /upload/ HTTP/1.1
-Host: localhost:8083
-User-Agent: insomnia/2022.7.0
-webserv:
+GET /test.txt HTTP/1.1
+Host: webserv2
+User-Agent: curl/7.81.0
 Accept: */*
 
 
-RealPath : ./site/upload/
-RealPathIndex : ./site/upload/
-PathToStore : /var/www/uploads
- BOOL TRUE is_dir 1
- BOOL TEST /
- BOOL INDEX 1
+it->second : 10
+conn_sock : 10
+c1
+c1.0.1
+c1.0.2
+c1.0.3
+PORT : 8083
+GOODSERVER : 8083
+c1.0.4
+c1.0.3
+PORT : 8083
+GOODSERVER : 8080
+c1.0.2
+c1.0.3
+PORT : 8083
+GOODSERVER : 8080
+c1.0.2
+c1.0.3
+PORT : 8083
+GOODSERVER : 8083
+c1.0.4
+c1.0.5
+c1.1
+c1.2
+SERVER CONFIG
+Server name : webserv2
+Root : ./
+Port : 8083
+Host : 0.0.0.0
+Cliend Body Limit : 1048576
+CGI (first = extension, second = root):
+- first = '.php' && second = '/usr/bin/php-cgi'
+- first = '.py' && second = '/usr/bin/python3'
+
+
+***
+
+Location : 
+
+***
+
+
+RealPath : ./test.txt
+RealPathIndex : ./test.txt
+PathToStore : ./
 STATUS : 200
-FinalPath : ./site/upload/
+FinalPath : ./test.txt
 status code 200
+c1.3
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+events[n].data.fd : 10
+ChangeOrKeep : 
+it->second : 10
+Port : 8083
+conn_sock : 12
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
 
 
 Request :
-GET /upload/ HTTP/1.1
-Host: localhost:8083
-User-Agent: insomnia/2022.7.0
-webserv:
+GET /test.txt HTTP/1.1
+Host: webserv2
+User-Agent: curl/7.81.0
 Accept: */*
 
 
-RealPath : ./site/upload/
-RealPathIndex : ./site/upload/index2.html
-PathToStore : /var/www/uploads
- BOOL TRUE is_dir 1
- BOOL TEST /
- BOOL INDEX 1
+it->second : 12
+conn_sock : 12
+c1
+c1.0.1
+c1.0.2
+c1.0.3
+PORT : 8083
+GOODSERVER : 8083
+c1.0.4
+c1.0.3
+PORT : 8083
+GOODSERVER : 8080
+c1.0.2
+c1.0.3
+PORT : 8083
+GOODSERVER : 8080
+c1.0.2
+c1.0.3
+PORT : 8083
+GOODSERVER : 8083
+c1.0.4
+c1.0.5
+c1.1
+c1.2
+SERVER CONFIG
+Server name : webserv2
+Root : ./
+Port : 8083
+Host : 0.0.0.0
+Cliend Body Limit : 1048576
+CGI (first = extension, second = root):
+- first = '.php' && second = '/usr/bin/php-cgi'
+- first = '.py' && second = '/usr/bin/python3'
+
+
+***
+
+Location : 
+
+***
+
+
+RealPath : ./test.txt
+RealPathIndex : ./test.txt
+PathToStore : ./
 STATUS : 200
-FinalPath : ./site/upload/index2.html
+FinalPath : ./test.txt
 status code 200
+c1.3
+events[n].data.fd : 12
+events[n].data.fd : 12
+events[n].data.fd : 12
+events[n].data.fd : 12
+events[n].data.fd : 12
+events[n].data.fd : 12
+events[n].data.fd : 12
+events[n].data.fd : 12
+events[n].data.fd : 12
+events[n].data.fd : 12
+events[n].data.fd : 12
+events[n].data.fd : 12
+ChangeOrKeep : 
+it->second : 12
+Port : 8083
+conn_sock : 13
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
+events[n].data.fd : 3
+
+
+Request :
+GET /test.txt HTTP/1.1
+Host: webserv2
+User-Agent: curl/7.81.0
+Accept: */*
+
+
+it->second : 13
+conn_sock : 13
+c1
+c1.0.1
+c1.0.2
+c1.0.3
+PORT : 8083
+GOODSERVER : 8083
+c1.0.4
+c1.0.3
+PORT : 8083
+GOODSERVER : 8080
+c1.0.2
+c1.0.3
+PORT : 8083
+GOODSERVER : 8080
+c1.0.2
+c1.0.3
+PORT : 8083
+GOODSERVER : 8083
+c1.0.4
+c1.0.5
+c1.1
+c1.2
+SERVER CONFIG
+Server name : webserv2
+Root : ./
+Port : 8083
+Host : 0.0.0.0
+Cliend Body Limit : 1048576
+CGI (first = extension, second = root):
+- first = '.php' && second = '/usr/bin/php-cgi'
+- first = '.py' && second = '/usr/bin/python3'
+
+
+***
+
+Location : 
+
+***
+
+
+RealPath : ./test.txt
+RealPathIndex : ./test.txt
+PathToStore : ./
+STATUS : 200
+FinalPath : ./test.txt
+status code 200
+c1.3
+events[n].data.fd : 13
+events[n].data.fd : 13
+events[n].data.fd : 13
+events[n].data.fd : 13
+events[n].data.fd : 13
+events[n].data.fd : 13
+events[n].data.fd : 13
+events[n].data.fd : 13
+events[n].data.fd : 13
+events[n].data.fd : 13
+events[n].data.fd : 13
+events[n].data.fd : 13
