@@ -18,7 +18,7 @@ server_configuration::server_configuration()
 		std::cout << "server_configuration Default Constructor called" << std::endl;
 }
 
-server_configuration::server_configuration(std::string ConfigFile) : 
+server_configuration::server_configuration(std::string ConfigFile, const char **env) : 
 _ConfigFile(ConfigFile),
 _ServerName(findServerName()),
 _Root(findRoot()),
@@ -46,6 +46,8 @@ _Loc(findLoc())
 			_ErrorPage.erase(tmp);
 		}
 	}
+	for (size_t i = 0; env[i]; i++)
+		_env.push_back(env[i]);
 	if (DEBUG)
 	{
 		std::cout << "server_configuration Overload Constructor called" << std::endl;
@@ -89,7 +91,7 @@ std::string server_configuration::findServerName()
 			return(server_name.substr(0, space_pos)); // extract the substring before the space character
 		}
 	}
-	return ("");
+	return ("localhost");
 }
 
 std::string server_configuration::findRoot()
@@ -416,7 +418,8 @@ std::string server_configuration::getConfigFile() { return _ConfigFile;}
 std::string server_configuration::getServerName() { return _ServerName;}
 std::string server_configuration::getRoot() { return _Root;}
 std::string server_configuration::getIndex() { return _Index;}
-std::vector<int> server_configuration::getPort() { return _Port;}
+std::vector<int>	server_configuration::getPort() { return _Port;}
+std::vector<std::string> server_configuration::getEnv() { return _env;}
 size_t server_configuration::getClientMaxBodySize() { return _ClientMaxBodySize;}
 std::map<std::string, std::string> server_configuration::getCgi() { return (_cgi); }
 std::map<std::string, std::pair<std::string, std::string> >		server_configuration::getErrorPage() { return _ErrorPage;}

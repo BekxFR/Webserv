@@ -39,6 +39,7 @@
 
 #include "server_configuration.hpp"
 #include "server_request.hpp"
+#include "cgi.hpp"
 
 class server_request;
 
@@ -46,14 +47,19 @@ class server_response
 {
 	private:
 	int			_status_code;
+	int			_cgiFd;
+	std::string	_header;
 	std::string	_body;
 	std::string	_content;
+	std::string	_contentLength;
 	std::string	_ServerResponse;
+	std::vector<std::string>	_env;
+	server_request	*_req;
 	std::map<std::string, std::string> _contentType;
 	
 	public:
 	server_response();
-	server_response(int);
+	server_response(int, std::vector<std::string>, server_request);
 	server_response(server_response const &obj);
 	~server_response();
 	server_response &operator=(server_response const &obj);
@@ -70,10 +76,13 @@ class server_response
 	std::string getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI);
+	int	doCgi(std::string toexec, server_configuration * server); // envoyer fichier a cgiser + return fd du cgi
 
 	std::string getRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	// Définition de la méthode pour obtenir le corps de la réponse
-	std::string get_body() const { return _body; }
+	std::string	getHeader() const { return _header; }
+	std::string	getBody() const { return _body; }
+	std::string	getContentLength() const { return _contentLength; }
 
 	// Définition de la méthode pour obtenir la réponse _ServerResponse
 	std::string get_ServerResponse() const { return _ServerResponse; }

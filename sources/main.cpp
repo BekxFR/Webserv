@@ -125,7 +125,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	}
 	std::cout << "PORT TEST : " << Port << std::endl;
 	GoodServerConf = getGoodServer(servers, ServerRequest, Port);
-	server_response ServerResponse(GoodServerConf->getStatusCode());
+	server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), *ServerRequest);
 	ServerResponse.todo(*ServerRequest, conn_sock, GoodServerConf);
 	delete ServerRequest;
 }
@@ -225,7 +225,6 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 			return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
 		}
 	}
-	int temp_fd = 0;
 	for (;;) {
 		nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
 		if (nfds == -1) {
@@ -237,9 +236,7 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 			{
 				if (events[n].data.fd == listen_sock[i])
 				{
-					temp_fd = i;
 					CodeStatus = 200; // a voir comment on gère le code status après envoi ds le handle connection
-					// servers[temp_fd]->setStatusCode(200);
 					// std::fprintf(stderr, "\nEVENTS I = %d ET N = %d\n", i, n);
 					conn_sock = accept(listen_sock[i], (struct sockaddr *) &addr[i], &addrlen[i]);
 					open_ports.push_back(conn_sock);
@@ -248,7 +245,6 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					ChangePort(StorePort, conn_sock, listen_sock[i]);
 					if (conn_sock == -1) {
 						CodeStatus = 500;
-						// servers[temp_fd]->setStatusCode(500); // il faudrait trouver le bon pour le mettre, facile à faire
 						std::fprintf(stderr, "Error: server accept failed: %s\n", strerror(errno));
 						return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
 					}
@@ -271,33 +267,34 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	return 0;
 }
 
-std::vector<server_configuration*> SetupNewServers(std::string filename)
+std::vector<server_configuration*> SetupNewServers(std::string filename, int ac, const char **env)
 {
-	std::ifstream input_file(filename.c_str());
-
-	if (!input_file.is_open()) {
-		std::cerr << "Failed to open file " << filename << std::endl;
-		exit (-1) ;
-	}
-	std::vector<server_configuration*> servers;
 	std::string ConfigFileStr;
-	std::getline(input_file, ConfigFileStr, '\0');
-	int count = 0;
-	size_t i = 0;
+	if (ac == 2)
+	{
+		std::ifstream input_file(filename.c_str());
+		if (!input_file.is_open()) {
+			std::cerr << "Failed to open file " << filename << std::endl;
+			exit (-1) ;
+		}
+		std::getline(input_file, ConfigFileStr, '\0');
+	}
+	else
+		ConfigFileStr = filename;
+	std::vector<server_configuration*> servers;
+	size_t count, i = 0;
 	while (ConfigFileStr.find("server {", i) != std::string::npos)
 	{
 		i = ConfigFileStr.find("server {", i);
 		if (i != std::string::npos)
-		{
-			count ++;
-			i++;
-		}
+			count++;
+		i++;
 	}
-	for (int i = 0; i < count; i++)
+	for (i = 0; i < count; i++)
 	{
 		size_t pos1 = ConfigFileStr.find("server {");
 		size_t pos2 = ConfigFileStr.find("server {", pos1 + 1);
-		server_configuration* myserver = new server_configuration(ConfigFileStr.substr(pos1, pos2));
+		server_configuration* myserver = new server_configuration(ConfigFileStr.substr(pos1, pos2), env);
 		if (DEBUG)
 			std::cout << "test\n" << ConfigFileStr.substr(pos1, pos2) << std::endl;
 		servers.push_back(myserver);
@@ -342,17 +339,22 @@ std::vector<int> getPorts(std::vector<server_configuration*> servers)
 	return Ports;
 }
 
-int main(int argc, char const **argv)
+int main(int argc, char const **argv, const char **envp)
 {
-	if (argc != 2)
+	if (argc > 2)
 	{
 		std::cerr << "Wrong number of arguments" << std::endl;
 		return -1;
 	}
 	signal(SIGINT, sigint_handler);
 
-	std::vector<server_configuration*> servers = SetupNewServers(argv[1]);
-	// PrintServer(servers);
+	std::string	config;
+	if (argc == 2)
+		config = argv[1];
+	else
+		config = "http {\nserver {\nlisten 8080;\n}\n}\n";
+	std::vector<server_configuration*> servers = SetupNewServers(config, argc, envp);
+//	PrintServer(servers);
 	StartServer(servers, getPorts(servers));
 	DeleteServers(servers);
 	return 0;

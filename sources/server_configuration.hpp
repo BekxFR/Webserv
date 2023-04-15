@@ -36,6 +36,7 @@ class server_configuration
 	std::string _ServerName;
 	std::string	_Root;
 	std::string _Index;
+	std::vector<std::string>	_env;
 	std::map<std::string, std::string>	_cgi;
 	std::vector<int> _Port;
 	int			_StatusCode;
@@ -47,7 +48,7 @@ class server_configuration
 	
 	public:
 	server_configuration();
-	server_configuration(std::string ConfigFile);
+	server_configuration(std::string ConfigFile, const char **);
 	server_configuration(server_configuration const &obj);
 	~server_configuration();
 	server_configuration &operator=(server_configuration const &obj);
@@ -73,15 +74,16 @@ class server_configuration
 	std::string getConfigFile();
 	std::string getServerName();
 	int	getStatusCode();
+	std::vector<std::string>	getEnv();
 	std::map<std::string, std::string>	getCgi();
 	std::map<std::string, std::pair<std::string, std::string> >	getErrorPage();
 	std::map<std::string, std::pair<std::string, std::string> >&	getDefErrorPage();
 	std::map<std::string, class server_location_configuration*>* getLoc();
-	std::string getRoot();
-	std::string getIndex();
+	std::string	getRoot();
+	std::string	getIndex();
+	std::vector<int>	getPort();
 	
 	
-	std::vector<int> getPort();
 	
 	class CgiException: public std::exception {
 		public:

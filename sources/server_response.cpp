@@ -19,7 +19,7 @@ server_response::server_response() : _status_code(200), _body(""), _content(""),
 	std::cout << "server_response Default Constructor called" << std::endl;
 }
 
-server_response::server_response(int stat) : _status_code(stat), _body(""), _content(""), _ServerResponse("")
+server_response::server_response(int stat, std::vector<std::string> env, server_request req) : _status_code(stat), _body(""), _content(""), _ServerResponse(""), _env(env), _req(&req)
 {
 	this->addType();
 	std::cout << "server_response int Constructor called" << std::endl;
@@ -599,7 +599,6 @@ void	server_response::delete_dir(const char* path)
 
 std::string	server_response::addHeader(std::string statusMsg, std::pair<std::string, std::string> statusContent, const server_request& Server_Request)
 {
-	std::string	header;
 	std::stringstream	response;
 	
 	response << Server_Request.getVersion() << " " << _status_code << " " << statusMsg << "\r\n";
@@ -610,19 +609,19 @@ std::string	server_response::addHeader(std::string statusMsg, std::pair<std::str
 	}
 	else
 		response << this->getType(Server_Request.getType()); // modif text/html (parsing) -> peut etre faire map de content type / mime en fonction de .py = /truc .html = text/html etc.
-	header = response.str();
-	return (header);
+	_header = response.str();
+	return (_header);
 }
 
 std::string	server_response::addBody(std::string msg)
 {
-	std::string	body;
 	std::stringstream	response;
 
-	response << "Content-Length: " << msg.size() << "\r\n\r\n";
+	_contentLength = msg.size();
+	response << "Content-Length: " << _contentLength << "\r\n\r\n";
 	response << msg << "\r\n";
-	body = response.str();
-	return (body);
+	_body = response.str();
+	return (_body);
 }
 
 void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request)
@@ -639,6 +638,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		{
 			std::cout << "JE SUIS DANS INFO" << std::endl;
 			switch (_status_code)
+			{
 				case 100:
 				{
 					response << addHeader(STATUS100, server->getErrorPage().find(STATUS100)->second, Server_Request);
@@ -651,6 +651,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 					response << addBody(server->getErrorPage()[STATUS101].second);
 					break;
 				}
+			}
 			break;
 		}
 		case SUCCESS:
@@ -707,6 +708,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		{
 			std::cout << "JE SUIS DANS REDIRECTION" << std::endl;
 			switch (_status_code)
+			{
 				case 300:
 				{
 					response << addHeader(STATUS300, server->getErrorPage().find(STATUS300)->second, Server_Request);
@@ -749,6 +751,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 					response << addBody(server->getErrorPage()[STATUS307].second);
 					break;
 				}
+			}
 			break;
 		}
 		case CLIENT:
@@ -919,3 +922,71 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	_ServerResponse = response.str();
 }
 
+// ajouter dans l'env avant exec (source https://www.youtube.com/watch?v=37choLzDTgY) :
+// CONTENT_TYPE=
+// CONTENT_LENGTH=
+// HTTP_COOKIE=(askip dans le header)
+// HTTP_USER_AGENT=(web browser surement dans le header requete)
+// PATH_INFO=(path cgi script (on l'a))
+// QUERY_STRING=(the url-encoded information that is sent with GET method request)
+// REMOTE_ADDR=(the ip address of the remote host making the request. pour authentification)
+// REMOTE_HOST=(the fully qualified name of the host making the request, not mandatory)
+// REQUEST_MET_HOD=(the method used to make the request (GET / POST / DELETE))
+// SCRIPT_FILENAME=(the full path to the cgi script)
+// SCRIPT_NAME=(the name of the cgi script)
+// SERVER_NAME=(hostname or ip address)
+// SERVER_SOFWARE=(name and version of the software the server is running)
+int server_response::doCgi(std::string toexec, server_configuration * server) // envoyer path du cgi
+{
+	char	buff[256];
+	std::string	cgiPath; // trouver le cgi path en fonction du type de toexec
+
+	_env.push_back("SERVER_SOFTWARE=Webserv/1.0");
+	std::string		servName = server->getServerName();
+	std::string		servNameEnv = "SERVER_NAME=";
+	if (_req->getHost().find("host") != std::string::npos)
+		servNameEnv += _req->getHost();
+	else
+	{
+		if (servName.size())
+			servNameEnv += servName[0];
+		else
+			servNameEnv = "localhost";
+	}
+	_env.push_back(servNameEnv);
+	_env.push_back("SERVER_PROTOCOL=" + _req->getVersion());
+	_env.push_back("SERVER_PORT=" + server->getPort()[0]);
+	std::string	cwd = getcwd(buff, 256);
+	_env.push_back("DOCUMENT_ROOT=" + cwd);
+	_env.push_back("REQUEST_METHOD=" + _req->getType());
+	_env.push_back("SCRIPT_FILENAME=" + toexec);
+	_env.push_back("SCRIPT_NAME=" + cgiPath);
+//	_env.push_back("QUERY_STRING=" + _req->getQuery()); a pas l'info dans la requete
+	_env.push_back("PATH_INFO=" + cgiPath);
+	_env.push_back("REQUEST_URI=" + _req->getRequestURI().size());
+	_env.push_back("REDIRECT_STATUS=1");
+	if (_body.find(std::string("content-length")) != std::string::npos)
+		_env.push_back(std::string("CONTENT_LENGTH=") + _contentLength);
+	if (_req->getType() != "")
+		_env.push_back(std::string("CONTENT_TYPE=") + _req->getType());
+	if (_body.size() > 0)
+	{
+		this->_cgiFd = open(this->_req->getBody().data(), O_RDONLY);
+		if (this->_cgiFd < 0)
+		{
+			_status_code = 500;
+			return (-1);
+		}
+	}
+	try
+	{
+		Cgi cgi(cgiPath, toexec, _env, _cgiFd);
+		this->_cgiFd = -1;
+		return cgi.getPdes()[0];
+	}
+	catch (std::exception const &e)
+	{
+		_status_code = 500;
+	}
+	return (-1);
+}

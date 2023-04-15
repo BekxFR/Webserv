@@ -93,29 +93,29 @@ void	Cgi::print() const
 
 void	Cgi::dupping()
 {
-	std::string filename(".cgi-tmp.txt");
+/*	std::string filename(".cgi-tmp.txt");
 
 	FILE* fp = fopen(filename.c_str(), "w");
 	if (fp == NULL) {
 		std::cerr << "Error opening file: " << std::strerror(errno) << std::endl;
-		return ((void) 1);
+		exit (1);
 	}
 
 	int fd = fileno(fp); // get file descriptor from file pointer
 
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		std::cerr << "Error redirecting output: " << std::strerror(errno) << std::endl;
-		return ((void) 1);
+		exit (1);
 	}
-// if (_input_fd != -1)
-// {
-// 	if (dup2(_input_fd, STDIN_FILENO) == -1)
-// 		exit (1);
-// 	close (_input_fd);
-// }
-//	if (dup2(_pdes[1], STDOUT_FILENO) == -1) // uncom quand good
-//		exit (1);
-	close (fd);
+*/ if (_input_fd != -1)
+	{
+		if (dup2(_input_fd, STDIN_FILENO) == -1)
+			exit (1);
+		close (_input_fd);
+	}
+	if (dup2(_pdes[1], STDOUT_FILENO) == -1) // uncom quand good
+		exit (1);
+//	close (fd);
 	close (_pdes[0]);
 	close (_pdes[1]);
 }
@@ -191,22 +191,8 @@ std::string	cgi_type(std::string const &type)
 		}
 	}
 }
-// ajouter dans l'env avant exec (source https://www.youtube.com/watch?v=37choLzDTgY) :
-// CONTENT_TYPE=
-// CONTENT_LENGTH=
-// HTTP_COOKIE=(askip dans le header)
-// HTTP_USER_AGENT=(web browser surement dans le header requete)
-// PATH_INFO=(path cgi script (on l'a))
-// QUERY_STRING=(the url-encoded information that is sent with GET method request)
-// REMOTE_ADDR=(the ip address of the remote host making the request. pour authentification)
-// REMOTE_HOST=(the fully qualified name of the host making the request, not mandatory)
-// REQUEST_MET_HOD=(the method used to make the request (GET / POST / DELETE))
-// SCRIPT_FILENAME=(the full path to the cgi script)
-// SCRIPT_NAME=(the name of the cgi script)
-// SERVER_NAME=(hostname or ip address)
-// SERVER_SOFWARE=(name and version of the software the server is running)
 
-int	main(int ac, char **av, char **envp)
+/*int	main(int ac, char **av, char **envp)
 {
 	if (ac != 2)
 		return (1);
@@ -226,4 +212,4 @@ int	main(int ac, char **av, char **envp)
 		return (std::cerr << e.what() << std::endl, 1);
 	}
 	return (0);
-}
+}*/
