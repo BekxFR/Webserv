@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/14 11:51:56 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/17 17:40:33 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ void	Cgi::print() const
 
 void	Cgi::dupping()
 {
-	std::string filename("/tmp/cgi-tmp.txt");
+	std::string filename("./cgi-tmp.txt");
 
 	FILE* fp = fopen(filename.c_str(), "w");
 	if (fp == NULL) {
@@ -118,8 +118,57 @@ void	Cgi::dupping()
 	close (fd);
 	close (_pdes[0]);
 	close (_pdes[1]);
+}
 
-	
+int	parse_answer_file()
+{
+	std::string filename("./cgi-tmp.txt");
+	std::ifstream ifs(filename.c_str());
+	std::string line;
+	std::string body;
+	std::string header;
+	int status = 0;
+	int i = 0;
+
+	if (ifs.is_open())
+	{
+		while (std::getline(ifs, line))
+		{
+			if (line == "\r")
+				break;
+			if (i == 0)
+				status = std::atoi(line.c_str() + 7);
+			header += line;
+			i++;
+		}
+		while (std::getline(ifs, line))
+		{
+			body += line;
+		}
+		ifs.close();
+	}
+	else
+		std::fprintf(stderr, "Error: CGI data file invalide: %s\n", strerror(errno));
+	return (status);
+}
+
+int	check_access(std::string exec)
+{
+    int fd = 1;
+
+	if (exec.c_str()[0] != '.' || exec.c_str()[0] != '/'){
+		std::fprintf(stderr, "Error: %s: Can't be execute\n", exec.c_str());
+        return 1;
+    }
+	fd = access(exec.c_str(), X_OK);
+	if (fd == 0)
+		return 0;
+
+    if (fd == -1) {
+		std::fprintf(stderr, "Error: %s: %s\n", exec.c_str(), strerror(errno));
+        return 1;
+    }
+    return 2;
 }
 
 const char *	PipeException::what() const throw()
@@ -152,11 +201,25 @@ void	exeCgi(Cgi & cgi)
 	std::cerr << "EXIT STATUS = " << status << std::endl;
 }
 
+int check_cgi_type(std::map<std::string, std::string>& _Cgi, std::string const &Type, Cgi & cgi)
+{
+	for (std::map<std::string, std::string>::iterator it = _Cgi.begin(); it != _Cgi.end(); it++)
+	{
+		if (it->first == Type)
+		{
+			if (check_access(it->second) != 0)
+				return 1;
+			exeCgi(cgi);
+		}
+	}
+	return 0;
+}
+
 std::string	cgi_type(std::string const &type)
 {
-	enum	status { PHP, PYTHON, AUTRE};
+	enum	status {PHP, PYTHON, AUTRE};
 
-	const std::string ftab[3] = {"php", ".py", "others"};
+	const std::string ftab[3] = {"php", "py", "others"};
 	// const std::string ftab[3] = {"/usr/bin/php-cgi", "/usr/bin/python3", "/usr/bin/autre"};
 	int n = 0;
 	for (; n < 4; n++)
@@ -222,6 +285,7 @@ int	main(int ac, char **av, char **envp)
 		Cgi	cgi(a, cmd, env, -1);
 		exeCgi(cgi);
 		cgi.closePdes();
+		parse_answer_file();
 	}
 	catch ( std::exception& e )
 	{

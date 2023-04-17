@@ -24,3 +24,7 @@ CMD ["/bin/bash", "-c", "service fcgiwrap start && php-fpm7.4 && chmod 777 /run/
 # curl -X POST -F 'file=@/mnt/nfs/homes/chillion/42.jpg' http://localhost:8099/HH.jpg
 # curl -X PUT -F 'file=@/mnt/nfs/homes/chillion/42.jpg' http://localhost:8099/HH.jpg
 # curl -X POST -F 'file=@/mnt/nfs/homes/chillion/42.jpg' http://localhost:8099/cgi-bin/upload.cgi
+
+
+# curl -F "myfile=@/mnt/nfs/homes/chillion/42.jpg" http://127.0.0.1:8083/cgi-bin/perlupload.cgi
+# python3 /mnt/nfs/homes/chillion/42/GitHub/Webserv/site/cgi-bin/copy.cgi /mnt/nfs/homes/chillion/42.jpg /mnt/nfs/homes/chillion/42/GitHub/Webserv/site/upload/

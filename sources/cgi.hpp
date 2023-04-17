@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:06 by nflan             #+#    #+#             */
-/*   Updated: 2023/03/28 15:26:04 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/17 11:49:23 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
+#include <map>
 
 class Cgi
 {
