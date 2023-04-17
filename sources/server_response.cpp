@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/15 18:41:25 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/17 12:30:44 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -346,9 +346,8 @@ std::string server_response::getRedir(std::string MethodUsed, server_configurati
 
 void	server_response::todo(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
-	std::cout << "e3" << std::endl;
-	std::cout << "SERVER CONFIG" << std::endl;
-	std::cout << *server << std::endl;
+	// std::cout << "SERVER CONFIG" << std::endl;
+	// std::cout << *server << std::endl;
 	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
 		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
 	if (Server_Request.getContentLength() > server->getClientMaxBodySize())
@@ -370,7 +369,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	std::string PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (PathToStore.find("//") != std::string::npos)
 		PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
-	if (DEBUG1)
+	if (0)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
@@ -378,7 +377,6 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	}
 	/*************************************************************/
 
-	std::cout << "e4" << std::endl;
 	/*Ici, on check si c'est le path donné est un directory ou non.
 	Une fosis que l'on sait cela, on peut renvoyer un index ou 
 	un message erreur */
@@ -415,15 +413,14 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			FinalPath = RealPath;
 		}
 	}
-	std::cout << "e5" << std::endl;
 	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
 	car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
 	sur que le status code n'est pas modifié par la suite */
 	_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
-	std::cout << "STATUS isMethodAuthorised : " << _status_code << std::endl;
+	// std::cout << "STATUS isMethodAuthorised : " << _status_code << std::endl;
 	/********************************************/
 	
-	std::cout << "FinalPath : " << FinalPath << std::endl;
+	// std::cout << "FinalPath : " << FinalPath << std::endl;
 	/************************************************/
 	/*Si l'on se situe, ds une location et qu'il y a une HTTP redir alors
 	il faut pouvoir renvoyer la redir */
@@ -438,7 +435,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	
 	/* si ya un index ds le dossier ou je*/
 	/*********************************************/
-	std::cout << "e6" << std::endl;
+	// std::cout << "e6" << std::endl;
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
 	
@@ -637,7 +634,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	std::stringstream	response;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
 	int	n = 0;
-	std::cout << "status code Create Response " << _status_code << std::endl;
+	// std::cout << "status code Create Response " << _status_code << std::endl;
 	int	tmp = _status_code / 100 - 1;
 	for (; n != tmp && n < 5; n++) {}
 	switch (n)
