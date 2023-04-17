@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/17 13:10:08 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/17 13:25:09 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,6 +134,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	ServerRequest->request_parser();
 	// ici on a la requete qui est parsé, je peux donc trouver le bon et en envoyer qu'un
 	
+	// std::cout << "c5" << std::endl;
 	for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
 	{
 		// std::cout << "TROUVER LE BON PORT" << std::endl;
@@ -143,7 +144,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		if (it->second == conn_sock)
 			Port = it->first;
 	}
-	
+	// std::cout << "c6" << std::endl;
 	
 	// std::cout << "PORT TEST : " << Port << std::endl;
 	// std::cout << "e1.0" << std::endl;
@@ -326,7 +327,6 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	int temp_fd = 0;
 	for (;;) {
 		nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
-		// StorePort.clear();
 		if (nfds == -1) {
 			std::fprintf(stderr, "Error: epoll_wait: %s\n", strerror(errno));
 			return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
