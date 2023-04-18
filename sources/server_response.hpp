@@ -53,6 +53,7 @@ class server_response
 	std::string	_content;
 	std::string	_contentLength;
 	std::string	_ServerResponse;
+	std::string	_finalPath;
 	std::vector<std::string>	_env;
 	server_request	*_req;
 	std::map<std::string, std::string> _contentType;
@@ -83,7 +84,7 @@ class server_response
 	std::string	getHeader() const { return _header; }
 	std::string	getBody() const { return _body; }
 	std::string	getContentLength() const { return _contentLength; }
-
+	std::string	getPath() const { return (_finalPath); }
 	// Définition de la méthode pour obtenir la réponse _ServerResponse
 	std::string get_ServerResponse() const { return _ServerResponse; }
 

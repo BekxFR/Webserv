@@ -93,28 +93,31 @@ void	Cgi::print() const
 
 void	Cgi::dupping()
 {
-/*	std::string filename(".cgi-tmp.txt");
-
-	FILE* fp = fopen(filename.c_str(), "w");
-	if (fp == NULL) {
-		std::cerr << "Error opening file: " << std::strerror(errno) << std::endl;
-		exit (1);
-	}
-
-	int fd = fileno(fp); // get file descriptor from file pointer
-
-	if (dup2(fd, STDOUT_FILENO) == -1) {
-		std::cerr << "Error redirecting output: " << std::strerror(errno) << std::endl;
-		exit (1);
-	}
-*/ if (_input_fd != -1)
+	if (_input_fd != -1)
 	{
 		if (dup2(_input_fd, STDIN_FILENO) == -1)
 			exit (1);
 		close (_input_fd);
 	}
-	if (dup2(_pdes[1], STDOUT_FILENO) == -1) // uncom quand good
-		exit (1);
+	else
+	{
+		std::string filename(".cgi-tmp.txt");
+
+		FILE* fp = fopen(filename.c_str(), "w");
+		if (fp == NULL) {
+			std::cerr << "Error opening file: " << std::strerror(errno) << std::endl;
+			exit (1);
+		}
+
+		int fd = fileno(fp); // get file descriptor from file pointer
+
+		if (dup2(fd, STDOUT_FILENO) == -1) {
+			std::cerr << "Error redirecting output: " << std::strerror(errno) << std::endl;
+			exit (1);
+		}
+	}
+//	if (dup2(_pdes[1], STDOUT_FILENO) == -1) // uncom quand good
+//		exit (1);
 //	close (fd);
 	close (_pdes[0]);
 	close (_pdes[1]);

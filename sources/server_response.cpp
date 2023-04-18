@@ -388,7 +388,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	
 	struct stat path_info;
 	bool dir;
-	std::string FinalPath;
+//	std::string FinalPath;
 	if (stat(RealPath.c_str(), &path_info) != 0) {
 		/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
@@ -406,13 +406,13 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			std::cout << " BOOL TRUE is_dir " << dir << std::endl;
 		if (dir) // A FAIRE MARCHER
 		{
-			FinalPath = RealPathIndex;
+			_finalPath = RealPathIndex;
 		}
 		else
-			FinalPath = RealPath;
+			_finalPath = RealPath;
 	}
 	
-	std::cout << "FinalPath : " << FinalPath << std::endl;
+	std::cout << "FinalPath : " << _finalPath << std::endl;
 	/************************************************/
 
 	/*Si l'on se situe, ds une location et qu'il y a une HTTP redir alors
@@ -445,24 +445,24 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		{
 			if (_status_code == 200)
 			{
-				if (access(FinalPath.c_str(), F_OK) && FinalPath != "./")
+				if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
 					_status_code = 404;
 				else
 				{
 					std::stringstream buffer;
-					if (is_dir(FinalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
+					if (is_dir(_finalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
 					{
 						std::cout << "AUTOLISTING ON" << std::endl;
-						buffer << list_dir(FinalPath);
+						buffer << list_dir(_finalPath);
 					}
-					else if (is_dir(FinalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
+					else if (is_dir(_finalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
 					{
 						_status_code = 403;
 					}
 					else if (_status_code == 200)
 					{
 						std::cout << "d0" << std::endl;
-						std::ifstream file(FinalPath.c_str());
+						std::ifstream file(_finalPath.c_str());
 						if (!file.is_open())
 						{
 							/* cela ne marche pas car il ne rentre pas mm si file est un dir*/
@@ -510,7 +510,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			// outputFile.close();
 
 			/*OK 1*/
-            std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
+            std::ifstream file(_finalPath.c_str(), std::ifstream::binary);
             // std::stringstream buffer;
             std::filebuf* pbuf = file.rdbuf();
             std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
@@ -553,7 +553,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		}
 		case DELETE :
 		{
-			this->delete_dir(FinalPath.c_str());
+			this->delete_dir(_finalPath.c_str());
 			if (_status_code == 200)
 				_content = server->getErrorPage()[STATUS200].second;
 			createResponse(server, _content, Server_Request);
@@ -662,7 +662,21 @@ void	server_response::createResponse(server_configuration * server, std::string 
 				case 200:
 				{
 					response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request);
-					response << addBody(file);
+					if (server->getCgi().find(Server_Request.getType()) == server->getCgi().end())
+						response << addBody(file);
+					else
+					{
+						int	fd;
+						fd = doCgi(_finalPath,server);
+						if (fd > 0)
+						{
+							close(fd);
+							std::ifstream	cgiContent(".cgi-tmp.txt");
+							std::getline(cgiContent, _content, '\0');
+							response << _content;
+						}
+					}
+
 					break;
 				}
 				case 201:
@@ -936,11 +950,28 @@ void	server_response::createResponse(server_configuration * server, std::string 
 // SCRIPT_NAME=(the name of the cgi script)
 // SERVER_NAME=(hostname or ip address)
 // SERVER_SOFWARE=(name and version of the software the server is running)
+
+std::string	itos(int nb)
+{
+	std::stringstream	convert;
+
+	convert << nb;
+	return (convert.str());
+}
+
 int server_response::doCgi(std::string toexec, server_configuration * server) // envoyer path du cgi
 {
 	char	buff[256];
 	std::string	cgiPath; // trouver le cgi path en fonction du type de toexec
+	std::string	tmp;
 
+	if (server->getCgi().find("." + _req->getType()) != server->getCgi().end())
+		cgiPath = server->getCgi().find("." + _req->getType())->second;
+	else
+	{
+		_status_code = 400; //a test avec nginx
+		return (-1);
+	}
 	_env.push_back("SERVER_SOFTWARE=Webserv/1.0");
 	std::string		servName = server->getServerName();
 	std::string		servNameEnv = "SERVER_NAME=";
@@ -955,7 +986,9 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	}
 	_env.push_back(servNameEnv);
 	_env.push_back("SERVER_PROTOCOL=" + _req->getVersion());
-	_env.push_back("SERVER_PORT=" + server->getPort()[0]);
+	tmp = itos(server->getPort()[0]);
+	_env.push_back("SERVER_PORT=" + tmp);
+	tmp.clear();
 	std::string	cwd = getcwd(buff, 256);
 	_env.push_back("DOCUMENT_ROOT=" + cwd);
 	_env.push_back("REQUEST_METHOD=" + _req->getType());
@@ -963,7 +996,9 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	_env.push_back("SCRIPT_NAME=" + cgiPath);
 //	_env.push_back("QUERY_STRING=" + _req->getQuery()); a pas l'info dans la requete
 	_env.push_back("PATH_INFO=" + cgiPath);
-	_env.push_back("REQUEST_URI=" + _req->getRequestURI().size());
+	tmp = (_req->getRequestURI().size());
+	_env.push_back("REQUEST_URI=" + tmp);
+	tmp.clear();
 	_env.push_back("REDIRECT_STATUS=1");
 	if (_body.find(std::string("content-length")) != std::string::npos)
 		_env.push_back(std::string("CONTENT_LENGTH=") + _contentLength);
