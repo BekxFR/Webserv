@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 14:19:54 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/14 15:54:57 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,23 @@ server_request::server_request(server_request const &obj)
 
 server_request::~server_request()
 {
-	std::cout << "server_request Destructor called" << std::endl;
+	if (0)
+		std::cout << "server_request Destructor called" << std::endl;
 }
 
 server_request &server_request::operator=(server_request const &obj)
 {
-	(void)obj;
+	_ServerRequest = obj.getServerRequest();
+	_Method = obj.getMethod();
+	_RequestURI = obj.getRequestURI();
+	_path = obj.getPath();
+	_type = obj.getType();
+	_version = obj.getVersion();
+	_host = obj.getHost();
+	_connectionType = obj.getConnectionType();
+	_mimeType = obj.getMimeType();
+	_contentType = obj.getContentType();
+	_body = obj.getBody();
 	std::cout << "server_request Copy assignment operator called" << std::endl;
 	return *this;
 }
@@ -59,40 +70,17 @@ std::string server_request::findRequestURI()
 	return (tmp);
 }
 
-std::string server_request::getServerRequest() const
-{
-	return (_ServerRequest);
-}
-std::string server_request::getType() const
-{
-	return (_type);
-}
-void server_request::setType(std::string type)
-{
-	_type = type;
-}
-std::string server_request::getMethod() const
-{
-	return (_Method);
-}
-std::string server_request::getRequestURI() const
-{
-	return (_RequestURI);
-}
-std::string server_request::getVersion() const
-{
-	return (_version);
-}
-
-std::string server_request::getBody() const
-{
-	return (_body);
-}
-
-std::string server_request::getHost() const
-{
-	return (_host);
-}
+std::string	server_request::getServerRequest() const { return (_ServerRequest); }
+std::string	server_request::getMethod() const { return (_Method); }
+std::string	server_request::getRequestURI() const { return (_RequestURI); }
+std::string	server_request::getPath() const { return (_path); }
+std::string	server_request::getType() const { return (_type); }
+std::string	server_request::getVersion() const { return (_version); }
+std::string	server_request::getHost() const { return (_host); }
+std::string	server_request::getConnectionType() const { return (_connectionType); }
+std::string	server_request::getMimeType() const { return (_mimeType); }
+std::string	server_request::getContentType() const { return (_contentType); }
+std::string	server_request::getBody() const { return (_body); }
 
 unsigned long long server_request::getContentLength() const
 {
@@ -167,13 +155,16 @@ void server_request::request_parser()
 	
     std::string::size_type body_start = _ServerRequest.find("\r\n\r\n", method_end + 1);
 	std::string::size_type body_end = _ServerRequest.find("\r\n", body_start + 4);
-	std::cout << "\nbody_start : " << body_start << " body_end : " << body_end  << std::endl;
+	if (0)
+		std::cout << "\nbody_start : " << body_start << " body_end : " << body_end  << std::endl;
 	if (body_start != body_end)
     	this->_body = _ServerRequest.substr(body_start + 4);
 
 		
     // Afficher les résultats
-    std::cout << "\nMéthode : " << this->_method << std::endl;
+	if (0)
+	{	
+    std::cout << "\n\nMéthode : " << this->_method << std::endl;
     std::cout << "Chemin : " << this->_path << std::endl;
     std::cout << "Type : " << this->_type << std::endl;
     std::cout << "Version : " << this->_version << std::endl;
@@ -183,5 +174,6 @@ void server_request::request_parser()
     std::cout << "Content Type : " << this->_contentType <<  std::endl;
     std::cout << "Content Length : " << this->_contentLength << "\n" <<  std::endl;
     std::cout << "Body : " << this->_body << "\n" <<  std::endl;
+	}
 }
 

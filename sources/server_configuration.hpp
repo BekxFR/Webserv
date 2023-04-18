@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_configuration.hpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 14:19:46 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/14 17:23:29 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,10 @@ class server_configuration
 	std::string	_Root;
 	std::string _Index;
 	std::vector<std::string>	_env;
+	std::vector<std::string>	_HttpMethodAccepted;
 	std::map<std::string, std::string>	_cgi;
 	std::vector<int> _Port;
+	std::vector<std::string> _Host;
 	int			_StatusCode;
 	size_t		_ClientMaxBodySize;
 	std::map<std::string, std::pair<std::string, std::string> >	_ErrorPage;
@@ -46,8 +48,8 @@ class server_configuration
 	std::map<std::string, std::string> _Location;
 	std::map<std::string, class server_location_configuration*> _Loc;
 	
-	public:
 	server_configuration();
+	public:
 	server_configuration(std::string ConfigFile, const char **);
 	server_configuration(server_configuration const &obj);
 	~server_configuration();
@@ -55,35 +57,42 @@ class server_configuration
 
 	std::string findServerName();
 	std::vector<int> findPort();
+	std::vector<std::string> findHost();
 	std::string findRoot();
+
 	std::string findIndex();
 	std::map<std::string, std::string> findLocation();
+	std::vector<std::string> findHttpMethodAccepted();
+
 	void	setCgi();
 	void	setErrorPage();
 	void	setDefErrorPage();
 	void	setStatusCode(int);
 	int fillCgi(size_t pos);
 	std::map<std::string, class server_location_configuration*> findLoc();
+	size_t findClientMaxBodySize();
 
 	std::ostream&	printLoc(std::ostream &out);
 	
 	template<class T>
 	void	printMap(std::map<T,T>);
 
-	size_t findClientMaxBodySize();
-	std::string getConfigFile();
-	std::string getServerName();
-	int	getStatusCode();
-	std::vector<std::string>	getEnv();
-	std::map<std::string, std::string>	getCgi();
-	std::map<std::string, std::pair<std::string, std::string> >	getErrorPage();
-	std::map<std::string, std::pair<std::string, std::string> >&	getDefErrorPage();
-	std::map<std::string, class server_location_configuration*>* getLoc();
-	std::string	getRoot();
-	std::string	getIndex();
-	std::vector<int>	getPort();
-	
-	
+	std::string	getConfigFile() const;
+	std::string	getServerName() const;
+	int	getStatusCode() const;
+	std::vector<std::string>	getEnv() const;
+	std::map<std::string, std::string>	getCgi() const;
+	std::map<std::string, std::string>	getLocation() const;
+	std::map<std::string, std::pair<std::string, std::string> >	getErrorPage() const;
+	std::map<std::string, std::pair<std::string, std::string> >	getDefErrorPage() const;
+	std::map<std::string, class server_location_configuration*>	getLoc() const;
+	std::string	getRoot() const;
+	std::string	getIndex() const;
+	std::vector<std::string>	getHttpMethodAccepted() const;
+	std::vector<int>	getPort() const;
+	size_t	getClientMaxBodySize() const;
+	std::vector<std::string>	getHost() const;
+
 	
 	class CgiException: public std::exception {
 		public:
@@ -93,7 +102,6 @@ class server_configuration
 		public:
 			virtual const char *	what() const throw();
 	};
-	size_t getClientMaxBodySize();
 };
 
 std::ostream& operator <<(std::ostream &out, server_configuration &ServConfig);

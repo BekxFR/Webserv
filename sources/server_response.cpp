@@ -6,39 +6,67 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 13:04:05 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/17 12:30:44 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server_response.hpp"
 # define DEBUG1 1
 
-server_response::server_response() : _status_code(200), _body(""), _content(""), _ServerResponse("")
+server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(""), _ServerResponse(""), _finalPath(""), _req(NULL)
 {
 	this->addType();
-	std::cout << "server_response Default Constructor called" << std::endl;
+	if (0)
+		std::cout << "server_response Default Constructor called" << std::endl;
 }
 
-server_response::server_response(int stat, std::vector<std::string> env, server_request req) : _status_code(stat), _body(""), _content(""), _ServerResponse(""), _env(env), _req(&req)
+server_response::server_response(int stat, std::vector<std::string> env, server_request req) : _status_code(stat), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(""), _ServerResponse(""), _finalPath(""), _env(env), _req(&req)
 {
 	this->addType();
-	std::cout << "server_response int Constructor called" << std::endl;
+	if (0)
+		std::cout << "server_response int Constructor called" << std::endl;
 }
 
 server_response::server_response(server_response const &obj)
 {
-	*this = obj;
+	_status_code = obj.getStatusCode();
+	_cgiFd = obj.getCgiFd();
+	_header = obj.getHeader();
+	_body = obj.getBody();
+	_content = obj.getContent();
+	_contentLength = obj.getContentLength();
+	_ServerResponse = obj.getServerResponse();
+	_finalPath = obj.getPath();
+	_req = obj.getReq();
+	for (std::vector<std::string>::iterator it = obj.getEnv().begin(); it != obj.getEnv().end(); it++)
+		_env.push_back(*it);
+	for (std::map<std::string, std::string>::iterator it = obj.getContentType().begin(); it != obj.getContentType().end(); it++)
+		_contentType.insert(*it);
 }
 
 server_response::~server_response()
 {
-	std::cout << "server_response Destructor called" << std::endl;
+	if (0)
+		std::cout << "server_response Destructor called" << std::endl;
 }
 
 server_response &server_response::operator=(server_response const &obj)
 {
-	(void)obj;
-	std::cout << "server_response Copy assignment operator called" << std::endl;
+	_status_code = obj.getStatusCode();
+	_cgiFd = obj.getCgiFd();
+	_header = obj.getHeader();
+	_body = obj.getBody();
+	_content = obj.getContent();
+	_contentLength = obj.getContentLength();
+	_ServerResponse = obj.getServerResponse();
+	_finalPath = obj.getPath();
+	_req = obj.getReq();
+	for (std::vector<std::string>::iterator it = obj.getEnv().begin(); it != obj.getEnv().end(); it++)
+		_env.push_back(*it);
+	for (std::map<std::string, std::string>::iterator it = obj.getContentType().begin(); it != obj.getContentType().end(); it++)
+		_contentType.insert(*it);
+	if (0)
+		std::cout << "server_response Copy assignment operator called" << std::endl;
 	return *this;
 }
 
@@ -81,7 +109,7 @@ void	server_response::addType()
 
 std::string server_response::getType(std::string type)
 {
-	std::cout << "TEST : " << type << std::endl;
+	// std::cout << "TEST : " << type << std::endl;
 	for (std::map<std::string, std::string>::iterator it = _contentType.begin(); it != _contentType.end(); it++)
 	{
 		if (type == it->first)
@@ -122,7 +150,6 @@ std::string	server_response::list_dir(std::string path)
 	errno = 0;
 	dir = opendir(path.c_str());
 	if (dir == NULL)
-		std::cout << "c3.0" << std::endl;
 	if (errno == EACCES || errno == EMFILE || errno == ENFILE || errno == ENOENT || errno == ENOMEM || errno == ENOTDIR)
 	{
 		if (errno == ENOENT || errno == ENOTDIR)
@@ -155,124 +182,140 @@ std::string	server_response::list_dir(std::string path)
 	return (content);
 }
 
-int server_response::checkConfFile(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
-	// std::cout << "METHOD : " << MethodUsed << std::endl;
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+bool	isGenerallyAuthorised(std::string MethodUsed, server_configuration *server, std::string ite)
+{
+	if (ite == "NOT INDICATED")
 	{
-		// std::cout << "IT-FIRST : " << it->first << " Size : " << it->first.size() << std::endl;
-		// std::cout << "RequestURI.SUBSTR : " << RequestURI.substr(0, it->first.size()) << std::endl;
+		for (std::vector<std::string>::iterator ite2 = server->getHttpMethodAccepted().begin(); ite2 != server->getHttpMethodAccepted().end(); ite2++)
+			{
+				if (MethodUsed == *ite2)
+				{
+					return (1);
+				}
+			}
+	}
+	return (0);
+}
+
+int server_response::isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
+{	
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
+	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				// std::cout << "ITE* : " << *ite << std::endl;
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
-					// std::cout << "IL PASSE ICI" << std::endl;
 					// s'il passe ici c'est que la méthode est autorisée et qu'une loc a été trouvée
-					// return (200);
-				}
-				else
-				{
-					// s'il passe ici, c'est qu'une loc a ete trouvee mais la methode n'est pas trouvee
-					// return (405);
+					return (200);
 				}
 			}
 		}
 	}
-	// s'il passe ici c'est qu'aucune loc n'a éte trouvée et que donc c'est possible (sauf interdiction mais non gere)
-	return (200);
+	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
+	dans une location */
+	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
+		return (200);
+	// s'il passe ici c'est qu'aucune loc n'a éte trouvée et que donc c'est possible, meme ds le principal
+	return (405);
 }
 
 std::string server_response::getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	std::cout << "BIG TEST 0: " << RequestURI << std::endl;
-	if (RequestURI.size() > 2 && RequestURI.at(RequestURI.size() - 1) == '/')
-		RequestURI = RequestURI.substr(0, RequestURI.size() - 1);
-	std::cout << "BIG TEST : " << RequestURI << std::endl;
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
+		/* Ici, on compare le path donné dans location avec le début de la requestURI, car le path de la location part
+		du début de l'URI */
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
+					/*	Ci dessous, si le getRoot de la location existe, alors on le donne.
+						Sinon, on donne le root general. QUID SI YA PAS DE ROOT GENERAL */
+					
 					if (it->second->getRoot().size() > 0)
 					{
 						return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()));
 					}
 					else
 					{
-						return (server->getRoot() + "/" + RequestURI.substr(1));
+						return (server->getRoot() + "/" + RequestURI.substr(it->first.size()));
 					}
 				}
 			}
 		}
 	}
-	return (server->getRoot() + "/" + RequestURI.substr(1));
+	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
+	dans une location */
+	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
+		return (server->getRoot() + "/" + RequestURI);
+	return ("");
 }
 
 std::string server_response::getRealPathIndex(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {
 	std::string IndexPath;
 	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
+
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
 					if (it->second->getDirectoryRequest().size() > 0)
 					{
-						IndexPath = it->second->getRoot() + "/" + RequestURI.substr(1) + "/" + it->second->getDirectoryRequest();
+						/*	Ci dessous, je rajoute l'index a IndexPath, puis, avec Access, je vois s'il existe.
+							S'il existe, je renvoie Index Path, s'il n'existe pas, je renvoie sans l'index car, alors,
+							il faudra afficher le dossier seulement, ou renvoyer une erreur si c'est interdit */
+						IndexPath = it->second->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + it->second->getDirectoryRequest();
 						if (access(IndexPath.c_str(), F_OK) == 0)
-						{
-							return (it->second->getRoot() + "/" + RequestURI.substr(1) + "/" + it->second->getDirectoryRequest());
-						}
+							return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + it->second->getDirectoryRequest());
 						else
-						{
-							return (it->second->getRoot() + "/" + RequestURI.substr(1) + "/");
-						}
+							return (it->second->getRoot() + "/" + RequestURI.substr(it->first.size()));
 					}
 					else
 					{
-						IndexPath = server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex();
+						/* Ici, je fais la meme chose, mais dans le cas où aucun index ne serait indiqué dans la location,
+							alors je renvoie l'index général. FAUDRAIT-IL PREVOIR LE CAS OU IL N'Y A PAS D'INDEX GENERAL */
+						IndexPath = server->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + server->getIndex();
 						if (access(IndexPath.c_str(), F_OK) == 0)
-							return (server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex());
+							return (server->getRoot() + "/" + RequestURI.substr(it->first.size()) + "/" + server->getIndex());
 						else
-							return (server->getRoot() + "/" + RequestURI.substr(1) + "/");
-
+							return (server->getRoot() + "/" + RequestURI.substr(it->first.size()));
 					}
 				}
 			}
 		}
 	}
-	IndexPath = server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex();
+	IndexPath = server->getRoot() + "/" + RequestURI.substr(0) + "/" + server->getIndex();
 	if (access(IndexPath.c_str(), F_OK) == 0)
-		return (server->getRoot() + "/" + RequestURI.substr(1) + "/" + server->getIndex());
+		return (server->getRoot() + "/" + RequestURI.substr(0) + "/" + server->getIndex());
 	else
-		return (server->getRoot() + "/" + RequestURI.substr(1) + "/");
+		return (server->getRoot() + "/" + RequestURI.substr(0));
 	
 }
 
+
 std::string server_response::getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
+					/*	Ci-dessous, on renvoie directement le path au store, car ce path se suffit à lui-même. 
+						Si on ne le trouve pas, alors on renvoie le root car on enregistra à la racine du root. */
 					if (it->second->getUploadStore().size() > 0)
-					{
-						return (it->second->getRoot() + "/" + it->second->getUploadStore());
-					}
+						return (it->second->getUploadStore());
 					else
 						return (server->getRoot());
 				}
@@ -282,15 +325,19 @@ std::string server_response::getPathToStore(std::string MethodUsed, server_confi
 	return (server->getRoot());
 }
 
+
+
 bool server_response::autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				/*	Cela permet de verifier si l'autoindex est on, pour sinon renvoyer une erreur 403 car on 
+					ne peut pas lister le directory si c'est off, ds le cas où il n'y aurait pas d'index */
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
 					if (it->second->getDirectoryListing() == "on")
 						return (1);
@@ -304,14 +351,18 @@ bool server_response::autoindex_is_on(std::string MethodUsed, server_configurati
 
 bool server_response::isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
+					/*	Ci-dessous, on considère que s'il la redirection est vide 
+						Exemple de config:
+							return 301 ;
+						Ici, on retourne 0, car on considère qu'aucune redirection n'est proposée */
 					if (it->second->getHttpRedirection().size() > 0)
 					{
 						return 1;
@@ -329,14 +380,15 @@ bool server_response::isRedir(std::string MethodUsed, server_configuration *serv
 
 std::string server_response::getRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite)
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
+					/*	Ici, on renverra forcément ci-dessous, cela a ete verifiee ci-dessous */
 					if (it->second->getHttpRedirection().size() > 0)
 					{
 						return (it->second->getHttpRedirection());
@@ -345,26 +397,25 @@ std::string server_response::getRedir(std::string MethodUsed, server_configurati
 			}
 		}
 	}
-	return ("ERROR");
+	return ("CE RETURN NE SERA JAMAIS EMPRUNTE");
 }
 
 void	server_response::todo(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
+	// std::cout << "SERVER CONFIG" << std::endl;
+	// std::cout << *server << std::endl;
 	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
 		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
 	if (Server_Request.getContentLength() > server->getClientMaxBodySize())
 	{
 		_status_code = 413;
 	}
-	
-	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
-	car sinon un code erreur peut être renvoyé */
-	_status_code = checkConfFile(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
-	/********************************************/
-	
+	/*********************************************************************/
+		
 	enum imethod {GET, POST, DELETE};
 	std::stringstream response;
 	
+	/*	Dans les fonctions ci-dessous, je recupere des path et ensuite je supprime les double / si necessaire */
 	std::string RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPath.find("//") != std::string::npos)
 		RealPath = RealPath.erase(RealPath.find("//"), 1);
@@ -374,47 +425,50 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	std::string PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (PathToStore.find("//") != std::string::npos)
 		PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
-	if (DEBUG1)
+	if (0)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
 		std::cout << "PathToStore : " << PathToStore << std::endl;
 	}
+	/*************************************************************/
 
 	/*Ici, on check si c'est le path donné est un directory ou non.
 	Une fosis que l'on sait cela, on peut renvoyer un index ou 
 	un message erreur */
-
-	
 	struct stat path_info;
 	bool dir;
 //	std::string FinalPath;
 	if (stat(RealPath.c_str(), &path_info) != 0) {
 		/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
-		/* => VOIR AVEC NICO */
 		_status_code = 404;
-        if (1)
-			std::cout << " BOOL FALSE" << std::endl;
+		// std::cout << " BOOL FALSE" << std::endl;
     }
 	else
 	{
 		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
 		C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
 		dir = S_ISDIR(path_info.st_mode);
-		if (1)
-			std::cout << " BOOL TRUE is_dir " << dir << std::endl;
-		if (dir) // A FAIRE MARCHER
+		
+		// std::cout << " BOOL TRUE is_dir " << dir << std::endl;
+		// std::cout << " BOOL TEST " << RealPath.at(RealPath.size() - 1) << std::endl;
+		if (dir && RealPath.at(RealPath.size() - 1) != '/')
 		{
 			_finalPath = RealPathIndex;
 		}
 		else
 			_finalPath = RealPath;
 	}
+	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
+	car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
+	sur que le status code n'est pas modifié par la suite */
+	_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
+	// std::cout << "STATUS isMethodAuthorised : " << _status_code << std::endl;
+	/********************************************/
 	
-	std::cout << "FinalPath : " << _finalPath << std::endl;
+	//std::cout << "FinalPath : " << _finalPath << std::endl;
 	/************************************************/
-
 	/*Si l'on se situe, ds une location et qu'il y a une HTTP redir alors
 	il faut pouvoir renvoyer la redir */
 	if (isRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) > 0)
@@ -428,7 +482,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	
 	/* si ya un index ds le dossier ou je*/
 	/*********************************************/
-
+	// std::cout << "e6" << std::endl;
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
 	
@@ -466,24 +520,22 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 						if (!file.is_open())
 						{
 							/* cela ne marche pas car il ne rentre pas mm si file est un dir*/
-							std::cout << "d0.1" << std::endl;
 							_status_code = 403;
 						}
 						else
 						{
-							std::cout << "d0.2" << std::endl;
 							buffer << file.rdbuf();
 						}
 					}
 					_content = buffer.str();
 				}
 			}
-			std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
+			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
 			createResponse(server, _content, Server_Request);
-			std::cout << std::endl << "SERVER RESPONSE CONSTRUITE -> " << std::endl << _ServerResponse << std::endl << std::endl;
+			// std::cout << std::endl << "SERVER RESPONSE CONSTRUITE -> " << std::endl << _ServerResponse << std::endl << std::endl;
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			std::cerr << "\nREPONSE SEND :\n";
-			std::cerr << this->_ServerResponse << std::endl;			
+			// std::cerr << "\nREPONSE SEND :\n";
+			// std::cerr << this->_ServerResponse << std::endl;			
 			break ;
 
 		}
@@ -515,6 +567,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
             std::filebuf* pbuf = file.rdbuf();
             std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
             pbuf->pubseekpos (0,file.in);
+			
             char *buffer= new char[size];
             pbuf->sgetn(buffer, size);
             file.close();
@@ -629,14 +682,14 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	std::stringstream	response;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
 	int	n = 0;
-	std::cout << "status code " << _status_code << std::endl;
+	// std::cout << "status code Create Response " << _status_code << std::endl;
 	int	tmp = _status_code / 100 - 1;
 	for (; n != tmp && n < 5; n++) {}
 	switch (n)
 	{
 		case INFO:
 		{
-			std::cout << "JE SUIS DANS INFO" << std::endl;
+			// std::cout << "JE SUIS DANS INFO" << std::endl;
 			switch (_status_code)
 			{
 				case 100:
@@ -656,7 +709,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case SUCCESS:
 		{
-			std::cout << "JE SUIS DANS SUCCESS" << std::endl;
+			// std::cout << "JE SUIS DANS SUCCESS" << std::endl;
 			switch (_status_code)
 			{
 				case 200:
@@ -720,7 +773,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case REDIRECTION:
 		{
-			std::cout << "JE SUIS DANS REDIRECTION" << std::endl;
+			// std::cout << "JE SUIS DANS REDIRECTION" << std::endl;
 			switch (_status_code)
 			{
 				case 300:
@@ -770,7 +823,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case CLIENT:
 		{
-			std::cout << "JE SUIS DANS CLIENT" << std::endl;
+			// std::cout << "JE SUIS DANS CLIENT" << std::endl;
 			switch (_status_code)
 			{
 				case 400:
@@ -886,7 +939,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case SERVER:
 		{
-			std::cout << "JE SUIS DANS SERVER" << std::endl;
+			// std::cout << "JE SUIS DANS SERVER" << std::endl;
 			switch (_status_code)
 			{
 				case 500:

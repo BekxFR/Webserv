@@ -52,13 +52,17 @@ class server_request
 	
 	std::string findRequestURI();
 	std::string findMethod();
-	std::string getServerRequest() const;
-	std::string getMethod() const;
-	std::string getRequestURI() const;
+	std::string	getServerRequest() const;
+	std::string	getMethod() const;
+	std::string	getRequestURI() const;
+	std::string	getPath() const;
 	std::string	getType() const;
 	std::string	getVersion() const;
-	std::string	getBody() const;
 	std::string	getHost() const;
+	std::string	getConnectionType() const;
+	std::string	getMimeType() const;
+	std::string	getContentType() const;
+	std::string	getBody() const;
 	unsigned long long getContentLength() const ;
 	void request_parser();
 

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: chillion <chillion@student.42.fr>          +#+  +:+       +#+         #
+#    By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/01 12:07:22 by chillion          #+#    #+#              #
-#    Updated: 2023/04/11 13:24:25 by chillion         ###   ########.fr        #
+#    Updated: 2023/04/15 16:28:33 by mgruson          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -86,6 +86,9 @@ test : all
 t2 : all
 	$(VAL) ./${SOFT_NAME} sources/server.conf2
 
+t3 : all
+	$(VAL) ./${SOFT_NAME} sources/server.conf3
+	
 tc : tmp
 	$(VAL) ./${SOFT_NAME2} ./site/arbo-OLD2.php
 

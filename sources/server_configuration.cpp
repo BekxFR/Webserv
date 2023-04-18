@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_configuration.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 14:18:41 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/14 17:52:45 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,9 @@ _ConfigFile(ConfigFile),
 _ServerName(findServerName()),
 _Root(findRoot()),
 _Index(findIndex()),
+_HttpMethodAccepted(findHttpMethodAccepted()),
 _Port(findPort()),
+_Host(findHost()),
 _StatusCode(200),
 _ClientMaxBodySize(findClientMaxBodySize()),
 _Location(findLocation()),
@@ -58,7 +60,31 @@ _Loc(findLoc())
 
 server_configuration::server_configuration(server_configuration const &obj)
 {
-	*this = obj;
+	_ConfigFile = obj.getConfigFile();
+	_ServerName = obj.getServerName();
+	_Root = obj.getRoot();
+	_Index = obj.getIndex();
+	_StatusCode = obj.getStatusCode();
+	_ClientMaxBodySize = obj.getClientMaxBodySize();
+	for (std::vector<std::string>::iterator it = obj.getEnv().begin(); it != obj.getEnv().end(); it++)
+		_env.push_back(*it);
+	for (std::vector<std::string>::iterator it = obj.getHttpMethodAccepted().begin(); it != obj.getHttpMethodAccepted().end(); it++)
+		_HttpMethodAccepted.push_back(*it);
+	for (std::vector<int>::iterator it = obj.getPort().begin(); it != obj.getPort().end(); it++)
+		_Port.push_back(*it);
+	std::vector<int> _Port;
+	for (std::vector<std::string>::iterator it = obj.getHost().begin(); it != obj.getHost().end(); it++)
+		_Host.push_back(*it);
+	for (std::map<std::string, std::string>::iterator it = obj.getCgi().begin(); it != obj.getCgi().end(); it++)
+		_cgi.insert(*it);
+	for (std::map<std::string, std::pair<std::string, std::string> >::iterator it = obj.getErrorPage().begin(); it != obj.getErrorPage().end(); it++)
+		_ErrorPage.insert(*it);
+	for (std::map<std::string, std::pair<std::string, std::string> >::iterator it = obj.getDefErrorPage().begin(); it != obj.getDefErrorPage().end(); it++)
+		_DefErrorPage.insert(*it);
+	for (std::map<std::string, std::string>::iterator it = obj.getLocation().begin(); it != obj.getLocation().end(); it++)
+		_Location.insert(*it);
+	for(std::map<std::string, class server_location_configuration*>::iterator it = obj.getLoc().begin(); it != obj.getLoc().end(); it++)
+		_Loc.insert(*it);
 }
 
 server_configuration::~server_configuration()
@@ -69,13 +95,36 @@ server_configuration::~server_configuration()
 
 server_configuration &server_configuration::operator=(server_configuration const &obj)
 {
+	_ConfigFile = obj.getConfigFile();
+	_ServerName = obj.getServerName();
+	_Root = obj.getRoot();
+	_Index = obj.getIndex();
+	_StatusCode = obj.getStatusCode();
+	_ClientMaxBodySize = obj.getClientMaxBodySize();
+	for (std::vector<std::string>::iterator it = obj.getEnv().begin(); it != obj.getEnv().end(); it++)
+		_env.push_back(*it);
+	for (std::vector<std::string>::iterator it = obj.getHttpMethodAccepted().begin(); it != obj.getHttpMethodAccepted().end(); it++)
+		_HttpMethodAccepted.push_back(*it);
+	for (std::vector<int>::iterator it = obj.getPort().begin(); it != obj.getPort().end(); it++)
+		_Port.push_back(*it);
+	std::vector<int> _Port;
+	for (std::vector<std::string>::iterator it = obj.getHost().begin(); it != obj.getHost().end(); it++)
+		_Host.push_back(*it);
+	for (std::map<std::string, std::string>::iterator it = obj.getCgi().begin(); it != obj.getCgi().end(); it++)
+		_cgi.insert(*it);
+	for (std::map<std::string, std::pair<std::string, std::string> >::iterator it = obj.getErrorPage().begin(); it != obj.getErrorPage().end(); it++)
+		_ErrorPage.insert(*it);
+	for (std::map<std::string, std::pair<std::string, std::string> >::iterator it = obj.getDefErrorPage().begin(); it != obj.getDefErrorPage().end(); it++)
+		_DefErrorPage.insert(*it);
+	for (std::map<std::string, std::string>::iterator it = obj.getLocation().begin(); it != obj.getLocation().end(); it++)
+		_Location.insert(*it);
+	for(std::map<std::string, class server_location_configuration*>::iterator it = obj.getLoc().begin(); it != obj.getLoc().end(); it++)
+		_Loc.insert(*it);
 	if (DEBUG)
 		std::cout << "server_configuration Copy assignment operator called" << std::endl;
-	(void)obj;
 	return *this;
 }
 
-int	server_configuration::getStatusCode() { return (_StatusCode); }
 void	server_configuration::setStatusCode(int nb) { _StatusCode = nb; }
 
 std::string server_configuration::findServerName()
@@ -155,7 +204,8 @@ std::string	readingFileEP( std::string file )
 	std::ifstream input_file(file.c_str());
 
 	if (!input_file.is_open()) {
-		std::cout << "Can't open file " << file << " using default error page" << std::endl;
+		if (0)
+			std::cout << "Can't open file " << file << " using default error page" << std::endl;
 		return ("");
 	}
 
@@ -245,51 +295,131 @@ void server_configuration::setDefErrorPage()
 //	for (std::map<std::string, std::string>::iterator it = _DefErrorPage.begin(); it != _DefErrorPage.end(); it++) // Print Def error pages
 //		std::cout << "Error code = '" << it->first << "' && Error HTML = '" << it->second << "'" << std::endl; // Print Def error pages
 }
+std::vector<std::string> server_configuration::findHttpMethodAccepted()
+{
+	std::vector<std::string> MethodAccepted;
+	std::string delimiter = " ;";
+	std::string methods;
+	size_t end_pos = 0;
+		
+	size_t pos = _ConfigFile.find("	allow_methods ");
+	if (pos != std::string::npos) {
+		pos += strlen("	allow_methods ");
+		methods = _ConfigFile.substr(pos);
+		end_pos = methods.find_first_of(";");
+	}
+	else
+	{
+		MethodAccepted.push_back("");
+		return (MethodAccepted);
+	}
+	size_t i = 0;
+	std::string token;
+	while ((i = methods.find_first_of(delimiter)) != std::string::npos && methods.find_first_of(delimiter) <= end_pos)
+	{
+		token = methods.substr(0, i);
+		if (0)
+			std::cout << "TOKEN : " << token << std::endl;
+		MethodAccepted.push_back(token);
+		methods.erase(0, i + 1);
+	}
+	MethodAccepted.push_back(methods);
+		return (MethodAccepted);
+}
 
-std::vector<int> server_configuration::findPort()
+std::vector<std::string> server_configuration::findHost()
 {
 	size_t pos = 0;
-	size_t space_pos = 0;
-	std::vector<int> Port;
+	size_t end_pos = 0;
+	size_t pos_colon = -1;
+	std::vector<std::string> Host;
 	while (pos != std::string::npos)
 	{
-		if (_ConfigFile.find("listen 0.0.0.0:", pos) != std::string::npos)
-		{
-			pos = _ConfigFile.find("listen 0.0.0.0:", pos) + strlen("listen 0.0.0.0:");
-			std::string port = _ConfigFile.substr(pos);
-			space_pos = port.find_first_of(" \n;");
-			if (space_pos != std::string::npos) {
-				if (DEBUG)
-					std::cout << "server_configuration::findPort() " << port.substr(0, space_pos).c_str() << std::endl;
-				Port.push_back(atoi(port.substr(0, space_pos).c_str()));
-			}
-		}
-		else if (_ConfigFile.find("listen localhost:", pos) != std::string::npos)
-		{
-			pos = _ConfigFile.find("listen localhost:", pos) + strlen("listen localhost:");
-			std::string port = _ConfigFile.substr(pos);
-			space_pos = port.find_first_of(" \n;");
-			if (space_pos != std::string::npos) {
-				if (DEBUG)
-					std::cout << "server_configuration::findPort() " << port.substr(0, space_pos).c_str() << std::endl;
-				Port.push_back(atoi(port.substr(0, space_pos).c_str()));
-			}
-		}
-		else if (_ConfigFile.find("	listen ", pos) != std::string::npos)
+		if (_ConfigFile.find("	listen ", pos) != std::string::npos)
 		{
 			pos = _ConfigFile.find("	listen ", pos) + strlen("	listen ");
-			std::string port = _ConfigFile.substr(pos);
-			space_pos = port.find_first_of(" \n;");
-			if (space_pos != std::string::npos) {
-				if (DEBUG)
-					std::cout << "server_configuration::findPort() " << port.substr(0, space_pos).c_str() << std::endl;
-				Port.push_back(atoi(port.substr(0, space_pos).c_str()));
+			std::string host = _ConfigFile.substr(pos);
+			end_pos = host.find_first_of(" ;");
+			if (host.find_first_of(":", pos_colon + 1) != std::string::npos && host.find_first_of(":", pos_colon + 1 ) < end_pos)
+			{	
+				while (host.find_first_of(":", pos_colon + 1) != std::string::npos && host.find_first_of(":", pos_colon + 1 ) < end_pos)
+				{
+					pos_colon = host.find_first_of(":", pos_colon + 1);
+				}
+			}
+			else
+				pos_colon = end_pos + 1;
+			if (0)
+			{
+				std::cout << "HOST :" << host << std::endl;
+				std::cout << "POS_COLON : " << pos_colon << std::endl;
+				std::cout << "END_POS : " << end_pos << std::endl;
+			}
+			if (end_pos != std::string::npos && (pos_colon == std::string::npos || pos_colon > end_pos))
+			{
+				Host.push_back("");
+			}
+			else if (end_pos != std::string::npos && pos_colon != std::string::npos && pos_colon < end_pos)
+			{
+				if (0)
+					std::cout << "server_configuration::findhost() 2" << host.substr(0, pos_colon) << std::endl;
+				Host.push_back(host.substr(0, pos_colon).c_str());
 			}
 		}
 		else
 			pos = _ConfigFile.find("	listen ", pos);
-		pos = pos + space_pos;
-		space_pos = 0;
+		pos = pos + end_pos;
+		end_pos = 0;
+		pos_colon = -1;
+	}
+	return (Host);
+}
+
+/* Il faut que je la modifie car cela restreint trop les cas gérés */
+
+std::vector<int> server_configuration::findPort()
+{
+	size_t pos = 0;
+	size_t end_pos = 0;
+	size_t pos_colon = -1;
+	std::vector<int> Port;
+	while (pos != std::string::npos)
+	{
+		if (_ConfigFile.find("	listen ", pos) != std::string::npos)
+		{
+			pos = _ConfigFile.find("	listen ", pos) + strlen("	listen ");
+			std::string port = _ConfigFile.substr(pos);
+			if (0)
+				std::cout << "\nTest :" << port << std::endl;
+			end_pos = port.find_first_of(" ;");
+			if (port.find_first_of(":", pos_colon + 1) != std::string::npos && port.find_first_of(":", pos_colon + 1 ) < end_pos)
+			{	
+				while (port.find_first_of(":", pos_colon + 1) != std::string::npos && port.find_first_of(":", pos_colon + 1 ) < end_pos)
+				{
+					pos_colon = port.find_first_of(":", pos_colon + 1);
+				}
+			}
+			else
+				pos_colon = end_pos + 1;
+			
+			if (end_pos != std::string::npos && (pos_colon == std::string::npos || pos_colon > end_pos))
+			{
+				if (0)
+					std::cout << "server_configuration::findPort() 1:" << port.substr(0, end_pos).c_str() << std::endl;
+				Port.push_back(atoi(port.substr(0, end_pos).c_str()));
+			}
+			else if (end_pos != std::string::npos && pos_colon != std::string::npos && pos_colon < end_pos)
+			{
+				if (0)
+					std::cout << "server_configuration::findPort() 2:" << port.substr(pos_colon + 1, (end_pos - (pos_colon + 1))).c_str() << std::endl;
+				Port.push_back(atoi(port.substr(pos_colon + 1, (end_pos - (pos_colon + 1))).c_str()));
+			}
+		}
+		else
+			pos = _ConfigFile.find("	listen ", pos);
+		pos = pos + end_pos;
+		end_pos = 0;
+		pos_colon = -1;
 	}
 	return (Port);
 }
@@ -361,8 +491,7 @@ std::map<std::string, std::string> server_configuration::findLocation()
 		}
 		else
 		{
-			location_pair.first = "";
-			location_pair.second = "";
+			return (location_map);
 		}
 		location_map.insert(location_pair);
 	}
@@ -414,17 +543,21 @@ std::ostream&	server_configuration::printLoc(std::ostream &out)
 		return (out);
 }
 
-std::string server_configuration::getConfigFile() { return _ConfigFile;}
-std::string server_configuration::getServerName() { return _ServerName;}
-std::string server_configuration::getRoot() { return _Root;}
-std::string server_configuration::getIndex() { return _Index;}
-std::vector<int>	server_configuration::getPort() { return _Port;}
-std::vector<std::string> server_configuration::getEnv() { return _env;}
-size_t server_configuration::getClientMaxBodySize() { return _ClientMaxBodySize;}
-std::map<std::string, std::string> server_configuration::getCgi() { return (_cgi); }
-std::map<std::string, std::pair<std::string, std::string> >		server_configuration::getErrorPage() { return _ErrorPage;}
-std::map<std::string, std::pair<std::string, std::string> >&	server_configuration::getDefErrorPage() { return _DefErrorPage;}
-std::map<std::string, class server_location_configuration*>*	server_configuration::getLoc() { return (&_Loc);}
+std::string server_configuration::getConfigFile() const { return _ConfigFile;}
+std::string server_configuration::getServerName() const { return _ServerName;}
+std::string server_configuration::getRoot() const { return _Root;}
+std::string server_configuration::getIndex() const { return _Index;}
+std::vector<int>	server_configuration::getPort() const { return _Port;}
+std::vector<std::string> server_configuration::getEnv() const { return _env;}
+std::vector<std::string> server_configuration::getHttpMethodAccepted() const {return _HttpMethodAccepted;}
+std::vector<std::string> server_configuration::getHost() const { return _Host;}
+size_t server_configuration::getClientMaxBodySize() const { return _ClientMaxBodySize;}
+std::map<std::string, std::string> server_configuration::getCgi() const { return (_cgi); }
+std::map<std::string, std::string> server_configuration::getLocation() const { return (_Location); }
+std::map<std::string, std::pair<std::string, std::string> >		server_configuration::getErrorPage() const { return _ErrorPage;}
+std::map<std::string, std::pair<std::string, std::string> >	server_configuration::getDefErrorPage() const { return _DefErrorPage;}
+std::map<std::string, class server_location_configuration*>	server_configuration::getLoc() const { return (_Loc);}
+int	server_configuration::getStatusCode() const { return (_StatusCode); }
 
 const char *	server_configuration::CgiException::what() const throw()
 {
@@ -439,10 +572,12 @@ const char *	server_configuration::ErrorPageException::what() const throw()
 std::ostream& operator <<(std::ostream &out, server_configuration &ServConfig)
 {
 	out << "Server name : " << ServConfig.getServerName() \
-		<< "\nRoot : " << ServConfig.getRoot() \
-		// for (int i = 0; i < ServConfig.getPort().size(); i++);
-			// << "\nPort : " << ServConfig.getPort()[i] 
-		<< "\nCliend Body Limit : " << ServConfig.getClientMaxBodySize() \
+		<< "\nRoot : " << ServConfig.getRoot();
+		for (size_t i = 0; i < ServConfig.getPort().size(); i++)
+			out << "\nPort : " << ServConfig.getPort()[i];
+		for (size_t i = 0; i < ServConfig.getHost().size(); i++)
+			out << "\nHost : " << ServConfig.getHost()[i];
+		out << "\nCliend Body Limit : " << ServConfig.getClientMaxBodySize() \
 		<< "\nCGI (first = extension, second = root):" << std::endl;
 		ServConfig.printMap(ServConfig.getCgi());
 		out << "\n\n***\n" \
