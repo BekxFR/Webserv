@@ -49,13 +49,13 @@ class server_location_configuration
 	void setCgi(std::string location_conf);
 	std::string findUploadStore(std::string location_conf);
 
-	std::vector<std::string>& getHttpMethodAccepted();
-	std::string	getHttpRedirection();
-	std::string getRoot();
-	std::string getDirectoryListing();
-	std::string getDirectoryRequest();
-	std::map<std::string, std::string>&	getCgi();
-	std::string getUploadStore();
+	std::vector<std::string>	getHttpMethodAccepted() const;
+	std::string	getHttpRedirection() const;
+	std::string	getRoot() const;
+	std::string	getDirectoryListing() const;
+	std::string	getDirectoryRequest() const;
+	std::map<std::string, std::string>	getCgi() const;
+	std::string	getUploadStore() const;
 };
 
 

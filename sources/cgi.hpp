@@ -33,6 +33,7 @@ class Cgi
 		char**	getCmd() const;
 		char**	getEnvp() const;
 		pid_t	getPid() const;
+		int	getInputFd() const;
 		void	setPid();
 		void	setPdes();
 		void	dupping();

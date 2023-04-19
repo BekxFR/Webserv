@@ -310,7 +310,7 @@ int StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	}
 	open_ports.push_back(epollfd);
 	
-	struct epoll_event ev, events[MAX_EVENTS];
+	struct epoll_event	ev, events[MAX_EVENTS];
 
 	for (size_t i = 0; i < Ports.size(); i++)
 	{
@@ -381,7 +381,8 @@ std::vector<server_configuration*> SetupNewServers(std::string filename, int ac,
 	else
 		ConfigFileStr = filename;
 	std::vector<server_configuration*> servers;
-	size_t count, i = 0;
+	size_t	count = 0;
+	size_t	i = 0;
 	while (ConfigFileStr.find("server {", i) != std::string::npos)
 	{
 		i = ConfigFileStr.find("server {", i);

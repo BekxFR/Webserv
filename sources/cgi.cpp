@@ -41,25 +41,50 @@ Cgi::~Cgi()
 	delete [] _envp;
 }
 
-const int*	Cgi::getPdes() const
+Cgi::Cgi(const Cgi & o)
 {
-	return (_pdes);
+	_pdes[0] = o.getPdes()[0];
+	_pdes[1] = o.getPdes()[1];
+	_pid = o.getPid();
+	_input_fd = o.getInputFd();
+	_cmd = new char*[3];
+	_cmd[0] = o.getCmd()[0];
+	_cmd[1] = o.getCmd()[1];
+	_cmd[2] = NULL;
+	size_t	i = 0;
+	for (; o.getEnvp()[i]; i++) {}
+	_envp = new char* [i + 1];
+	for (i = 0; o.getEnvp()[i]; i++)
+		_envp[i] = o.getEnvp()[i];
+	_envp[i + 1] = NULL;
 }
 
-pid_t	Cgi::getPid() const
+Cgi	&Cgi::operator=(Cgi const &o)
 {
-	return (_pid);
+	if (this == &o)
+		return (*this);
+	_pdes[0] = o.getPdes()[0];
+	_pdes[1] = o.getPdes()[1];
+	_pid = o.getPid();
+	_input_fd = o.getInputFd();
+	_cmd = new char*[3];
+	_cmd[0] = o.getCmd()[0];
+	_cmd[1] = o.getCmd()[1];
+	_cmd[2] = NULL;
+	size_t	i = 0;
+	for (; o.getEnvp()[i]; i++) {}
+	_envp = new char* [i + 1];
+	for (i = 0; o.getEnvp()[i]; i++)
+		_envp[i] = o.getEnvp()[i];
+	_envp[i + 1] = NULL;
+	return (*this);
 }
 
-char**	Cgi::getCmd() const
-{
-	return (_cmd);
-}
-
-char**	Cgi::getEnvp() const
-{
-	return (_envp);
-}
+const int*	Cgi::getPdes() const { return (_pdes); }
+pid_t	Cgi::getPid() const { return (_pid); }
+int	Cgi::getInputFd() const { return (_input_fd); }
+char**	Cgi::getCmd() const { return (_cmd); }
+char**	Cgi::getEnvp() const { return (_envp); }
 
 void	Cgi::setPid()
 {

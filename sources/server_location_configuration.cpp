@@ -33,7 +33,6 @@ _UploadStore(findUploadStore(location_conf))
 
 server_location_configuration::server_location_configuration(server_location_configuration const &obj)
 {
-	(void)obj;
 	*this = obj;
 }
 
@@ -45,7 +44,15 @@ server_location_configuration::~server_location_configuration()
 
 server_location_configuration &server_location_configuration::operator=(server_location_configuration const &obj)
 {
-	(void)obj;
+	if (this == &obj)
+		return (*this);
+	_HttpMethodAccepted = obj.getHttpMethodAccepted();
+	_HttpRedirection = obj.getHttpRedirection();
+	_Root = obj.getRoot();
+	_DirectoryListing = obj.getDirectoryListing();
+	_DirectoryRequest = obj.getDirectoryRequest();
+	_Cgi = obj.getCgi();
+	_UploadStore = obj.getUploadStore();
 	if (DEBUG)
 		std::cout << "server_location_configuration Copy assignment operator called" << std::endl;
 	return *this;
@@ -187,10 +194,10 @@ std::string server_location_configuration::findUploadStore(std::string location_
 	return ("");
 }
 
-std::vector<std::string>& server_location_configuration::getHttpMethodAccepted() {return _HttpMethodAccepted;}
-std::string	server_location_configuration::getHttpRedirection() { return _HttpRedirection;}
-std::string server_location_configuration::getRoot() { return _Root;}
-std::string server_location_configuration::getDirectoryListing() { return _DirectoryListing;}
-std::string server_location_configuration::getDirectoryRequest() { return _DirectoryRequest;}
-std::map<std::string, std::string>&	server_location_configuration::getCgi() { return _Cgi;}
-std::string server_location_configuration::getUploadStore() { return _UploadStore;}
+std::vector<std::string> server_location_configuration::getHttpMethodAccepted() const {return _HttpMethodAccepted;}
+std::string	server_location_configuration::getHttpRedirection() const { return _HttpRedirection;}
+std::string server_location_configuration::getRoot() const { return _Root;}
+std::string server_location_configuration::getDirectoryListing() const { return _DirectoryListing;}
+std::string server_location_configuration::getDirectoryRequest() const { return _DirectoryRequest;}
+std::map<std::string, std::string>	server_location_configuration::getCgi() const { return _Cgi;}
+std::string server_location_configuration::getUploadStore() const { return _UploadStore;}
