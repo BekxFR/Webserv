@@ -3,3 +3,6 @@ index.php
 tags
 /to_del
 dir.sh
+*.o
+*.d
+webserv
