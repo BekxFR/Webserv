@@ -727,6 +727,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 							std::ifstream	cgiContent(".cgi-tmp.txt");
 							std::getline(cgiContent, _content, '\0');
 							response << _content;
+							std::remove(".cgi-tmp.txt");
 						}
 					}
 
