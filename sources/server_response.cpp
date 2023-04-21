@@ -6,21 +6,21 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/17 12:30:44 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 17:26:48 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server_response.hpp"
 # define DEBUG1 1
 
-server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(""), _ServerResponse(""), _finalPath(""), _req(NULL)
+server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _req(NULL)
 {
 	this->addType();
 	if (0)
 		std::cout << "server_response Default Constructor called" << std::endl;
 }
 
-server_response::server_response(int stat, std::vector<std::string> env, server_request req) : _status_code(stat), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(""), _ServerResponse(""), _finalPath(""), _env(env), _req(&req)
+server_response::server_response(int stat, std::vector<std::string> env, server_request* req) : _status_code(stat), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(env), _req(req)
 {
 	this->addType();
 	if (0)
@@ -29,19 +29,7 @@ server_response::server_response(int stat, std::vector<std::string> env, server_
 
 server_response::server_response(server_response const &obj)
 {
-	_status_code = obj.getStatusCode();
-	_cgiFd = obj.getCgiFd();
-	_header = obj.getHeader();
-	_body = obj.getBody();
-	_content = obj.getContent();
-	_contentLength = obj.getContentLength();
-	_ServerResponse = obj.getServerResponse();
-	_finalPath = obj.getPath();
-	_req = obj.getReq();
-	for (std::vector<std::string>::iterator it = obj.getEnv().begin(); it != obj.getEnv().end(); it++)
-		_env.push_back(*it);
-	for (std::map<std::string, std::string>::iterator it = obj.getContentType().begin(); it != obj.getContentType().end(); it++)
-		_contentType.insert(*it);
+	*this = obj;
 }
 
 server_response::~server_response()
@@ -52,6 +40,8 @@ server_response::~server_response()
 
 server_response &server_response::operator=(server_response const &obj)
 {
+	if (this == &obj)
+		return (*this);
 	_status_code = obj.getStatusCode();
 	_cgiFd = obj.getCgiFd();
 	_header = obj.getHeader();
@@ -61,10 +51,8 @@ server_response &server_response::operator=(server_response const &obj)
 	_ServerResponse = obj.getServerResponse();
 	_finalPath = obj.getPath();
 	_req = obj.getReq();
-	for (std::vector<std::string>::iterator it = obj.getEnv().begin(); it != obj.getEnv().end(); it++)
-		_env.push_back(*it);
-	for (std::map<std::string, std::string>::iterator it = obj.getContentType().begin(); it != obj.getContentType().end(); it++)
-		_contentType.insert(*it);
+	_env = obj.getEnv();
+	_contentType = obj.getContentType();
 	if (0)
 		std::cout << "server_response Copy assignment operator called" << std::endl;
 	return *this;
@@ -73,7 +61,7 @@ server_response &server_response::operator=(server_response const &obj)
 // https://techcommunity.microsoft.com/t5/image/serverpage/image-id/456929i280730750B92FE12/
 void	server_response::addType()
 {
-	_contentType.insert(std::make_pair<std::string, std::string>("html", "Content-Type: text/html\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("html", "Content-Type: text/html; charset=utf-8\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("htm", "Content-Type: text/html\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("shtml", "Content-Type: text/html\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("css", "Content-Type: text/css\r\n"));
@@ -115,7 +103,7 @@ std::string server_response::getType(std::string type)
 		if (type == it->first)
 			return (it->second);
 	}
-	return ("Content-Type: text/html\r\n");
+	return ("Content-Type: text/html; charset=utf-8\r\n");
 }
 
 bool	is_dir(const char* path, server_response& sr)
@@ -153,9 +141,7 @@ std::string	server_response::list_dir(std::string path)
 	if (errno == EACCES || errno == EMFILE || errno == ENFILE || errno == ENOENT || errno == ENOMEM || errno == ENOTDIR)
 	{
 		if (errno == ENOENT || errno == ENOTDIR)
-		{
 			_status_code = 404;
-		}
 		else if (errno == EACCES)
 			_status_code = 403;
 		else if (errno == EMFILE || errno == ENFILE || errno == ENOMEM)
@@ -186,7 +172,8 @@ bool	isGenerallyAuthorised(std::string MethodUsed, server_configuration *server,
 {
 	if (ite == "NOT INDICATED")
 	{
-		for (std::vector<std::string>::iterator ite2 = server->getHttpMethodAccepted().begin(); ite2 != server->getHttpMethodAccepted().end(); ite2++)
+		std::vector<std::string>	tmp = server->getHttpMethodAccepted();
+		for (std::vector<std::string>::iterator ite2 = tmp.begin(); ite2 != tmp.end(); ite2++)
 			{
 				if (MethodUsed == *ite2)
 				{
@@ -438,11 +425,13 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	un message erreur */
 	struct stat path_info;
 	bool dir;
+	_finalPath.clear();
 //	std::string FinalPath;
 	if (stat(RealPath.c_str(), &path_info) != 0) {
 		/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		_status_code = 404;
+		std::cerr << "ici" <<std::endl;
 		// std::cout << " BOOL FALSE" << std::endl;
     }
 	else
@@ -500,7 +489,11 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			if (_status_code == 200)
 			{
 				if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
+				{
+					std::cerr << _finalPath << std::endl;
+					std::cerr << "fichier existe pas et pas ./" << std::endl;
 					_status_code = 404;
+				}
 				else
 				{
 					std::stringstream buffer;
@@ -510,9 +503,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 						buffer << list_dir(_finalPath);
 					}
 					else if (is_dir(_finalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
-					{
 						_status_code = 403;
-					}
 					else if (_status_code == 200)
 					{
 						std::cout << "d0" << std::endl;
@@ -714,22 +705,27 @@ void	server_response::createResponse(server_configuration * server, std::string 
 			{
 				case 200:
 				{
-					response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request);
-					if (server->getCgi().find(Server_Request.getType()) == server->getCgi().end())
+					if (server->getCgi().find("." + Server_Request.getType()) == server->getCgi().end())
+					{
+						response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request);
 						response << addBody(file);
+					}
 					else
 					{
-						int	fd;
-						fd = doCgi(_finalPath,server);
-						if (fd > 0)
+						std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
+						if (!doCgi(_finalPath,server))
 						{
-							close(fd);
+							response << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
+							_content.clear();
 							std::ifstream	cgiContent(".cgi-tmp.txt");
 							std::getline(cgiContent, _content, '\0');
-							response << _content;
-							std::remove(".cgi-tmp.txt");
+					//		response << "Content-Length: " << _content.size() << "\r\n\r\n";
+							response << _content << "\0";
+							_content.clear();
 						}
+						//std::remove(".cgi-tmp.txt");
 					}
+					std::cerr << response.str() << std::endl;
 
 					break;
 				}
@@ -1016,9 +1012,11 @@ std::string	itos(int nb)
 int server_response::doCgi(std::string toexec, server_configuration * server) // envoyer path du cgi
 {
 	char	buff[256];
-	std::string	cgiPath; // trouver le cgi path en fonction du type de toexec
+	std::string	cgiPath;
 	std::string	tmp;
+	std::stringstream	length;
 
+	length << _contentLength;
 	if (server->getCgi().find("." + _req->getType()) != server->getCgi().end())
 		cgiPath = server->getCgi().find("." + _req->getType())->second;
 	else
@@ -1036,7 +1034,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 		if (servName.size())
 			servNameEnv += servName[0];
 		else
-			servNameEnv = "localhost";
+			servNameEnv += "localhost";
 	}
 	_env.push_back(servNameEnv);
 	_env.push_back("SERVER_PROTOCOL=" + _req->getVersion());
@@ -1051,13 +1049,13 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 //	_env.push_back("QUERY_STRING=" + _req->getQuery()); a pas l'info dans la requete
 	_env.push_back("PATH_INFO=" + cgiPath);
 	tmp = (_req->getRequestURI().size());
-	_env.push_back("REQUEST_URI=" + tmp);
+	_env.push_back("REQUEST_URI=" + _req->getRequestURI());
 	tmp.clear();
 	_env.push_back("REDIRECT_STATUS=1");
 	if (_body.find(std::string("content-length")) != std::string::npos)
-		_env.push_back(std::string("CONTENT_LENGTH=") + _contentLength);
-	if (_req->getType() != "")
-		_env.push_back(std::string("CONTENT_TYPE=") + _req->getType());
+		_env.push_back(std::string("CONTENT_LENGTH=") + length.str());
+	if (this->getType(_req->getType()) != "")
+		_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
 	if (_body.size() > 0)
 	{
 		this->_cgiFd = open(this->_req->getBody().data(), O_RDONLY);
@@ -1071,11 +1069,10 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	{
 		Cgi cgi(cgiPath, toexec, _env, _cgiFd);
 		this->_cgiFd = -1;
-		return cgi.getPdes()[0];
 	}
 	catch (std::exception const &e)
 	{
 		_status_code = 500;
 	}
-	return (-1);
+	return (0);
 }

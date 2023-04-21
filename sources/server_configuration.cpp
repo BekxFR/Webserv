@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 17:52:45 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 12:22:52 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,31 +60,7 @@ _Loc(findLoc())
 
 server_configuration::server_configuration(server_configuration const &obj)
 {
-	_ConfigFile = obj.getConfigFile();
-	_ServerName = obj.getServerName();
-	_Root = obj.getRoot();
-	_Index = obj.getIndex();
-	_StatusCode = obj.getStatusCode();
-	_ClientMaxBodySize = obj.getClientMaxBodySize();
-	for (std::vector<std::string>::iterator it = obj.getEnv().begin(); it != obj.getEnv().end(); it++)
-		_env.push_back(*it);
-	for (std::vector<std::string>::iterator it = obj.getHttpMethodAccepted().begin(); it != obj.getHttpMethodAccepted().end(); it++)
-		_HttpMethodAccepted.push_back(*it);
-	for (std::vector<int>::iterator it = obj.getPort().begin(); it != obj.getPort().end(); it++)
-		_Port.push_back(*it);
-	std::vector<int> _Port;
-	for (std::vector<std::string>::iterator it = obj.getHost().begin(); it != obj.getHost().end(); it++)
-		_Host.push_back(*it);
-	for (std::map<std::string, std::string>::iterator it = obj.getCgi().begin(); it != obj.getCgi().end(); it++)
-		_cgi.insert(*it);
-	for (std::map<std::string, std::pair<std::string, std::string> >::iterator it = obj.getErrorPage().begin(); it != obj.getErrorPage().end(); it++)
-		_ErrorPage.insert(*it);
-	for (std::map<std::string, std::pair<std::string, std::string> >::iterator it = obj.getDefErrorPage().begin(); it != obj.getDefErrorPage().end(); it++)
-		_DefErrorPage.insert(*it);
-	for (std::map<std::string, std::string>::iterator it = obj.getLocation().begin(); it != obj.getLocation().end(); it++)
-		_Location.insert(*it);
-	for(std::map<std::string, class server_location_configuration*>::iterator it = obj.getLoc().begin(); it != obj.getLoc().end(); it++)
-		_Loc.insert(*it);
+	*this = obj;
 }
 
 server_configuration::~server_configuration()
@@ -95,31 +71,23 @@ server_configuration::~server_configuration()
 
 server_configuration &server_configuration::operator=(server_configuration const &obj)
 {
+	if (this == &obj)
+		return (*this);
 	_ConfigFile = obj.getConfigFile();
 	_ServerName = obj.getServerName();
 	_Root = obj.getRoot();
 	_Index = obj.getIndex();
 	_StatusCode = obj.getStatusCode();
 	_ClientMaxBodySize = obj.getClientMaxBodySize();
-	for (std::vector<std::string>::iterator it = obj.getEnv().begin(); it != obj.getEnv().end(); it++)
-		_env.push_back(*it);
-	for (std::vector<std::string>::iterator it = obj.getHttpMethodAccepted().begin(); it != obj.getHttpMethodAccepted().end(); it++)
-		_HttpMethodAccepted.push_back(*it);
-	for (std::vector<int>::iterator it = obj.getPort().begin(); it != obj.getPort().end(); it++)
-		_Port.push_back(*it);
-	std::vector<int> _Port;
-	for (std::vector<std::string>::iterator it = obj.getHost().begin(); it != obj.getHost().end(); it++)
-		_Host.push_back(*it);
-	for (std::map<std::string, std::string>::iterator it = obj.getCgi().begin(); it != obj.getCgi().end(); it++)
-		_cgi.insert(*it);
-	for (std::map<std::string, std::pair<std::string, std::string> >::iterator it = obj.getErrorPage().begin(); it != obj.getErrorPage().end(); it++)
-		_ErrorPage.insert(*it);
-	for (std::map<std::string, std::pair<std::string, std::string> >::iterator it = obj.getDefErrorPage().begin(); it != obj.getDefErrorPage().end(); it++)
-		_DefErrorPage.insert(*it);
-	for (std::map<std::string, std::string>::iterator it = obj.getLocation().begin(); it != obj.getLocation().end(); it++)
-		_Location.insert(*it);
-	for(std::map<std::string, class server_location_configuration*>::iterator it = obj.getLoc().begin(); it != obj.getLoc().end(); it++)
-		_Loc.insert(*it);
+	_env = obj.getEnv();
+	_HttpMethodAccepted = obj.getHttpMethodAccepted();
+	_Port = obj.getPort();
+	_Host = obj.getHost();
+	_cgi = obj.getCgi();
+	_ErrorPage = obj.getErrorPage();
+	_DefErrorPage = obj.getDefErrorPage();
+	_Location = obj.getLocation();
+	_Loc = obj.getLoc();
 	if (DEBUG)
 		std::cout << "server_configuration Copy assignment operator called" << std::endl;
 	return *this;
@@ -523,41 +491,47 @@ void	server_configuration::printMap(std::map<T, T> map)
 
 std::ostream&	server_configuration::printLoc(std::ostream &out)
 {
-		
-		for (std::map<std::string, class server_location_configuration*>::iterator it = _Loc.begin(); it != _Loc.end(); it++)
+	std::vector<std::string>	tmp;
+	std::map<std::string, std::string>	tmps;
+	for (std::map<std::string, class server_location_configuration*>::iterator it = _Loc.begin(); it != _Loc.end(); it++)
+	{
+		out << "\n\nLocation configurations  for " << it->first ;
+		tmp = it->second->getHttpMethodAccepted();
+		for (std::vector<std::string>::iterator ite = tmp.begin(); ite != tmp.end(); ite++)
+			out << "\nHttpMethodAccepted : " << *ite;
+		out << "\nHttpRedirection " << it->second->getHttpRedirection() \
+		<< "\nRoot : " << it->second->getRoot() \
+		<< "\nDirectoryListing : " << it->second->getDirectoryListing() \
+		<< "\nDirectoryRequest : " << it->second->getDirectoryRequest() ;
+		tmps = it->second->getCgi();
+		for (std::map<std::string, std::string>::iterator ite = tmps.begin(); ite != tmps.end(); ite++)
 		{
-			out << "\n\nLocation configurations  for " << it->first ;
-			for (std::vector<std::string>::iterator ite = it->second->getHttpMethodAccepted().begin(); ite != it->second->getHttpMethodAccepted().end(); ite++)
-				out << "\nHttpMethodAccepted : " << *ite;
-			out << "\nHttpRedirection " << it->second->getHttpRedirection() \
-			<< "\nRoot : " << it->second->getRoot() \
-			<< "\nDirectoryListing : " << it->second->getDirectoryListing() \
-			<< "\nDirectoryRequest : " << it->second->getDirectoryRequest() ;
-			for (std::map<std::string, std::string>::iterator ite = it->second->getCgi().begin(); ite != it->second->getCgi().end(); ite++)
-			{
-				out << "\nCGI : \n" \
-				<< "path : " << ite->first << "\nconf : " << ite->second ;
-			}
-			out << "\nUploadStore : " << it->second->getUploadStore();
+			out << "\nCGI : \n" \
+			<< "path : " << ite->first << "\nconf : " << ite->second ;
 		}
-		return (out);
+		out << "\nUploadStore : " << it->second->getUploadStore();
+	}
+	return (out);
 }
 
-std::string server_configuration::getConfigFile() const { return _ConfigFile;}
-std::string server_configuration::getServerName() const { return _ServerName;}
-std::string server_configuration::getRoot() const { return _Root;}
-std::string server_configuration::getIndex() const { return _Index;}
+std::string	server_configuration::getConfigFile() const { return _ConfigFile;}
+std::string	server_configuration::getServerName() const { return _ServerName;}
+std::string	server_configuration::getRoot() const { return _Root;}
+std::string	server_configuration::getIndex() const { return _Index;}
 std::vector<int>	server_configuration::getPort() const { return _Port;}
-std::vector<std::string> server_configuration::getEnv() const { return _env;}
-std::vector<std::string> server_configuration::getHttpMethodAccepted() const {return _HttpMethodAccepted;}
-std::vector<std::string> server_configuration::getHost() const { return _Host;}
-size_t server_configuration::getClientMaxBodySize() const { return _ClientMaxBodySize;}
-std::map<std::string, std::string> server_configuration::getCgi() const { return (_cgi); }
-std::map<std::string, std::string> server_configuration::getLocation() const { return (_Location); }
+std::vector<std::string>	server_configuration::getEnv() const { return _env;}
+std::vector<std::string>	server_configuration::getHttpMethodAccepted() const { return (_HttpMethodAccepted); }
+std::vector<std::string>&	server_configuration::getHttpMethodAccepted() { return (_HttpMethodAccepted); }
+std::vector<std::string>	server_configuration::getHost() const { return _Host;}
+size_t	server_configuration::getClientMaxBodySize() const { return _ClientMaxBodySize;}
+std::map<std::string, std::string>	server_configuration::getCgi() const { return (_cgi); }
+std::map<std::string, std::string>&	server_configuration::getCgi() { return (_cgi); }
+std::map<std::string, std::string>	server_configuration::getLocation() const { return (_Location); }
 std::map<std::string, std::pair<std::string, std::string> >		server_configuration::getErrorPage() const { return _ErrorPage;}
 std::map<std::string, std::pair<std::string, std::string> >	server_configuration::getDefErrorPage() const { return _DefErrorPage;}
 std::map<std::string, class server_location_configuration*>	server_configuration::getLoc() const { return (_Loc);}
-int	server_configuration::getStatusCode() const { return (_StatusCode); }
+std::map<std::string, class server_location_configuration*>&	server_configuration::getLoc() { return (_Loc);}
+int	server_configuration::getStatusCode()	 const { return (_StatusCode); }
 
 const char *	server_configuration::CgiException::what() const throw()
 {

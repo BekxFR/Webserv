@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 15:54:57 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 11:50:38 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ server_request::~server_request()
 
 server_request &server_request::operator=(server_request const &obj)
 {
+	if (this == &obj)
+		return (*this);
 	_ServerRequest = obj.getServerRequest();
 	_Method = obj.getMethod();
 	_RequestURI = obj.getRequestURI();

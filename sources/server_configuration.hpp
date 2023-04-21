@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 17:23:29 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 12:22:17 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,13 +82,16 @@ class server_configuration
 	int	getStatusCode() const;
 	std::vector<std::string>	getEnv() const;
 	std::map<std::string, std::string>	getCgi() const;
+	std::map<std::string, std::string>&	getCgi();
 	std::map<std::string, std::string>	getLocation() const;
 	std::map<std::string, std::pair<std::string, std::string> >	getErrorPage() const;
 	std::map<std::string, std::pair<std::string, std::string> >	getDefErrorPage() const;
 	std::map<std::string, class server_location_configuration*>	getLoc() const;
+	std::map<std::string, class server_location_configuration*>&	getLoc();
 	std::string	getRoot() const;
 	std::string	getIndex() const;
 	std::vector<std::string>	getHttpMethodAccepted() const;
+	std::vector<std::string>&	getHttpMethodAccepted();
 	std::vector<int>	getPort() const;
 	size_t	getClientMaxBodySize() const;
 	std::vector<std::string>	getHost() const;

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/17 13:25:09 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 12:26:46 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,7 +149,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	// std::cout << "PORT TEST : " << Port << std::endl;
 	// std::cout << "e1.0" << std::endl;
 	GoodServerConf = getGoodServer(servers, ServerRequest, Port);
-	server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), *ServerRequest);
+	server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
 	ServerResponse.todo(*ServerRequest, conn_sock, GoodServerConf);
 	// std::cout << "e2" << std::endl;
 	delete ServerRequest;
@@ -473,7 +473,7 @@ int main(int argc, char const **argv, const char **envp)
 	if (argc == 2)
 		config = argv[1];
 	else
-		config = "http {\nserver {\nlisten 8080;\n}\n}\n";
+		config = "server {\nlisten 8080;\nroot ./;\n}\n";
 	std::vector<server_configuration*> servers = SetupNewServers(config, argc, envp);
 //	PrintServer(servers);
 	StartServer(servers, getPorts(servers), getHosts(servers));

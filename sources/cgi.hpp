@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:06 by nflan             #+#    #+#             */
-/*   Updated: 2023/03/28 15:26:04 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/21 14:44:17 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,12 @@ class Cgi
 		char**	getEnvp() const;
 		pid_t	getPid() const;
 		int	getInputFd() const;
+		int		getStatus() const;
 		void	setPid();
 		void	setPdes();
 		void	dupping();
 		void	closePdes();
+		void	exeCgi();
 
 
 	private:
@@ -46,6 +48,7 @@ class Cgi
 		pid_t	_pid;
 		int		_input_fd;
 		int		_pdes[2];
+		int		_status;
 
 
 		Cgi();

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/14 15:51:27 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 15:44:20 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd)
+Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd): _status(0)
 {
 	_cmd = new char*[3];
 	_cmd[0] = &(cgi_path[0]);
@@ -31,7 +31,6 @@ Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::strin
 	_envp[env.size()] = NULL;
 	_input_fd = input_fd;
 	_pid = -1;
-	setPdes();
 	setPid();
 }
 
@@ -43,20 +42,7 @@ Cgi::~Cgi()
 
 Cgi::Cgi(const Cgi & o)
 {
-	_pdes[0] = o.getPdes()[0];
-	_pdes[1] = o.getPdes()[1];
-	_pid = o.getPid();
-	_input_fd = o.getInputFd();
-	_cmd = new char*[3];
-	_cmd[0] = o.getCmd()[0];
-	_cmd[1] = o.getCmd()[1];
-	_cmd[2] = NULL;
-	size_t	i = 0;
-	for (; o.getEnvp()[i]; i++) {}
-	_envp = new char* [i + 1];
-	for (i = 0; o.getEnvp()[i]; i++)
-		_envp[i] = o.getEnvp()[i];
-	_envp[i + 1] = NULL;
+	*this = o;
 }
 
 Cgi	&Cgi::operator=(Cgi const &o)
@@ -77,6 +63,7 @@ Cgi	&Cgi::operator=(Cgi const &o)
 	for (i = 0; o.getEnvp()[i]; i++)
 		_envp[i] = o.getEnvp()[i];
 	_envp[i + 1] = NULL;
+	_status = o.getStatus();
 	return (*this);
 }
 
@@ -85,18 +72,22 @@ pid_t	Cgi::getPid() const { return (_pid); }
 int	Cgi::getInputFd() const { return (_input_fd); }
 char**	Cgi::getCmd() const { return (_cmd); }
 char**	Cgi::getEnvp() const { return (_envp); }
+int	Cgi::getStatus() const { return (_status); }
 
 void	Cgi::setPid()
 {
 	_pid = fork();
 	if (static_cast<int>(_pid) == -1)
 		throw ForkException();
+	else if (static_cast<int>(_pid) == 0)
+		setPdes();
 }
 
 void	Cgi::setPdes()
 {
 	if (pipe(_pdes) == -1)
 		throw PipeException();
+	dupping();
 }
 
 void	Cgi::closePdes()
@@ -121,31 +112,27 @@ void	Cgi::dupping()
 	if (_input_fd != -1)
 	{
 		if (dup2(_input_fd, STDIN_FILENO) == -1)
-			exit (1);
+			exit (500);
 		close (_input_fd);
 	}
-	else
-	{
-		std::string filename(".cgi-tmp.txt");
 
-		FILE* fp = fopen(filename.c_str(), "w");
-		if (fp == NULL) {
-			std::cerr << "Error opening file: " << std::strerror(errno) << std::endl;
-			exit (1);
-		}
+	std::string filename(".cgi-tmp.txt");
 
-		int fd = fileno(fp); // get file descriptor from file pointer
-
-		if (dup2(fd, STDOUT_FILENO) == -1) {
-			std::cerr << "Error redirecting output: " << std::strerror(errno) << std::endl;
-			exit (1);
-		}
+	FILE* fp = fopen(filename.c_str(), "w+");
+	if (fp == NULL) {
+		std::cerr << "Error opening file: " << std::strerror(errno) << std::endl;
+		exit (500);
 	}
-//	if (dup2(_pdes[1], STDOUT_FILENO) == -1) // uncom quand good
-//		exit (1);
-//	close (fd);
-	close (_pdes[0]);
+
+	int fd = fileno(fp); // get file descriptor from file pointer
+
+	if (dup2(fd, STDOUT_FILENO) == -1) {
+		std::cerr << "Error redirecting output: " << std::strerror(errno) << std::endl;
+		exit (500);
+	}
 	close (_pdes[1]);
+	close (_pdes[0]);
+	exeCgi();
 }
 
 const char *	PipeException::what() const throw()
@@ -163,19 +150,17 @@ const char *	ExecveException::what() const throw()
 	return ("Execve Error!");
 }
 
-void	exeCgi(Cgi & cgi)
+void	Cgi::exeCgi()
 {
-	int	status;
-	if (cgi.getPid() == 0)
+	if (execve(_cmd[0], _cmd, _envp) == -1)
 	{
-		cgi.dupping();
-		if (execve((cgi.getCmd())[0], cgi.getCmd(), cgi.getEnvp()))
-			throw ExecveException();
+		closePdes();
+		throw ExecveException();
 	}
-	waitpid(cgi.getPid(), &status, 0);
-	if (WIFEXITED(status))
-		status = WEXITSTATUS(status);
-	std::cerr << "EXIT STATUS = " << status << std::endl;
+	waitpid(_pid, &_status, 0);
+	if (WIFEXITED(_status))
+		_status = WEXITSTATUS(_status);
+	std::cerr << "EXIT STATUS = " << _status << std::endl;
 }
 
 std::string	cgi_type(std::string const &type)

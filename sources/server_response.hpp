@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 16:58:21 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 15:54:56 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,17 +51,17 @@ class server_response
 	std::string	_header;
 	std::string	_body;
 	std::string	_content;
-	std::string	_contentLength;
+	size_t	_contentLength;
 	std::string	_ServerResponse;
 	std::string	_finalPath;
 	std::vector<std::string>	_env;
-	server_request	*_req;
+	server_request*	_req;
 	std::map<std::string, std::string> _contentType;
 
 	server_response();
 	
 	public:
-	server_response(int, std::vector<std::string>, server_request);
+	server_response(int, std::vector<std::string>, server_request*);
 	server_response(server_response const &obj);
 	~server_response();
 	server_response &operator=(server_response const &obj);
@@ -85,7 +85,7 @@ class server_response
 	std::string	getHeader() const { return _header; }
 	std::string	getBody() const { return _body; }
 	std::string	getContent() const { return (_content); }
-	std::string	getContentLength() const { return _contentLength; }
+	size_t	getContentLength() const { return _contentLength; }
 	std::string	getServerResponse() const { return (_ServerResponse); }
 	std::string	getPath() const { return (_finalPath); }
 	server_request*	getReq() const { return (_req); }

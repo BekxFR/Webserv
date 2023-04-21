@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-print("Content-Type: text/html\n\n")
+print("Content-Type: text/html; charset=utf-8")
+print()
 print("<html>")
 print("<head>")
 print("<title>Test de page Python</title>")

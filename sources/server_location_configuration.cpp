@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/04 17:08:06 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 17:10:23 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 12:23:18 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,10 +194,12 @@ std::string server_location_configuration::findUploadStore(std::string location_
 	return ("");
 }
 
-std::vector<std::string> server_location_configuration::getHttpMethodAccepted() const {return _HttpMethodAccepted;}
+std::vector<std::string>&	server_location_configuration::getHttpMethodAccepted() {return _HttpMethodAccepted;}
+std::vector<std::string>	server_location_configuration::getHttpMethodAccepted() const {return _HttpMethodAccepted;}
 std::string	server_location_configuration::getHttpRedirection() const { return _HttpRedirection;}
 std::string server_location_configuration::getRoot() const { return _Root;}
 std::string server_location_configuration::getDirectoryListing() const { return _DirectoryListing;}
 std::string server_location_configuration::getDirectoryRequest() const { return _DirectoryRequest;}
+std::map<std::string, std::string>&	server_location_configuration::getCgi() { return _Cgi;}
 std::map<std::string, std::string>	server_location_configuration::getCgi() const { return _Cgi;}
 std::string server_location_configuration::getUploadStore() const { return _UploadStore;}

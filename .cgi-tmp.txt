@@ -1,4 +1,12 @@
-Status: 403 Forbidden
-Content-type: text/html; charset=UTF-8
+Content-Type: text/html; charset=utf-8
+Content-Length: 180
 
-Access denied.
+
+<html>
+<head>
+<title>Test de page Python</title>
+</head>
+<body>
+<h1>Ceci est une page générée en utilisant Python!</h1>
+</body>
+</html>
