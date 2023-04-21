@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+print ("Content-type: text/html\n\n")
+print()
 import os
 
 # Fonction pour générer une liste de fichiers dans le répertoire courant
@@ -17,7 +19,6 @@ def list_files():
     return file_list
 
 # Code HTML de la page
-#print ("Content-type: text/html\n\n")
 print ("<html>")
 print ("<head>")
 print ("<title>Liste des fichiers dans le répertoire courant</title>")

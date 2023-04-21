@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 17:26:48 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/21 19:16:06 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -668,6 +668,20 @@ std::string	server_response::addBody(std::string msg)
 	return (_body);
 }
 
+void	server_response::addLength()
+{
+	std::stringstream	l;
+	std::string	tmp = "Content-Length: ";
+
+	if (_content.size() > 0)
+		l << _content.size() - _content.find_first_of("\n");
+	else
+		l << 0;
+	tmp += l.str();
+	tmp += "\r\n";
+	_content.insert(_content.find_first_of("\n") + 1, tmp);
+}
+
 void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request)
 {
 	std::stringstream	response;
@@ -719,11 +733,10 @@ void	server_response::createResponse(server_configuration * server, std::string 
 							_content.clear();
 							std::ifstream	cgiContent(".cgi-tmp.txt");
 							std::getline(cgiContent, _content, '\0');
-					//		response << "Content-Length: " << _content.size() << "\r\n\r\n";
+							cgiContent.close();
+							addLength();
 							response << _content << "\0";
-							_content.clear();
 						}
-						//std::remove(".cgi-tmp.txt");
 					}
 					std::cerr << response.str() << std::endl;
 

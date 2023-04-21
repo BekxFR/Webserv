@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 15:54:56 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/21 19:02:00 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ class server_response
 	bool isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	int	doCgi(std::string toexec, server_configuration * server); // envoyer fichier a cgiser + return fd du cgi
+	void	addLength();
 
 	std::string getRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	// Définition de la méthode pour obtenir le corps de la réponse
