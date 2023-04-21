@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 12:09:58 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 12:12:29 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -619,9 +619,8 @@ std::string	server_response::addHeader(std::string statusMsg, std::pair<std::str
 		std::vector<std::string> CookieHeader = server->getCookieHeader();
 		for (std::vector<std::string>::iterator it = CookieHeader.begin(); it != CookieHeader.end(); it++)
 		{
-			std::cout << "Set-Cookie: " << *it << "\n"; 
+			// std::cout << "Set-Cookie: " << *it << "\n"; 
 			response << "Set-Cookie: " << *it << "\n"; // tentative d'implementation des cookies
-			
 		}
 	}
 	header = response.str();

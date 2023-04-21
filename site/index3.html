@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Login Page</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #f4f4f4;
+		}
+		.container {
+			margin: 100px auto;
+			width: 300px;
+			padding: 20px;
+			background-color: #fff;
+			box-shadow: 0 0 10px #ccc;
+		}
+		input[type="text"],
+		input[type="password"] {
+			display: block;
+			margin: 10px 0;
+			padding: 5px;
+			width: 100%;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			box-sizing: border-box;
+			font-size: 16px;
+		}
+		input[type="submit"] {
+			display: block;
+			margin: 10px auto;
+			padding: 10px 20px;
+			background-color: #4CAF50;
+			color: #fff;
+			border: none;
+			border-radius: 5px;
+			font-size: 16px;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h2>Login</h2>
+		<form id="login-form">
+			<label for="username">Username</label>
+			<input type="text" id="username" name="username">
+
+			<label for="password">Password</label>
+			<input type="password" id="password" name="password">
+
+			<input type="submit" value="Login">
+		</form>
+	</div>
+	<script>
+		const loginForm = document.getElementById("login-form");
+
+		loginForm.addEventListener("submit", function(event) {
+			event.preventDefault();
+			const username = loginForm.elements.username.value;
+			const password = loginForm.elements.password.value;
+
+			// Check username and password against a database or API here
+			// If they are correct, redirect the user to the next page
+			// If they are incorrect, show an error message
+		});
+	</script>
+</body>
+</html>

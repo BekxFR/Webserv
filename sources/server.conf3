@@ -21,6 +21,8 @@ server {
 			upload_store /var/www/uploads/;
 		}
 
+		
+
 		location /password/ {
 			return 301 https://www.example.com/new-page.html;
 
@@ -42,7 +44,6 @@ server {
 			index indexr.html;
 			root ./site/;
 			autoindex off;
-
 		}
 
 		allow_methods GET POST;

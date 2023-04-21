@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/17 16:50:35 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 15:03:32 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -466,16 +466,23 @@ std::vector<std::string> getHosts(std::vector<server_configuration*> servers)
 
 int main(int argc, char const **argv)
 {
-	if (argc != 2)
+	try 
 	{
-		std::cerr << "Wrong number of arguments" << std::endl;
-		return -1;
-	}
-	signal(SIGINT, sigint_handler);
+		if (argc != 2)
+		{
+			std::cerr << "Wrong number of arguments" << std::endl;
+			return -1;
+		}
+		signal(SIGINT, sigint_handler);
 
-	std::vector<server_configuration*> servers = SetupNewServers(argv[1]);
-	// PrintServer(servers);
-	StartServer(servers, getPorts(servers), getHosts(servers));
-	DeleteServers(servers);
+		std::vector<server_configuration*> servers = SetupNewServers(argv[1]);
+		// PrintServer(servers);
+		StartServer(servers, getPorts(servers), getHosts(servers));
+		DeleteServers(servers);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << "Webserv error : " << e.what() << '\n';
+	}
 	return 0;
 }

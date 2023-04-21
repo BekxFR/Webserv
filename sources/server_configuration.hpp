@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 12:02:08 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 16:02:56 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 #include <map>
 #include "server_location_configuration.hpp"
 #include <vector>
+#include <cstring>
 #define DEBUG 0
 
 class ErrorCorresp;
@@ -106,6 +107,12 @@ class server_configuration
 			virtual const char *	what() const throw();
 	};
 	size_t getClientMaxBodySize();
+
+
+	/**********UTILS*************/
+	
+	bool is_in_location(size_t conf_pos, std::string str);
+
 };
 
 std::ostream& operator <<(std::ostream &out, server_configuration &ServConfig);

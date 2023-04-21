@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 12:01:43 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 16:01:54 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,40 @@ std::string server_configuration::findServerName()
 	return ("");
 }
 
+bool server_configuration::is_in_location(size_t conf_pos, std::string str)
+{
+	size_t pos = 0;
+	size_t end_loc = 0;
+	
+	while (pos != std::string::npos)
+		{
+			pos = str.find("location /", pos);
+			if (pos != std::string::npos)
+			{
+				pos += strlen("location", pos); 
+				size_t pos = str.find_first_of("{", pos); 
+				if (pos == std::string::npos) 
+					return 0;
+				end_loc = location_path.find_first_of("{}", pos + 1);
+				int j = 0;
+				while (location_path[end_loc] == '{')
+				{
+					j++;
+					end_loc = location_path.find_first_of("{}", end_loc + 1);
+				}
+				if (end_loc == std::string::npos)
+					return 0;
+				if (conf_pos > pos && conf_pos < end_loc)
+					return (1);
+				pos = end_loc;
+				end_loc = 0;
+			}
+			else
+				return 0;
+		}
+		return (0);
+}
+
 std::string server_configuration::findRoot()
 {
 	size_t pos = _ConfigFile.find("root");
@@ -129,18 +163,25 @@ int server_configuration::fillCgi(size_t pos)
 	std::pair<std::string, std::string> cgi_pair;
 	for (tmp = pos; _ConfigFile[pos] != ' ' && _ConfigFile[pos] != ';' && _ConfigFile[pos] != '\n'; pos++) {}
 	cgi_pair.first = _ConfigFile.substr(tmp, pos - tmp);
+	std::cout << "c1 " << cgi_pair.first << std::endl;
 	for (; _ConfigFile[pos] == ' '; pos++) {}
 	if (_ConfigFile[pos] == ';')
 		throw CgiException();
 	for (tmp = pos; _ConfigFile[pos] != ' ' && _ConfigFile[pos] != ';'; pos++) {}
 	cgi_pair.second = _ConfigFile.substr(tmp, pos - tmp);
+	std::cout << "c0 " << cgi_pair.second << std::endl;
 	_cgi.insert(cgi_pair);
 	return (pos + 1);
 }
 
 void server_configuration::setCgi()
 {
-	size_t pos = _ConfigFile.find("cgi");
+	// std::cout << "c-1\n" << _ConfigFile << std::endl;
+	size_t pos = 0;
+	while (is_in_loc(_ConfigFile.find("cgi"), _ConfigFile))
+	{
+		size_t pos = _ConfigFile.find("cgi");
+	}
 	if (pos == std::string::npos)
 		return ;
 	pos += strlen("cgi");
@@ -473,7 +514,7 @@ std::map<std::string, std::string> server_configuration::findLocation()
 				location_pair.first = "";
 				location_pair.second = "";
 			}
-			location_pair.second = location_path.substr(space_pos + 1, end_loc);
+			location_pair.second = location_path.substr(space_pos + 1, (end_loc - space_pos) );
 			pos = pos + end_loc;
 			end_loc = 0;
 		}

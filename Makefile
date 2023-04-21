@@ -6,14 +6,14 @@
 #    By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/01 12:07:22 by chillion          #+#    #+#              #
-#    Updated: 2023/04/15 16:28:33 by mgruson          ###   ########.fr        #
+#    Updated: 2023/04/21 15:02:05 by mgruson          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 .PHONY : all clean fclean re test client
 
 CXX := c++
-CXXFLAGS := -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/
+CXXFLAGS := -std=c++98 -g -Wall -Wextra -Werror -MMD -MP -Isources/
 # CXXFLAGS += -fsanitize=address
 CXXFLAGS += -g3
 SRC_DIR := sources/
