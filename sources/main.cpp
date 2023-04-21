@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/17 13:25:09 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/17 16:50:35 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			request.append(buffer);
 		}
 	}
-	// std::cout << "\n\nRequest :\n" << request << std::endl;
+	std::cout << "\n\nRequest :\n\n" << request << std::endl;
 	server_request* ServerRequest = new server_request(request);
 	ServerRequest->request_parser();
 	// ici on a la requete qui est parsé, je peux donc trouver le bon et en envoyer qu'un

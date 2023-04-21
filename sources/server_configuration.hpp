@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 17:23:29 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 12:02:08 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <cctype>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -40,12 +41,14 @@ class server_configuration
 	std::map<std::string, std::string>	_cgi;
 	std::vector<int> _Port;
 	std::vector<std::string> _Host;
+	std::vector<std::string> _CookieHeader;
 	int			_StatusCode;
 	size_t		_ClientMaxBodySize;
 	std::map<std::string, std::pair<std::string, std::string> >	_ErrorPage;
 	std::map<std::string, std::pair<std::string, std::string> >	_DefErrorPage;
 	std::map<std::string, std::string> _Location;
 	std::map<std::string, class server_location_configuration*> _Loc;
+	
 	
 	public:
 	server_configuration();
@@ -58,6 +61,7 @@ class server_configuration
 	std::vector<int> findPort();
 	std::vector<std::string> findHost();
 	std::string findRoot();
+	std::vector<std::string>	findCookieHeader();
 
 	std::string findIndex();
 	std::map<std::string, std::string> findLocation();
@@ -90,6 +94,7 @@ class server_configuration
 	
 	std::vector<int> getPort();
 	std::vector<std::string> getHost();
+	std::vector<std::string> getCookieHeader();
 
 	
 	class CgiException: public std::exception {

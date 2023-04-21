@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 17:52:45 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 12:01:43 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ _Index(findIndex()),
 _HttpMethodAccepted(findHttpMethodAccepted()),
 _Port(findPort()),
 _Host(findHost()),
+_CookieHeader(findCookieHeader()),
 _StatusCode(200),
 _ClientMaxBodySize(findClientMaxBodySize()),
 _Location(findLocation()),
@@ -326,7 +327,43 @@ std::vector<std::string> server_configuration::findHost()
 	return (Host);
 }
 
-/* Il faut que je la modifie car cela restreint trop les cas gérés */
+std::vector<std::string>	server_configuration::findCookieHeader()
+{
+	size_t pos = 0;
+	size_t pos2 = 1;
+	size_t mid_pos = 0;
+	std::vector<std::string> Cookie;
+
+	if (_ConfigFile.find("add_header Set-Cookie ") != std::string::npos)
+	{
+		pos = _ConfigFile.find("add_header Set-Cookie \"") + strlen("add_header Set-Cookie ");
+		std::string CookieConf = _ConfigFile.substr(pos);
+		// std::cout << "c1 " << CookieConf.at(CookieConf.find_first_of(";\"", mid_pos + 1)) << std::endl;
+		while (CookieConf.at(CookieConf.find_first_of(";\"", mid_pos + 1)) != '"')
+		{
+			// std::cout << "c2" << std::endl;
+			pos2 = CookieConf.find_first_of("_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", mid_pos);
+			mid_pos = CookieConf.find_first_of(";\"", mid_pos + 1);
+			// std::cout << "c2.1 " << mid_pos << " " << CookieConf.at(mid_pos) << std::endl;
+			if (CookieConf.at(mid_pos) == ';')
+			{
+				// std::cout << "c3 " << CookieConf.substr(pos2, (mid_pos - pos2)) << std::endl;
+				// std::cout << "c4 " << pos2 << std::endl;
+				Cookie.push_back(CookieConf.substr(pos2, (mid_pos - pos2)));
+			
+			}
+			pos2 = mid_pos;
+		}
+	}
+	// int i = 0;
+	// std::cout << "\nCOOKIE HEADER\n" << std::endl;
+	// for (std::vector<std::string>::iterator it = Cookie.begin(); it != Cookie.end(); it++)
+	// {
+	// 	std::cout << i++ << std::endl;
+	// 	std::cout << *it << std::endl;
+	// }
+	return (Cookie);
+}
 
 std::vector<int> server_configuration::findPort()
 {
@@ -501,7 +538,7 @@ std::string server_configuration::getIndex() { return _Index;}
 std::vector<int> server_configuration::getPort() { return _Port;}
 std::vector<std::string>& server_configuration::getHttpMethodAccepted() {return _HttpMethodAccepted;}
 std::vector<std::string> server_configuration::getHost() { return _Host;}
-
+std::vector<std::string> server_configuration::getCookieHeader() { return _CookieHeader;}
 size_t server_configuration::getClientMaxBodySize() { return _ClientMaxBodySize;}
 std::map<std::string, std::string> server_configuration::getCgi() { return (_cgi); }
 std::map<std::string, std::pair<std::string, std::string> >		server_configuration::getErrorPage() { return _ErrorPage;}

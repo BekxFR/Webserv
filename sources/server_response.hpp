@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 16:58:21 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/21 12:05:40 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ class server_response
 	void	createResponse(server_configuration*, std::string, const server_request& Server_Request);
 	void	delete_dir(const char * path);
 	std::string	list_dir(std::string path);
-	std::string	addHeader(std::string statusMsg, std::pair<std::string, std::string> statusContent, const server_request& Server_Request);
+	std::string	addHeader(std::string statusMsg, std::pair<std::string, std::string> statusContent, const server_request& Server_Request, server_configuration *server);
 	std::string	addBody(std::string body);
 	int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI);
