@@ -1,21 +1,3 @@
-[0;34m###[0mCreation du fichier objects/server_response.o[0;34m###[0;33m
-c++ -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/ -g3 -c sources/server_response.cpp -o objects/server_response.o
-[0m
-[0;34m###[0mCreation du fichier webserv[0;34m###[0;33m
-c++ objects/main.o objects/server_configuration.o objects/server_request.o objects/server_response.o objects/server_location_configuration.o objects/ErrorCorresp.o -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/ -g3 -o webserv
-[0m
-valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./webserv sources/server.conf2
-Can't open file error.html using default error page
-Can't open file e using default error page
-Ports 0 : 8083
-Ports 0 : 8080
-Ports 0 : 8080
-Ports 0 : 8083
-Ports 0 : 8084
-Ports 0 : 8099
-Host 0 : 
-Host 0 : [::]
-Host 0 : 0.0.0.0
-Host 0 : 0.0.0.0
-Host 0 : localhost
-Host 0 : 127.0.0.1
+699237136
+1403826567
+1888898933
