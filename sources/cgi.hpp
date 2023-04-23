@@ -67,5 +67,13 @@ class ForkException: public std::exception {
 	public:
 		virtual const char *	what() const throw();
 };
+class DupException: public std::exception {
+	public:
+		virtual const char *	what() const throw();
+};
+class OpenException: public std::exception {
+	public:
+		virtual const char *	what() const throw();
+};
 
 #endif

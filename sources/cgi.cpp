@@ -107,29 +107,29 @@ void	Cgi::print() const
 		printf("envp = '%s'\n", _envp[i]);
 }
 
+const char *	DupException::what() const throw()
+{
+	return ("Dup Error!");
+}
+
+const char *	OpenException::what() const throw()
+{
+	return ("Open Error!");
+}
+
 void	Cgi::dupping()
 {
-	if (_input_fd != -1)
-	{
-		if (dup2(_input_fd, STDIN_FILENO) == -1)
-			exit (500);
-		close (_input_fd);
-	}
-
 	std::string filename(".cgi-tmp.txt");
 
-	FILE* fp = fopen(filename.c_str(), "w+");
-	if (fp == NULL) {
-		std::cerr << "Error opening file: " << std::strerror(errno) << std::endl;
-		exit (500);
-	}
+	FILE* fp = fopen(filename.c_str(), "w");
+	if (fp == NULL)
+		throw OpenException();
 
 	int fd = fileno(fp); // get file descriptor from file pointer
 
-	if (dup2(fd, STDOUT_FILENO) == -1) {
-		std::cerr << "Error redirecting output: " << std::strerror(errno) << std::endl;
-		exit (500);
-	}
+	if (dup2(fd, STDOUT_FILENO) == -1)
+		throw DupException();
+
 	close (_pdes[1]);
 	close (_pdes[0]);
 	exeCgi();

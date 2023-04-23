@@ -17,6 +17,7 @@
 #include <string>
 #include <cstring>
 #include <fstream>
+#include <unistd.h>
 #include <sstream>
 #include <algorithm>
 #include "default_error.hpp"

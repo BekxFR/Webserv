@@ -1086,6 +1086,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	catch (std::exception const &e)
 	{
 		_status_code = 500;
+		return (1);
 	}
 	return (0);
 }

@@ -150,7 +150,8 @@ int server_configuration::fillCgi(size_t pos)
 		throw CgiException();
 	for (tmp = pos; _ConfigFile[pos] != ' ' && _ConfigFile[pos] != ';'; pos++) {}
 	cgi_pair.second = _ConfigFile.substr(tmp, pos - tmp);
-	_cgi.insert(cgi_pair);
+	if (!access(cgi_pair.second.c_str(), X_OK))
+		_cgi.insert(cgi_pair);
 	return (pos + 1);
 }
 
