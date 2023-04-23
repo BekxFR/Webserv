@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 16:02:56 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/23 14:49:33 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class server_configuration
 	std::vector<int> _Port;
 	std::vector<std::string> _Host;
 	std::vector<std::string> _CookieHeader;
+	std::string	_DirectoryListing;
 	int			_StatusCode;
 	size_t		_ClientMaxBodySize;
 	std::map<std::string, std::pair<std::string, std::string> >	_ErrorPage;
@@ -63,6 +64,7 @@ class server_configuration
 	std::vector<std::string> findHost();
 	std::string findRoot();
 	std::vector<std::string>	findCookieHeader();
+	std::string	findDirectoryListing();
 
 	std::string findIndex();
 	std::map<std::string, std::string> findLocation();
@@ -96,6 +98,7 @@ class server_configuration
 	std::vector<int> getPort();
 	std::vector<std::string> getHost();
 	std::vector<std::string> getCookieHeader();
+	std::string getDirectoryListing();
 
 	
 	class CgiException: public std::exception {
@@ -112,7 +115,6 @@ class server_configuration
 	/**********UTILS*************/
 	
 	bool is_in_location(size_t conf_pos, std::string str);
-
 };
 
 std::ostream& operator <<(std::ostream &out, server_configuration &ServConfig);

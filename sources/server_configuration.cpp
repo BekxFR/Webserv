@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 16:01:54 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/23 15:28:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ _HttpMethodAccepted(findHttpMethodAccepted()),
 _Port(findPort()),
 _Host(findHost()),
 _CookieHeader(findCookieHeader()),
+_DirectoryListing(findDirectoryListing()),
 _StatusCode(200),
 _ClientMaxBodySize(findClientMaxBodySize()),
 _Location(findLocation()),
@@ -99,33 +100,47 @@ bool server_configuration::is_in_location(size_t conf_pos, std::string str)
 {
 	size_t pos = 0;
 	size_t end_loc = 0;
-	
+	// std::cout << "TEST\n\n" << "\n\n" << conf_pos << std::endl;
 	while (pos != std::string::npos)
 		{
+			// std::cout << "c0" << std::endl;
 			pos = str.find("location /", pos);
 			if (pos != std::string::npos)
 			{
-				pos += strlen("location", pos); 
-				size_t pos = str.find_first_of("{", pos); 
+				// std::cout << "c1" << std::endl;
+				pos += strlen("location /"); 
+				pos = str.find_first_of("{", pos); 
 				if (pos == std::string::npos) 
 					return 0;
-				end_loc = location_path.find_first_of("{}", pos + 1);
+				end_loc = str.find_first_of("{}", pos + 1);
 				int j = 0;
-				while (location_path[end_loc] == '{')
+				while (str[end_loc] == '{')
 				{
+					// std::cout << "c2" << std::endl;
 					j++;
-					end_loc = location_path.find_first_of("{}", end_loc + 1);
+					end_loc = str.find_first_of("{}", end_loc + 1);
 				}
 				if (end_loc == std::string::npos)
+				{
+					// std::cout << "NO END LOC" << std::endl;
 					return 0;
+				}
 				if (conf_pos > pos && conf_pos < end_loc)
+				{
+					// std::cout << "IN LOC" << std::endl;
 					return (1);
+				}
 				pos = end_loc;
 				end_loc = 0;
 			}
 			else
+			{
+				// std::cout << "NO LOC" << std::endl;
 				return 0;
+			}
 		}
+		// std::cout << "NO = LOC" << std::endl;
+
 		return (0);
 }
 
@@ -178,10 +193,12 @@ void server_configuration::setCgi()
 {
 	// std::cout << "c-1\n" << _ConfigFile << std::endl;
 	size_t pos = 0;
-	while (is_in_loc(_ConfigFile.find("cgi"), _ConfigFile))
+	while (is_in_location(_ConfigFile.find("cgi", pos + 1), _ConfigFile))
 	{
-		size_t pos = _ConfigFile.find("cgi");
+		// std::cout << "IS_IN_LOC" << std::endl;
+		pos = _ConfigFile.find("cgi", pos + 1);
 	}
+	pos = _ConfigFile.find("cgi", pos + 1);
 	if (pos == std::string::npos)
 		return ;
 	pos += strlen("cgi");
@@ -406,6 +423,30 @@ std::vector<std::string>	server_configuration::findCookieHeader()
 	return (Cookie);
 }
 
+std::string server_configuration::findDirectoryListing()
+{
+	size_t pos = 0;
+	// std::cout << "START" << std::endl;
+	while (is_in_location(_ConfigFile.find("autoindex", pos + 1), _ConfigFile))
+	{
+		// std::cout << "IS_IN_LOC" << std::endl;
+		pos = _ConfigFile.find("autoindex", pos + 1);
+	}
+	pos = _ConfigFile.find("autoindex", pos + 1);
+	// std::cout << "END" << std::endl;
+	pos = _ConfigFile.find("autoindex", pos);
+	if (pos != std::string::npos) {
+		pos += strlen("autoindex");
+		std::string root = _ConfigFile.substr(pos + 1);
+		size_t space_pos = root.find_first_of(" \n;");
+		std::cout << "TEST sur OFF ON " << root.substr(0, space_pos) << std::endl;
+		if (space_pos != std::string::npos) {
+			return (root.substr(0, space_pos));
+		}
+	}
+	return ("off");
+}
+
 std::vector<int> server_configuration::findPort()
 {
 	size_t pos = 0;
@@ -585,6 +626,7 @@ std::map<std::string, std::string> server_configuration::getCgi() { return (_cgi
 std::map<std::string, std::pair<std::string, std::string> >		server_configuration::getErrorPage() { return _ErrorPage;}
 std::map<std::string, std::pair<std::string, std::string> >&	server_configuration::getDefErrorPage() { return _DefErrorPage;}
 std::map<std::string, class server_location_configuration*>*	server_configuration::getLoc() { return (&_Loc);}
+std::string server_configuration::getDirectoryListing() { return (_DirectoryListing);}
 
 const char *	server_configuration::CgiException::what() const throw()
 {
@@ -605,7 +647,8 @@ std::ostream& operator <<(std::ostream &out, server_configuration &ServConfig)
 		for (size_t i = 0; i < ServConfig.getHost().size(); i++)
 			out << "\nHost : " << ServConfig.getHost()[i];
 		out << "\nCliend Body Limit : " << ServConfig.getClientMaxBodySize() \
-		<< "\nCGI (first = extension, second = root):" << std::endl;
+		<< "\nCGI (first = extension, second = root):" \
+		<< "\nAutoindex general : " << ServConfig.getDirectoryListing() << std::endl;
 		ServConfig.printMap(ServConfig.getCgi());
 		out << "\n\n***\n" \
 		<< "\nLocation : "; ServConfig.printLoc(out);

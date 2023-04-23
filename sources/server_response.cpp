@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 12:12:29 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/23 15:31:02 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -289,6 +289,8 @@ bool server_response::autoindex_is_on(std::string MethodUsed, server_configurati
 			}
 		}
 	}
+	if (server->getDirectoryListing() == "on")
+		return (1);
 	return (0);
 
 }

@@ -4,15 +4,16 @@ server {
 		listen [::]:8080;
 
 		root ./site/;
-		index index.html;
+		index indRex.html;
 		client_max_body_size 10;
 		error_page 404 site/42.jpg 405 error.html 406 e;
-
+		autoindex on;
+		
 		location /upload/ {
 
 			root ./site/upload/;
 
-			autoindex on;
+			autoindex off;
 
 			index index2.html;
 
@@ -20,8 +21,6 @@ server {
 
 			upload_store /var/www/uploads/;
 		}
-
-		
 
 		location /password/ {
 			return 301 https://www.example.com/new-page.html;
