@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/23 15:28:21 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/23 15:37:58 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,13 +178,13 @@ int server_configuration::fillCgi(size_t pos)
 	std::pair<std::string, std::string> cgi_pair;
 	for (tmp = pos; _ConfigFile[pos] != ' ' && _ConfigFile[pos] != ';' && _ConfigFile[pos] != '\n'; pos++) {}
 	cgi_pair.first = _ConfigFile.substr(tmp, pos - tmp);
-	std::cout << "c1 " << cgi_pair.first << std::endl;
+	// std::cout << "c1 " << cgi_pair.first << std::endl;
 	for (; _ConfigFile[pos] == ' '; pos++) {}
 	if (_ConfigFile[pos] == ';')
 		throw CgiException();
 	for (tmp = pos; _ConfigFile[pos] != ' ' && _ConfigFile[pos] != ';'; pos++) {}
 	cgi_pair.second = _ConfigFile.substr(tmp, pos - tmp);
-	std::cout << "c0 " << cgi_pair.second << std::endl;
+	// std::cout << "c0 " << cgi_pair.second << std::endl;
 	_cgi.insert(cgi_pair);
 	return (pos + 1);
 }
@@ -439,7 +439,7 @@ std::string server_configuration::findDirectoryListing()
 		pos += strlen("autoindex");
 		std::string root = _ConfigFile.substr(pos + 1);
 		size_t space_pos = root.find_first_of(" \n;");
-		std::cout << "TEST sur OFF ON " << root.substr(0, space_pos) << std::endl;
+		// std::cout << "TEST sur OFF ON " << root.substr(0, space_pos) << std::endl;
 		if (space_pos != std::string::npos) {
 			return (root.substr(0, space_pos));
 		}

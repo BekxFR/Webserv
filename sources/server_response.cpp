@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/23 15:31:02 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/23 18:15:48 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -356,6 +356,28 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	{
 		_status_code = 413;
 	}
+	
+	/**********************************************************************/
+	
+	int random_num = 0;
+	static std::vector<int> SessionIdGiven;
+	
+	if (Server_Request.getServerRequest().find("IdSession=") == std::string::npos)
+	{
+		srand(time(NULL));
+		random_num = rand() % INT_MAX;
+		SessionIdGiven.push_back(random_num);
+		// response << "Set-Cookie: " << "IdSession=" <<  << "\n"; // tentative d'implementation des cookies
+	}
+	else if (Server_Request.getServerRequest().find("IdSession="))
+	{
+		for (int i = 0; i < SessionIdGiven.size(); i++)
+		{
+			if (random_num = SessionIdGiven[i])
+			
+		}
+	}
+	
 	/*********************************************************************/
 		
 	enum imethod {GET, POST, DELETE};
@@ -603,10 +625,12 @@ void	server_response::delete_dir(const char* path)
 			_status_code = 403;
 }
 
-std::string	server_response::addHeader(std::string statusMsg, std::pair<std::string, std::string> statusContent, const server_request& Server_Request, server_configuration *server)
+std::string	server_response::addHeader(std::string statusMsg, std::pair<std::string, std::string> statusContent, const server_request& Server_Request, server_configuration *server, int IdSession)
 {
 	std::string	header;
 	std::stringstream	response;
+	static vector<int> SessionIdGiven;
+	
 	(void)server;
 	response << Server_Request.getVersion() << " " << _status_code << " " << statusMsg << "\r\n";
 	if (statusContent.first != "")
@@ -616,6 +640,13 @@ std::string	server_response::addHeader(std::string statusMsg, std::pair<std::str
 	}
 	else
 		response << this->getType(Server_Request.getType()); // modif text/html (parsing) -> peut etre faire map de content type / mime en fonction de .py = /truc .html = text/html etc.
+	if (Server_Request.getServerRequest().find("IdSession=") == std::string::npos)
+	{
+		srand(time(NULL));
+		int random_num = rand() % INT_MAX;
+		SessionIdGiven.push_back(random_num);
+		response << "Set-Cookie: " << "IdSession=" <<  << "\n"; // tentative d'implementation des cookies
+	}
 	if (server->getCookieHeader().size() != 0)
 	{
 		std::vector<std::string> CookieHeader = server->getCookieHeader();
@@ -641,7 +672,7 @@ std::string	server_response::addBody(std::string msg)
 	return (body);
 }
 
-void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request)
+void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request, int IdSession)
 {
 	std::stringstream	response;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
@@ -657,13 +688,13 @@ void	server_response::createResponse(server_configuration * server, std::string 
 			switch (_status_code)
 				case 100:
 				{
-					response << addHeader(STATUS100, server->getErrorPage().find(STATUS100)->second, Server_Request, server);
+					response << addHeader(STATUS100, server->getErrorPage().find(STATUS100)->second, Server_Request, server, int IdSession);
 					response << addBody(server->getErrorPage()[STATUS100].second);
 					break;
 				}
 				case 101:
 				{
-					response << addHeader(STATUS101, server->getErrorPage().find(STATUS101)->second, Server_Request, server);
+					response << addHeader(STATUS101, server->getErrorPage().find(STATUS101)->second, Server_Request, server, int IdSession);
 					response << addBody(server->getErrorPage()[STATUS101].second);
 					break;
 				}
@@ -676,43 +707,43 @@ void	server_response::createResponse(server_configuration * server, std::string 
 			{
 				case 200:
 				{
-					response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request, server);
+					response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request, server, int IdSession);
 					response << addBody(file);
 					break;
 				}
 				case 201:
 				{
-					response << addHeader(STATUS201, server->getErrorPage().find(STATUS201)->second, Server_Request, server);
+					response << addHeader(STATUS201, server->getErrorPage().find(STATUS201)->second, Server_Request, server, int IdSession);
 					response << addBody(server->getErrorPage()[STATUS201].second);
 					break;
 				}
 				case 202:
 				{
-					response << addHeader(STATUS202, server->getErrorPage().find(STATUS202)->second, Server_Request, server);
+					response << addHeader(STATUS202, server->getErrorPage().find(STATUS202)->second, Server_Request, server, int IdSession);
 					response << addBody(server->getErrorPage()[STATUS202].second);
 					break;
 				}
 				case 203:
 				{
-					response << addHeader(STATUS203, server->getErrorPage().find(STATUS203)->second, Server_Request, server);
+					response << addHeader(STATUS203, server->getErrorPage().find(STATUS203)->second, Server_Request, server, int IdSession);
 					response << addBody(server->getErrorPage()[STATUS203].second);
 					break;
 				}
 				case 204:
 				{
-					response << addHeader(STATUS204, server->getErrorPage().find(STATUS204)->second, Server_Request, server);
+					response << addHeader(STATUS204, server->getErrorPage().find(STATUS204)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS204].second);
 					break;
 				}
 				case 205:
 				{
-					response << addHeader(STATUS205, server->getErrorPage().find(STATUS205)->second, Server_Request, server);
+					response << addHeader(STATUS205, server->getErrorPage().find(STATUS205)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS205].second);
 					break;
 				}
 				case 206:
 				{
-					response << addHeader(STATUS206, server->getErrorPage().find(STATUS206)->second, Server_Request, server);
+					response << addHeader(STATUS206, server->getErrorPage().find(STATUS206)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS206].second);
 					break;
 				}
@@ -725,43 +756,43 @@ void	server_response::createResponse(server_configuration * server, std::string 
 			switch (_status_code)
 				case 300:
 				{
-					response << addHeader(STATUS300, server->getErrorPage().find(STATUS300)->second, Server_Request, server);
+					response << addHeader(STATUS300, server->getErrorPage().find(STATUS300)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS300].second);
 					break;
 				}
 				case 301:
 				{
-					response << addHeader(STATUS301, server->getErrorPage().find(STATUS301)->second, Server_Request, server);
+					response << addHeader(STATUS301, server->getErrorPage().find(STATUS301)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS301].second);
 					break;
 				}
 				case 302:
 				{
-					response << addHeader(STATUS302, server->getErrorPage().find(STATUS302)->second, Server_Request, server);
+					response << addHeader(STATUS302, server->getErrorPage().find(STATUS302)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS302].second);
 					break;
 				}
 				case 303:
 				{
-					response << addHeader(STATUS303, server->getErrorPage().find(STATUS303)->second, Server_Request, server);
+					response << addHeader(STATUS303, server->getErrorPage().find(STATUS303)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS303].second);
 					break;
 				}
 				case 304:
 				{
-					response << addHeader(STATUS304, server->getErrorPage().find(STATUS304)->second, Server_Request, server);
+					response << addHeader(STATUS304, server->getErrorPage().find(STATUS304)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS304].second);
 					break;
 				}
 				case 305:
 				{
-					response << addHeader(STATUS305, server->getErrorPage().find(STATUS305)->second, Server_Request, server);
+					response << addHeader(STATUS305, server->getErrorPage().find(STATUS305)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS305].second);
 					break;
 				}
 				case 307:
 				{
-					response << addHeader(STATUS307, server->getErrorPage().find(STATUS307)->second, Server_Request, server);
+					response << addHeader(STATUS307, server->getErrorPage().find(STATUS307)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS307].second);
 					break;
 				}
@@ -774,109 +805,109 @@ void	server_response::createResponse(server_configuration * server, std::string 
 			{
 				case 400:
 				{
-					response << addHeader(STATUS400, server->getErrorPage().find(STATUS400)->second, Server_Request, server);
+					response << addHeader(STATUS400, server->getErrorPage().find(STATUS400)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS400].second);
 					break;
 				}
 				case 401:
 				{
-					response << addHeader(STATUS401, server->getErrorPage().find(STATUS401)->second, Server_Request, server);
+					response << addHeader(STATUS401, server->getErrorPage().find(STATUS401)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS401].second);
 					break;
 				}
 				case 402:
 				{
-					response << addHeader(STATUS402, server->getErrorPage().find(STATUS402)->second, Server_Request, server);
+					response << addHeader(STATUS402, server->getErrorPage().find(STATUS402)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS402].second);
 					break;
 				}
 				case 403:
 				{
-					response << addHeader(STATUS403, server->getErrorPage().find(STATUS403)->second, Server_Request, server);
+					response << addHeader(STATUS403, server->getErrorPage().find(STATUS403)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS403].second);
 					break;
 				}
 				case 404:
 				{
-					response << addHeader(STATUS404, server->getErrorPage().find(STATUS404)->second, Server_Request, server);
+					response << addHeader(STATUS404, server->getErrorPage().find(STATUS404)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS404].second);
 					break;
 				}
 				case 405:
 				{
-					response << addHeader(STATUS405, server->getErrorPage().find(STATUS405)->second, Server_Request, server);
+					response << addHeader(STATUS405, server->getErrorPage().find(STATUS405)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS405].second);
 					break;
 				}
 				case 406:
 				{
-					response << addHeader(STATUS406, server->getErrorPage().find(STATUS406)->second, Server_Request, server);
+					response << addHeader(STATUS406, server->getErrorPage().find(STATUS406)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS406].second);
 					break;
 				}
 				case 407:
 				{
-					response << addHeader(STATUS407, server->getErrorPage().find(STATUS407)->second, Server_Request, server);
+					response << addHeader(STATUS407, server->getErrorPage().find(STATUS407)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS407].second);
 					break;
 				}
 				case 408:
 				{
-					response << addHeader(STATUS408, server->getErrorPage().find(STATUS408)->second, Server_Request, server);
+					response << addHeader(STATUS408, server->getErrorPage().find(STATUS408)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS408].second);
 					break;
 				}
 				case 409:
 				{
-					response << addHeader(STATUS409, server->getErrorPage().find(STATUS409)->second, Server_Request, server);
+					response << addHeader(STATUS409, server->getErrorPage().find(STATUS409)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS409].second);
 					break;
 				}
 				case 410:
 				{
-					response << addHeader(STATUS410, server->getErrorPage().find(STATUS410)->second, Server_Request, server);
+					response << addHeader(STATUS410, server->getErrorPage().find(STATUS410)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS410].second);
 					break;
 				}
 				case 411:
 				{
-					response << addHeader(STATUS411, server->getErrorPage().find(STATUS411)->second, Server_Request, server);
+					response << addHeader(STATUS411, server->getErrorPage().find(STATUS411)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS411].second);
 					break;
 				}
 				case 412:
 				{
-					response << addHeader(STATUS412, server->getErrorPage().find(STATUS412)->second, Server_Request, server);
+					response << addHeader(STATUS412, server->getErrorPage().find(STATUS412)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS412].second);
 					break;
 				}
 				case 413:
 				{
-					response << addHeader(STATUS413, server->getErrorPage().find(STATUS413)->second, Server_Request, server);
+					response << addHeader(STATUS413, server->getErrorPage().find(STATUS413)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS413].second);
 					break;
 				}
 				case 414:
 				{
-					response << addHeader(STATUS414, server->getErrorPage().find(STATUS414)->second, Server_Request, server);
+					response << addHeader(STATUS414, server->getErrorPage().find(STATUS414)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS414].second);
 					break;
 				}
 				case 415:
 				{
-					response << addHeader(STATUS415, server->getErrorPage().find(STATUS415)->second, Server_Request, server);
+					response << addHeader(STATUS415, server->getErrorPage().find(STATUS415)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS415].second);
 					break;
 				}
 				case 416:
 				{
-					response << addHeader(STATUS416, server->getErrorPage().find(STATUS416)->second, Server_Request, server);
+					response << addHeader(STATUS416, server->getErrorPage().find(STATUS416)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS416].second);
 					break;
 				}
 				case 417:
 				{
-					response << addHeader(STATUS417, server->getErrorPage().find(STATUS417)->second, Server_Request, server);
+					response << addHeader(STATUS417, server->getErrorPage().find(STATUS417)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS417].second);
 					break;
 				}
@@ -890,37 +921,37 @@ void	server_response::createResponse(server_configuration * server, std::string 
 			{
 				case 500:
 				{
-					response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server);
+					response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS500].second);
 					break;
 				}
 				case 501:
 				{
-					response << addHeader(STATUS501, server->getErrorPage().find(STATUS501)->second, Server_Request, server);
+					response << addHeader(STATUS501, server->getErrorPage().find(STATUS501)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS501].second);
 					break;
 				}
 				case 502:
 				{
-					response << addHeader(STATUS502, server->getErrorPage().find(STATUS502)->second, Server_Request, server);
+					response << addHeader(STATUS502, server->getErrorPage().find(STATUS502)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS502].second);
 					break;
 				}
 				case 503:
 				{
-					response << addHeader(STATUS503, server->getErrorPage().find(STATUS503)->second, Server_Request, server);
+					response << addHeader(STATUS503, server->getErrorPage().find(STATUS503)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS503].second);
 					break;
 				}
 				case 504:
 				{
-					response << addHeader(STATUS504, server->getErrorPage().find(STATUS504)->second, Server_Request, server);
+					response << addHeader(STATUS504, server->getErrorPage().find(STATUS504)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS504].second);
 					break;
 				}
 				case 505:
 				{
-					response << addHeader(STATUS505, server->getErrorPage().find(STATUS505)->second, Server_Request, server);
+					response << addHeader(STATUS505, server->getErrorPage().find(STATUS505)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS505].second);
 					break;
 				}
@@ -928,7 +959,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 			break;
 		}
 		default:
-			response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server);
+			response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, IdSession);
 			response << addBody(server->getErrorPage()[STATUS500].second);
 			break;
 	}

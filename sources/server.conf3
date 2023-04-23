@@ -8,6 +8,7 @@ server {
 		client_max_body_size 10;
 		error_page 404 site/42.jpg 405 error.html 406 e;
 		autoindex on;
+		add_header Set-Cookie "my_cookie=123; Path=/; Mathieu=Gruson;";
 		
 		location /upload/ {
 

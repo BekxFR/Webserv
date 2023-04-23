@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 12:05:40 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/23 18:05:40 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,9 @@
 #include <errno.h>
 #include <iostream>
 #include <sys/stat.h>
-
+#include <ctime>
+#include <cstdlib>
+#include <climits>
 #include "server_configuration.hpp"
 #include "server_request.hpp"
 
@@ -59,10 +61,10 @@ class server_response
 	server_response &operator=(server_response const &obj);
 
 	void	todo(const server_request& Server_Request, int conn_sock, server_configuration* Root);
-	void	createResponse(server_configuration*, std::string, const server_request& Server_Request);
+	void	createResponse(server_configuration*, std::string, const server_request& Server_Request, int IdSession);
 	void	delete_dir(const char * path);
 	std::string	list_dir(std::string path);
-	std::string	addHeader(std::string statusMsg, std::pair<std::string, std::string> statusContent, const server_request& Server_Request, server_configuration *server);
+	std::string	addHeader(std::string statusMsg, std::pair<std::string, std::string> statusContent, const server_request& Server_Request, server_configuration *server, int IdSession);
 	std::string	addBody(std::string body);
 	int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI);
