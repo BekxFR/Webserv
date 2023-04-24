@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 17:58:54 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/24 18:05:00 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -394,7 +394,7 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 	return (0);
 }
 
-void	server_response::todo(const server_request& Server_Request, int conn_sock, server_configuration *server)
+void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
 	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
 		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
@@ -438,69 +438,67 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	
 	/*	Dans les fonctions ci-dessous, je recupere des path et ensuite je supprime les double / si necessaire*/
 	std::string RealPath;
-	RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
-	while (RealPath.find("//") != std::string::npos)
-		RealPath = RealPath.erase(RealPath.find("//"), 1);
 	std::string RealPathIndex;
-	RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
-	while (RealPathIndex.find("//") != std::string::npos)
-		RealPathIndex = RealPathIndex.erase(RealPathIndex.find("//"), 1);
 	std::string PathToStore;
-	PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
-	while (PathToStore.find("//") != std::string::npos)
-		PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
-	if (0)
-	{
-		std::cout << "RealPath : " << RealPath << std::endl;
-		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
-		std::cout << "PathToStore : " << PathToStore << std::endl;
-	}
-	/*Ensuite, on check si c'est le path donné est un directory ou non.
-	Une fosis que l'on sait cela, on peut renvoyer un index ou 
-	un message erreur */
-	struct stat path_info;
-	bool dir;
 	std::string FinalPath;
-	if (stat(RealPath.c_str(), &path_info) != 0) {
-		/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
-		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
-		_status_code = 404;
-		// std::cout << " BOOL FALSE" << std::endl;
-    }
-	else
+	if (_status_code == 200)
 	{
-		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
-		C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
-		dir = S_ISDIR(path_info.st_mode);
-		
-		// std::cout << " BOOL TRUE is_dir " << dir << std::endl;
-		// std::cout << " BOOL TEST " << RealPath.at(RealPath.size() - 1) << std::endl;
-		if (dir && RealPath.at(RealPath.size() - 1) != '/')
+		RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+		while (RealPath.find("//") != std::string::npos)
+			RealPath = RealPath.erase(RealPath.find("//"), 1);
+		RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+		while (RealPathIndex.find("//") != std::string::npos)
+			RealPathIndex = RealPathIndex.erase(RealPathIndex.find("//"), 1);
+		PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+		while (PathToStore.find("//") != std::string::npos)
+			PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
+		if (0)
 		{
-			// std::cout << " BOOL 404 " << dir << std::endl;
+			std::cout << "RealPath : " << RealPath << std::endl;
+			std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
+			std::cout << "PathToStore : " << PathToStore << std::endl;
+		}
+		/*Ensuite, on check si c'est le path donné est un directory ou non.
+		Une fosis que l'on sait cela, on peut renvoyer un index ou 
+		un message erreur */
+		struct stat path_info;
+		bool dir;
+		if (stat(RealPath.c_str(), &path_info) != 0) {
+			/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
+			Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 			_status_code = 404;
-		}
-		else if (dir)
-		{
-			// std::cout << " BOOL INDEX " << dir << std::endl;
-			FinalPath = RealPathIndex;
-		}
+			// std::cout << " BOOL FALSE" << std::endl;
+    	}
 		else
 		{
-			// std::cout << " BOOL DIR " << dir << std::endl;
-			FinalPath = RealPath;
+			/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
+			C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
+			dir = S_ISDIR(path_info.st_mode);
+
+			// std::cout << " BOOL TRUE is_dir " << dir << std::endl;
+			// std::cout << " BOOL TEST " << RealPath.at(RealPath.size() - 1) << std::endl;
+			if (dir && RealPath.at(RealPath.size() - 1) != '/')
+			{
+				// std::cout << " BOOL 404 " << dir << std::endl;
+				_status_code = 404;
+			}
+			else if (dir)
+			{
+				// std::cout << " BOOL INDEX " << dir << std::endl;
+				FinalPath = RealPathIndex;
+			}
+			else
+			{
+				// std::cout << " BOOL DIR " << dir << std::endl;
+				FinalPath = RealPath;
+			}
 		}
+		// std::cout << "FinalPath : " << FinalPath << std::endl;
+		/************************************************/
 	}
-	// std::cout << "FinalPath : " << FinalPath << std::endl;
-	/************************************************/
-
+	else
+		FinalPath = "SI IL PREND CETTE VALEUR, ALORS IL NE SERA PAS UTILISE";
 	
-
-	
-	// std::cout << "status code 2 : " << _status_code << std::endl;
-	/* si ya un index ds le dossier ou je*/
-	/*********************************************/
-	// std::cout << "e6" << std::endl;
 	
 	enum imethod {GET, POST, DELETE};
 	std::stringstream response;

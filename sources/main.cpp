@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 11:53:21 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/24 18:05:27 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	// std::cout << "e1.1" << std::endl;
 	server_response ServerResponse(GoodServerConf->getStatusCode());
 	// std::cout << "e1.2" << std::endl;
-	ServerResponse.todo(*ServerRequest, conn_sock, GoodServerConf);
+	ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf);
 	// std::cout << "e2" << std::endl;
 	delete ServerRequest;
 }

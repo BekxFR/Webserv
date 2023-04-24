@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 17:41:39 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/24 18:04:50 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ class server_response
 	~server_response();
 	server_response &operator=(server_response const &obj);
 
-	void	todo(const server_request& Server_Request, int conn_sock, server_configuration* Root);
+	void	SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration* Root);
 	void	createResponse(server_configuration*, std::string, const server_request& Server_Request, int IdSession);
 	void	delete_dir(const char * path);
 	std::string	list_dir(std::string path);
