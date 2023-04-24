@@ -14,6 +14,7 @@ def list_files():
         if not f.startswith("."):
             # Ajoute un élément de liste avec un lien hypertexte vers chaque fichier
             file_list += "<li><a href=\"" + f + "\">" + f + "</a></li>\n"
+        file_list += "<li><a href=\"/mnt/nfs/\">blabla</a></li>\n"
     file_list += "</ul>"
     # Retourne la liste de fichiers générée
     return file_list

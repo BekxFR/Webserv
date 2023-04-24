@@ -162,7 +162,7 @@ void	Cgi::exeCgi()
 	if (execve(_cmd[0], _cmd, _envp) == -1)
 	{
 		closePdes();
-		throw ExecveException();
+		exit(1);
 	}
 }
 

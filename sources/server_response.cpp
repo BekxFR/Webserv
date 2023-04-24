@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 13:20:16 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/24 17:16:20 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -475,6 +475,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
 	
+	static int	k = 0;
 	for (; n < 4; n++)
 	{
 		if (n != 3 && ftab[n] == Server_Request.getMethod()) // OK 
@@ -491,7 +492,6 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 				if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
 				{
 					std::cerr << _finalPath << std::endl;
-					std::cerr << "fichier existe pas et pas ./" << std::endl;
 					_status_code = 404;
 				}
 				else
@@ -506,16 +506,41 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 						_status_code = 403;
 					else if (_status_code == 200)
 					{
-						std::cout << "d0" << std::endl;
-						std::ifstream file(_finalPath.c_str());
-						if (!file.is_open())
+						if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end())
 						{
-							/* cela ne marche pas car il ne rentre pas mm si file est un dir*/
-							_status_code = 403;
+							std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
+							std::stringstream	ouai;
+							ouai << k;
+							_fileName = ".cgi-tmp.txt" + ouai.str();
+							k++;
+							if (!doCgi(_finalPath,server))
+							{
+								buffer << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
+								_content.clear();
+								std::ifstream	cgiContent(_fileName.c_str());
+								std::getline(cgiContent, _content, '\0');
+								cgiContent.close();
+								addLength();
+								buffer << _content << "\0";
+								_ServerResponse = buffer.str();
+								send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+								std::cerr << "ServerResponse = '" << _ServerResponse << "'" << std::endl;
+								break ;
+							}
 						}
 						else
 						{
-							buffer << file.rdbuf();
+							std::cout << "d0" << std::endl;
+							std::ifstream file(_finalPath.c_str());
+							if (!file.is_open())
+							{
+								/* cela ne marche pas car il ne rentre pas mm si file est un dir*/
+								_status_code = 403;
+							}
+							else
+							{
+								buffer << file.rdbuf();
+							}
 						}
 					}
 					_content = buffer.str();
@@ -673,20 +698,18 @@ void	server_response::addLength()
 	std::stringstream	l;
 	std::string	tmp = "Content-Length: ";
 
-	std::cerr << "Size du content = '" << _content.size() << "'" << std::endl;
-	if (_content.size() > 0)
-		l << _content.size() - (_content.find_first_of("\n\n") + 2);
+ 	if (_content.size() > 0)
+		l << _content.size() - (_content.find_first_of("\n\n") + 4); // on retire les \n et les retours a la ligne generees par le cgi
 	else
 		l << 0;
 	tmp += l.str();
 	tmp += "\r\n";
-	_content.insert(_content.find_first_of("\n") + 1, tmp);
+	_content.insert(0, tmp);
 }
 
 void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request)
 {
 	std::stringstream	response;
-	static int	i = 0;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
 	int	n = 0;
 	// std::cout << "status code Create Response " << _status_code << std::endl;
@@ -721,32 +744,8 @@ void	server_response::createResponse(server_configuration * server, std::string 
 			{
 				case 200:
 				{
-					if (server->getCgi().find("." + Server_Request.getType()) == server->getCgi().end())
-					{
-						response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request);
-						response << addBody(file);
-					}
-					else
-					{
-						std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
-						std::stringstream	ouai;
-						ouai << i;
-						_fileName = ".cgi-tmp.txt" + ouai.str();
-						i++;
-						if (!doCgi(_finalPath,server))
-						{
-							response << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
-							_content.clear();
-							std::ifstream	cgiContent(_fileName.c_str());
-							std::getline(cgiContent, _content, '\0');
-							std::cerr << "content = '" << _content << "'" << std::endl;
-							//response << "Content-Length: 135\n";
-							cgiContent.close();
-							addLength();
-							std::cout << "test : " <<  _content.size() << std::endl;
-							response << _content << "\0";
-						}
-					}
+					response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request);
+					response << addBody(file);
 					std::cerr << response.str() << std::endl;
 
 					break;
@@ -1098,11 +1097,14 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 		waitpid(cgi.getPid(), &status, 0);
 		if (WIFEXITED(status))
 		{
-			_status_code = 406;
-			status = WEXITSTATUS(status);
-			createResponse();
+			if (WEXITSTATUS(status) != 0)
+			{
+				_status_code = 406;
+				return (1);
+			}
+	//		status = WEXITSTATUS(status);
+			std::cerr << "EXIT STATUS = " << status << std::endl;
 		}
-		std::cerr << "EXIT STATUS = " << status << std::endl;
 		this->_cgiFd = -1;
 	}
 	catch (std::exception const &e)
