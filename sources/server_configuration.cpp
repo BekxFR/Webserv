@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 12:11:44 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/24 12:23:31 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,7 +155,7 @@ bool server_configuration::is_in_location(size_t conf_pos, std::string str)
 		return (0);
 }
 
-std::string server_configuration::findRoot()
+std::string server_configuration::findRoot() // PROTEGE
 {
 	size_t pos = 0;
 	while (is_in_location(_ConfigFile.find("root", pos + 1), _ConfigFile))
@@ -177,9 +177,14 @@ std::string server_configuration::findRoot()
 	return ("");
 }
 
-std::string server_configuration::findIndex()
+std::string server_configuration::findIndex() // PROTEGE
 {
-	size_t pos = _ConfigFile.find("index");
+	size_t pos = 0;
+	while (is_in_location(_ConfigFile.find("index", pos + 1), _ConfigFile))
+	{
+		pos = _ConfigFile.find("index", pos + 1);
+	}
+	pos = _ConfigFile.find("index", pos + 1);
 	if (pos != std::string::npos) {
 		pos += strlen("index");
 		std::string index = _ConfigFile.substr(pos + 1);
@@ -208,7 +213,7 @@ int server_configuration::fillCgi(size_t pos)
 	return (pos + 1);
 }
 
-void server_configuration::setCgi()
+void server_configuration::setCgi() // PROTEGEE
 {
 	// std::cout << "c-1\n" << _ConfigFile << std::endl;
 	size_t pos = 0;
@@ -254,8 +259,12 @@ void server_configuration::setErrorPage()
 	std::string	second;
 	std::string	file;
 
-	size_t pos = _ConfigFile.find("error_page");
-
+	size_t pos = 0;
+	while (is_in_location(_ConfigFile.find("error_page", pos + 1), _ConfigFile))
+	{
+		pos = _ConfigFile.find("error_page", pos + 1);
+	}
+	pos = _ConfigFile.find("error_page", pos + 1);
 	if (pos == std::string::npos)
 		return ;
 	pos += strlen("error_page");
@@ -330,8 +339,14 @@ std::vector<std::string> server_configuration::findHttpMethodAccepted()
 	std::string delimiter = " ;";
 	std::string methods;
 	size_t end_pos = 0;
-		
-	size_t pos = _ConfigFile.find("	allow_methods ");
+	
+	
+	size_t pos = 0;
+	while (is_in_location(_ConfigFile.find("	allow_methods ", pos + 1), _ConfigFile))
+	{
+		pos = _ConfigFile.find("	allow_methods ", pos + 1);
+	}
+	pos = _ConfigFile.find("	allow_methods ", pos + 1);
 	if (pos != std::string::npos) {
 		pos += strlen("	allow_methods ");
 		methods = _ConfigFile.substr(pos);
@@ -515,7 +530,12 @@ std::vector<int> server_configuration::findPort()
 
 size_t server_configuration::findClientMaxBodySize()
 {
-	size_t pos = _ConfigFile.find("client_max_body_size");
+	size_t pos = 0;
+	while (is_in_location(_ConfigFile.find("client_max_body_size", pos + 1), _ConfigFile))
+	{
+		pos = _ConfigFile.find("client_max_body_size", pos + 1);
+	}
+	pos = _ConfigFile.find("client_max_body_size", pos + 1);
 	if (pos != std::string::npos) {
 		pos += strlen("client_max_body_size");
 		std::string port = _ConfigFile.substr(pos + 1);
@@ -665,7 +685,8 @@ const char *	server_configuration::ErrorPageException::what() const throw()
 std::ostream& operator <<(std::ostream &out, server_configuration &ServConfig)
 {
 	out << "Server name : " << ServConfig.getServerName() \
-		<< "\nRoot : " << ServConfig.getRoot();
+		<< "\nRoot : " << ServConfig.getRoot() \
+		<< "\nIndex : " << ServConfig.getIndex();
 		for (size_t i = 0; i < ServConfig.getPort().size(); i++)
 			out << "\nPort : " << ServConfig.getPort()[i];
 		for (size_t i = 0; i < ServConfig.getHost().size(); i++)
