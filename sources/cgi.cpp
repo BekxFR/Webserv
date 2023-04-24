@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/24 13:17:05 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/24 19:24:26 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string filen): _status(0)
+Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string filen, server_request* request): _status(0), _request(request)
 {
 	_cmd = new char*[3];
 	_cmd[0] = &(cgi_path[0]);
@@ -30,9 +30,10 @@ Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::strin
 		_envp[i] = &((*it)[0]);
 	_envp[env.size()] = NULL;
 	_input_fd = input_fd;
+	_output_fd = -1;
 	_pid = -1;
 	_fileName = filen;
-	setPid();
+	_fp = NULL;
 }
 
 Cgi::~Cgi()
@@ -74,6 +75,7 @@ int	Cgi::getInputFd() const { return (_input_fd); }
 char**	Cgi::getCmd() const { return (_cmd); }
 char**	Cgi::getEnvp() const { return (_envp); }
 int	Cgi::getStatus() const { return (_status); }
+server_request*	Cgi::getRequest() const { return (_request); }
 
 void	Cgi::setPid()
 {
@@ -87,7 +89,7 @@ void	Cgi::setPid()
 void	Cgi::setPdes()
 {
 	if (pipe(_pdes) == -1)
-		throw PipeException();
+		exit (2);
 	dupping();
 }
 
@@ -128,13 +130,13 @@ void	Cgi::dupping()
 	std::cout << "filename in cgi = '" << _fileName << "'" << std::endl;
 	std::string filename(_fileName.c_str());
 
-	FILE* fp = fopen(filename.c_str(), "w");
-	if (fp == NULL)
+	_fp = fopen(filename.c_str(), "w");
+	if (_fp == NULL)
 		throw OpenException();
 
-	int fd = fileno(fp); // get file descriptor from file pointer
+	_output_fd = fileno(_fp); // get file descriptor from file pointer
 
-	if (dup2(fd, STDOUT_FILENO) == -1)
+	if (dup2(_output_fd, STDOUT_FILENO) == -1)
 		throw DupException();
 
 	close (_pdes[1]);
@@ -157,13 +159,22 @@ const char *	ExecveException::what() const throw()
 	return ("Execve Error!");
 }
 
+void DeleteServers(std::vector<server_configuration*> servers);
+void PrintServer(std::vector<server_configuration*> servers);
+
 void	Cgi::exeCgi()
 {
-	if (execve(_cmd[0], _cmd, _envp) == -1)
-	{
+	std::cerr << "oscour " << _request->getAllServers().size() << std::endl;
+//	if (execve(_cmd[0], _cmd, _envp) == -1)
+//	{
+		DeleteServers(_request->getAllServers());
 		closePdes();
-		exit(1);
-	}
+		if (_output_fd != -1)
+			close(_output_fd);
+		delete(_request);
+		fclose(_fp);
+		exit (1);
+//	}
 }
 
 std::string	cgi_type(std::string const &type)

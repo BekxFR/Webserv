@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 11:50:38 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/24 19:01:47 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,10 @@ std::string	server_request::getConnectionType() const { return (_connectionType)
 std::string	server_request::getMimeType() const { return (_mimeType); }
 std::string	server_request::getContentType() const { return (_contentType); }
 std::string	server_request::getBody() const { return (_body); }
+std::vector<server_configuration*>&	server_request::getAllServers() { return (_allServers); }
+
+
+void	server_request::setAllServers(std::vector<server_configuration*> serv) { _allServers = serv; }
 
 unsigned long long server_request::getContentLength() const
 {

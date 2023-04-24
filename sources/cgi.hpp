@@ -6,13 +6,15 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:06 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/24 13:16:36 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/24 19:24:30 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CGI_HPP
 #define CGI_HPP
 
+#include "server_request.hpp"
+#include "server_response.hpp"
 #include <string>
 #include <cstring>
 #include <vector>
@@ -23,7 +25,7 @@
 class Cgi
 {
 	public:
-		Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string);
+		Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string, server_request * server);
 		Cgi(const Cgi & o);
 		~Cgi();
 
@@ -35,6 +37,7 @@ class Cgi
 		pid_t	getPid() const;
 		int	getInputFd() const;
 		int		getStatus() const;
+		server_request*	getRequest() const;
 		void	setStatus(int);
 		void	setPid();
 		void	setPdes();
@@ -49,8 +52,11 @@ class Cgi
 		std::string	_fileName;
 		pid_t	_pid;
 		int		_input_fd;
+		int		_output_fd;
+		FILE*	_fp;
 		int		_pdes[2];
 		int		_status;
+		server_request*	_request;
 
 
 		Cgi();

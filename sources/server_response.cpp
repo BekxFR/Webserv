@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 17:16:20 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/24 19:26:29 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1093,13 +1093,19 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	try
 	{
 		int status = 0;
-		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName);
+		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName, _req);
+		cgi.setPid();
 		waitpid(cgi.getPid(), &status, 0);
 		if (WIFEXITED(status))
 		{
-			if (WEXITSTATUS(status) != 0)
+			if (WEXITSTATUS(status) == 256)
 			{
 				_status_code = 406;
+				return (1);
+			}
+			else if (WEXITSTATUS(status) != 0)
+			{
+				_status_code = 500;
 				return (1);
 			}
 	//		status = WEXITSTATUS(status);
@@ -1109,6 +1115,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	}
 	catch (std::exception const &e)
 	{
+		std::cerr << e.what() << std::endl;
 		_status_code = 500;
 		return (1);
 	}

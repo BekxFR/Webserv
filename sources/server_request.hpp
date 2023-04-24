@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:29:37 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/13 14:20:08 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/24 19:00:39 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include "server_configuration.hpp"
 
 #define DEBUG 0
 
@@ -41,6 +42,7 @@ class server_request
 	std::string _contentType;
 	std::string _contentLength;
 	std::string _body;
+	std::vector<server_configuration*>	_allServers;
 
 	server_request();
 
@@ -64,9 +66,11 @@ class server_request
 	std::string	getContentType() const;
 	std::string	getBody() const;
 	unsigned long long getContentLength() const ;
+	std::vector<server_configuration*>&	getAllServers();
 	void request_parser();
 
 	void setType(std::string);
+	void	setAllServers(std::vector<server_configuration*>);
 };
 
 std::ostream& operator <<(std::ostream &out, server_request &ServRequest);

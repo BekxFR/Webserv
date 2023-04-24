@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 12:22:17 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/24 18:59:44 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ class server_configuration
 	std::vector<std::string>	_HttpMethodAccepted;
 	std::map<std::string, std::string>	_cgi;
 	std::vector<int> _Port;
-	std::vector<std::string> _Host;
+	std::vector<std::string>	_Host;
 	int			_StatusCode;
 	size_t		_ClientMaxBodySize;
 	std::map<std::string, std::pair<std::string, std::string> >	_ErrorPage;
