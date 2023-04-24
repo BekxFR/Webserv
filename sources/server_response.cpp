@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 17:54:11 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/24 17:58:54 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -402,6 +402,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		_status_code = 413;
 	/**********************************************************************/
 	
+	
 	/*	Ci-dessous, on genere un ID de session pour chaque nouvel utilisateur
 		et on verifie que si un ID est recu, c'est bien nous qui l'avons emis
 		pour renvoyer sinon une erreur 401 et un id_session a zero (a savoir 
@@ -413,16 +414,39 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	// std::cout << "id_session : " << id_session << std::endl;
 	/*********************************************************************/
 		
+		
+	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
+	car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
+	sur que le status code n'est pas modifié par la suite */
+	if (_status_code == 200)
+		_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
+	// std::cout << "STATUS isMethodAuthorised : " << _status_code << std::endl;
+	/********************************************/
 
 	
-	/*	Dans les fonctions ci-dessous, je recupere des path et ensuite je supprime les double / si necessaire */
-	std::string RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+	/*Si l'on se situe, ds une location et qu'il y a une HTTP redir alors
+	il faut pouvoir renvoyer la redir */
+	if (isRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) > 0)
+	{
+		std::stringstream response;
+			response << "HTTP/1.1 301 Moved Permanently\r\nLocation: " \
+			<< getRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) << "\r\n";
+			std::string response_str = response.str();
+			send(conn_sock, response_str.c_str() , response_str.size(), 0);
+	}
+	/*********************************************************************/
+	
+	/*	Dans les fonctions ci-dessous, je recupere des path et ensuite je supprime les double / si necessaire*/
+	std::string RealPath;
+	RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPath.find("//") != std::string::npos)
 		RealPath = RealPath.erase(RealPath.find("//"), 1);
-	std::string RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+	std::string RealPathIndex;
+	RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPathIndex.find("//") != std::string::npos)
 		RealPathIndex = RealPathIndex.erase(RealPathIndex.find("//"), 1);
-	std::string PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+	std::string PathToStore;
+	PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (PathToStore.find("//") != std::string::npos)
 		PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
 	if (0)
@@ -431,9 +455,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
 		std::cout << "PathToStore : " << PathToStore << std::endl;
 	}
-	/*************************************************************/
-
-	/*Ici, on check si c'est le path donné est un directory ou non.
+	/*Ensuite, on check si c'est le path donné est un directory ou non.
 	Une fosis que l'on sait cela, on peut renvoyer un index ou 
 	un message erreur */
 	struct stat path_info;
@@ -469,27 +491,11 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			FinalPath = RealPath;
 		}
 	}
-	
-	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
-	car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
-	sur que le status code n'est pas modifié par la suite */
-	if (_status_code == 200)
-		_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
-	// std::cout << "STATUS isMethodAuthorised : " << _status_code << std::endl;
-	/********************************************/
-	
 	// std::cout << "FinalPath : " << FinalPath << std::endl;
 	/************************************************/
-	/*Si l'on se situe, ds une location et qu'il y a une HTTP redir alors
-	il faut pouvoir renvoyer la redir */
-	if (isRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) > 0)
-	{
-		std::stringstream response;
-			response << "HTTP/1.1 301 Moved Permanently\r\nLocation: " \
-			<< getRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) << "\r\n";
-			std::string response_str = response.str();
-			send(conn_sock, response_str.c_str() , response_str.size(), 0);
-	}
+
+	
+
 	
 	// std::cout << "status code 2 : " << _status_code << std::endl;
 	/* si ya un index ds le dossier ou je*/
