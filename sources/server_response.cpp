@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/23 20:58:26 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/24 17:54:11 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -346,23 +346,9 @@ std::string server_response::getRedir(std::string MethodUsed, server_configurati
 	return ("CE RETURN NE SERA JAMAIS EMPRUNTE");
 }
 
-void	server_response::todo(const server_request& Server_Request, int conn_sock, server_configuration *server)
+int		server_response::getIdSessionOrSetError401(const server_request& Server_Request)
 {
-	// (void) conn_sock;
-	// std::cout << "SERVER CONFIG" << std::endl;
-	// std::cout << *server << std::endl;
-	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
-		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
-	if (Server_Request.getContentLength() > server->getClientMaxBodySize())
-	{
-		_status_code = 413;
-	}
-	
-	/**********************************************************************/
-	/*	Ci-dessous, on genere un ID de session pour chaque nouvel utilisateur
-		et on verifie que si un ID est recu, c'est bien nous qui l'avons emis
-		pour renvoyer sinon une erreur 401 (a savoir default d authorisation)*/
-	int random_num = 0;
+	int id_session = 0;
 	static std::vector<int> SessionIdGiven;
 
 	if (Server_Request.getServerRequest().find("IdSession=") == std::string::npos)
@@ -370,14 +356,13 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		// std::ofstream outfile(".session_management.txt", std::ios::app);
 		std::ofstream outfile(".session_management.txt", std::ios::out | std::ios::app);
 		srand(time(NULL));
-		random_num = rand() % INT_MAX;
-		// std::cout << "SESSION ID GENERATED : " << random_num << std::endl;
-		SessionIdGiven.push_back(random_num);
-		outfile << random_num << std::endl;
+		id_session = rand() % INT_MAX;
+		// std::cout << "SESSION ID GENERATED : " << id_session << std::endl;
+		SessionIdGiven.push_back(id_session);
+		outfile << id_session << std::endl;
 		outfile.close();
+		return (id_session);
     }
-		// response << "Set-Cookie: " << "IdSession=" <<  << "\n"; // tentative d'implementation des cookies
-	// }
 	else if (Server_Request.getServerRequest().find("IdSession="))
 	{
 		int pos = Server_Request.getServerRequest().find("IdSession=") + strlen("IdSession=");
@@ -406,12 +391,29 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			infile.close();
 		}
 	}
-	// std::cout << "_status_code : " << _status_code << std::endl;
+	return (0);
+}
 
+void	server_response::todo(const server_request& Server_Request, int conn_sock, server_configuration *server)
+{
+	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
+		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
+	if (_status_code == 200 && Server_Request.getContentLength() > server->getClientMaxBodySize())
+		_status_code = 413;
+	/**********************************************************************/
+	
+	/*	Ci-dessous, on genere un ID de session pour chaque nouvel utilisateur
+		et on verifie que si un ID est recu, c'est bien nous qui l'avons emis
+		pour renvoyer sinon une erreur 401 et un id_session a zero (a savoir 
+		default d authorisation)*/
+	int id_session = 0;
+	if (_status_code == 200)
+		id_session = getIdSessionOrSetError401(Server_Request);
+	// std::cout << "_status_code : " << _status_code << std::endl;
+	// std::cout << "id_session : " << id_session << std::endl;
 	/*********************************************************************/
 		
-	enum imethod {GET, POST, DELETE};
-	std::stringstream response;
+
 	
 	/*	Dans les fonctions ci-dessous, je recupere des path et ensuite je supprime les double / si necessaire */
 	std::string RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
@@ -467,6 +469,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			FinalPath = RealPath;
 		}
 	}
+	
 	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
 	car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
 	sur que le status code n'est pas modifié par la suite */
@@ -492,9 +495,11 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	/* si ya un index ds le dossier ou je*/
 	/*********************************************/
 	// std::cout << "e6" << std::endl;
+	
+	enum imethod {GET, POST, DELETE};
+	std::stringstream response;
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
-	
 	for (; n < 4; n++)
 	{
 		if (n != 3 && ftab[n] == Server_Request.getMethod()) // OK 
@@ -539,7 +544,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			}
 			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
 			// std::cout << "CREATE RESPONSE 200 : " << _status_code << std::endl;
-			createResponse(server, _content, Server_Request, random_num);
+			createResponse(server, _content, Server_Request, id_session);
 			// std::cout << std::endl << "SERVER RESPONSE CONSTRUITE -> " << std::endl << _ServerResponse << std::endl << std::endl;
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
 			// std::cerr << "\nREPONSE SEND :\n";
@@ -617,13 +622,13 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 			this->delete_dir(FinalPath.c_str());
 			if (_status_code == 200)
 				_content = server->getErrorPage()[STATUS200].second;
-			createResponse(server, _content, Server_Request, random_num);
+			createResponse(server, _content, Server_Request, id_session);
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
 			break ;
 		}
 		default :
 		{
-			response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, random_num);
+			response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, id_session);
 			response << addBody(server->getErrorPage()[STATUS500].second);
 			_ServerResponse = response.str();
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);

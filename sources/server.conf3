@@ -3,6 +3,7 @@ server {
 		listen 8083;
 		listen [::]:8080;
 
+		root ./site;
 		index indRex.html;
 		client_max_body_size 10;
 		error_page 404 site/42.jpg 405 error.html 406 e;
@@ -41,7 +42,7 @@ server {
 				deny all;
 			}
 			index indexr.html;
-			root ./site/te;
+			root ./site/;
 			autoindex off;
 		}
 

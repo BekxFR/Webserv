@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/23 18:05:40 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/24 17:41:39 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@ class server_response
 	std::string getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI);
+	int	getIdSessionOrSetError401(const server_request& Server_Request);
 
 	std::string getRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	// Définition de la méthode pour obtenir le corps de la réponse
