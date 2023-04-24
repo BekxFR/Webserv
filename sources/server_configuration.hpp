@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/23 14:49:33 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/24 11:51:04 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,10 +105,17 @@ class server_configuration
 		public:
 			virtual const char *	what() const throw();
 	};
+
+	class RootException: public std::exception {
+		public:
+			virtual const char *	what() const throw();
+	};
+	
 	class ErrorPageException: public std::exception {
 		public:
 			virtual const char *	what() const throw();
 	};
+	
 	size_t getClientMaxBodySize();
 
 

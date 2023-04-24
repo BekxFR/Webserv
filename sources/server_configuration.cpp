@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/23 15:37:58 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/24 12:11:44 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,17 +109,28 @@ bool server_configuration::is_in_location(size_t conf_pos, std::string str)
 			{
 				// std::cout << "c1" << std::endl;
 				pos += strlen("location /"); 
-				pos = str.find_first_of("{", pos); 
+				pos = str.find_first_of("{", pos);
 				if (pos == std::string::npos) 
 					return 0;
 				end_loc = str.find_first_of("{}", pos + 1);
-				int j = 0;
+				if (end_loc == std::string::npos) 
+					return 0;
+				int i = 0;;
 				while (str[end_loc] == '{')
 				{
-					// std::cout << "c2" << std::endl;
-					j++;
+					i++;
+					// std::cout << "c1 : " << str.substr(end_loc, 10) << std::endl;
 					end_loc = str.find_first_of("{}", end_loc + 1);
+					// std::cout << "c2 : " << str.substr(end_loc, 10) << std::endl;
 				}
+				while (str[end_loc] == '}' && i > 0)
+				{
+					// std::cout << "c3 : " << str.substr(end_loc, 10) << std::endl;
+					i--;
+					end_loc = str.find_first_of("{}", end_loc + 1);
+					// std::cout << "c4 : " << str.substr(end_loc, 10) << std::endl;
+				}
+				// std::cout << "c5" << std::endl;
 				if (end_loc == std::string::npos)
 				{
 					// std::cout << "NO END LOC" << std::endl;
@@ -146,7 +157,13 @@ bool server_configuration::is_in_location(size_t conf_pos, std::string str)
 
 std::string server_configuration::findRoot()
 {
-	size_t pos = _ConfigFile.find("root");
+	size_t pos = 0;
+	while (is_in_location(_ConfigFile.find("root", pos + 1), _ConfigFile))
+	{
+		pos = _ConfigFile.find("root", pos + 1);
+		// std::cout << "ROOT TEST : " <<_ConfigFile.substr(pos, 10) << std::endl;
+	}
+	pos = _ConfigFile.find("root", pos + 1);
 	if (pos != std::string::npos) {
 		pos += strlen("root");
 		std::string root = _ConfigFile.substr(pos + 1);
@@ -155,6 +172,8 @@ std::string server_configuration::findRoot()
 			return (root.substr(0, space_pos));
 		}
 	}
+	else
+		throw RootException();
 	return ("");
 }
 
@@ -631,6 +650,11 @@ std::string server_configuration::getDirectoryListing() { return (_DirectoryList
 const char *	server_configuration::CgiException::what() const throw()
 {
 	return ("CGI parsing error\n");
+}
+
+const char *	server_configuration::RootException::what() const throw()
+{
+	return ("Root parsing error\n");
 }
 
 const char *	server_configuration::ErrorPageException::what() const throw()
