@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 19:16:06 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/24 13:20:16 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -673,8 +673,9 @@ void	server_response::addLength()
 	std::stringstream	l;
 	std::string	tmp = "Content-Length: ";
 
+	std::cerr << "Size du content = '" << _content.size() << "'" << std::endl;
 	if (_content.size() > 0)
-		l << _content.size() - _content.find_first_of("\n");
+		l << _content.size() - (_content.find_first_of("\n\n") + 2);
 	else
 		l << 0;
 	tmp += l.str();
@@ -685,6 +686,7 @@ void	server_response::addLength()
 void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request)
 {
 	std::stringstream	response;
+	static int	i = 0;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
 	int	n = 0;
 	// std::cout << "status code Create Response " << _status_code << std::endl;
@@ -727,14 +729,21 @@ void	server_response::createResponse(server_configuration * server, std::string 
 					else
 					{
 						std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
+						std::stringstream	ouai;
+						ouai << i;
+						_fileName = ".cgi-tmp.txt" + ouai.str();
+						i++;
 						if (!doCgi(_finalPath,server))
 						{
 							response << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
 							_content.clear();
-							std::ifstream	cgiContent(".cgi-tmp.txt");
+							std::ifstream	cgiContent(_fileName.c_str());
 							std::getline(cgiContent, _content, '\0');
+							std::cerr << "content = '" << _content << "'" << std::endl;
+							//response << "Content-Length: 135\n";
 							cgiContent.close();
 							addLength();
+							std::cout << "test : " <<  _content.size() << std::endl;
 							response << _content << "\0";
 						}
 					}
@@ -1021,6 +1030,10 @@ std::string	itos(int nb)
 	convert << nb;
 	return (convert.str());
 }
+#include <sys/types.h>
+#include <sys/wait.h>
+
+
 
 int server_response::doCgi(std::string toexec, server_configuration * server) // envoyer path du cgi
 {
@@ -1080,7 +1093,16 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	}
 	try
 	{
-		Cgi cgi(cgiPath, toexec, _env, _cgiFd);
+		int status = 0;
+		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName);
+		waitpid(cgi.getPid(), &status, 0);
+		if (WIFEXITED(status))
+		{
+			_status_code = 406;
+			status = WEXITSTATUS(status);
+			createResponse();
+		}
+		std::cerr << "EXIT STATUS = " << status << std::endl;
 		this->_cgiFd = -1;
 	}
 	catch (std::exception const &e)

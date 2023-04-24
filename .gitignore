@@ -6,3 +6,4 @@ dir.sh
 *.o
 *.d
 webserv
+.cgi*

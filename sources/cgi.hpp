@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:06 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/21 14:44:17 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/24 13:16:36 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 class Cgi
 {
 	public:
-		Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd);
+		Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string);
 		Cgi(const Cgi & o);
 		~Cgi();
 
@@ -35,6 +35,7 @@ class Cgi
 		pid_t	getPid() const;
 		int	getInputFd() const;
 		int		getStatus() const;
+		void	setStatus(int);
 		void	setPid();
 		void	setPdes();
 		void	dupping();
@@ -45,6 +46,7 @@ class Cgi
 	private:
 		char**	_cmd;
 		char**	_envp;
+		std::string	_fileName;
 		pid_t	_pid;
 		int		_input_fd;
 		int		_pdes[2];

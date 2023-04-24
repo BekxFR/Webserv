@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/21 15:44:20 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/24 13:17:05 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd): _status(0)
+Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string filen): _status(0)
 {
 	_cmd = new char*[3];
 	_cmd[0] = &(cgi_path[0]);
@@ -31,6 +31,7 @@ Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::strin
 	_envp[env.size()] = NULL;
 	_input_fd = input_fd;
 	_pid = -1;
+	_fileName = filen;
 	setPid();
 }
 
@@ -107,6 +108,11 @@ void	Cgi::print() const
 		printf("envp = '%s'\n", _envp[i]);
 }
 
+void	Cgi::setStatus(int s)
+{
+	_status = s;
+}
+
 const char *	DupException::what() const throw()
 {
 	return ("Dup Error!");
@@ -119,7 +125,8 @@ const char *	OpenException::what() const throw()
 
 void	Cgi::dupping()
 {
-	std::string filename(".cgi-tmp.txt");
+	std::cout << "filename in cgi = '" << _fileName << "'" << std::endl;
+	std::string filename(_fileName.c_str());
 
 	FILE* fp = fopen(filename.c_str(), "w");
 	if (fp == NULL)
@@ -157,10 +164,6 @@ void	Cgi::exeCgi()
 		closePdes();
 		throw ExecveException();
 	}
-	waitpid(_pid, &_status, 0);
-	if (WIFEXITED(_status))
-		_status = WEXITSTATUS(_status);
-	std::cerr << "EXIT STATUS = " << _status << std::endl;
 }
 
 std::string	cgi_type(std::string const &type)

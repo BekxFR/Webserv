@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 19:02:00 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/24 13:14:48 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ class server_response
 	size_t	_contentLength;
 	std::string	_ServerResponse;
 	std::string	_finalPath;
+	std::string	_fileName;
 	std::vector<std::string>	_env;
 	server_request*	_req;
 	std::map<std::string, std::string> _contentType;
