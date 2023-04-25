@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 19:55:49 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/25 20:00:13 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,8 +183,8 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		if (PostContent.size() >= ContentSize)
 		{
 			std::cout << "c2.1" << std::endl;
-			ServerResponse.SendingPostResponse(*ServerRequest, conn_sock, GoodServerConf, PostContent, );
-			ppsting = false;
+			ServerResponse.SendingPostResponse(*ServerRequest, conn_sock, GoodServerConf, PostContent, filename);
+			posting = false;
 		}
 	}
 	else

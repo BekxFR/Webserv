@@ -1,0 +1,6 @@
+------WebKitFormBoundaryshbDhyAgdS28gUBS
+Content-Disposition: form-data; name="image"; filename="teSTEUR.txt"
+Content-Type: text/plain
+
+TEST
+------WebKitFormBoundaryshbDhyAgdS28gUBS--

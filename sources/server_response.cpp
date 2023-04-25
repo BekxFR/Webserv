@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 19:41:42 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/25 20:34:29 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -405,57 +405,75 @@ std::string getFileName(std::string FinalPath)
 	return (FinalPath.substr(pos + 1));
 }
 
-void	server_response::SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent)
+void	server_response::SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent, std::string filename)
 {
 	(void)Server_Request;
 	(void)conn_sock;
 	(void)server;
 	(void)PostContent;
+	(void)filename;
+	std::cout << "\n\nTU Y ES" << std::endl;
 	// il faudra faire en sorte que ca vienne la le nombre de fois necessaire
-	// std::string PostContent ;
-	// bool posting;
-	// unsigned long long ContentSize; 
-	// std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
 
-	// if (Server_Request.getMethod() == "POST")
-	// {
-	// 	posting = true;
-	// 	ContentSize = Server_Request.getContentLength();
-	// 	return ;
-	// }
+	// std::ifstream file(filename.c_str(), std::ifstream::binary);
 	
-	// while (PostContent.size() < ContentSize && posting)
-	// {
-	// 	PostContent =+ Server_Request.getContent();
-	// }
+	// en dessous ca vient apres, il faut d'abord mettre les donnees ds un fichier
+	std::ofstream outputFile(".uploadtmp", std::ios::binary);
+	// std::ofstream outputFile(filename.c_str(), std::ios::binary); // OK 1
+
+
+			// std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
+			// // std::stringstream buffer;
+			// std::filebuf* pbuf = file.rdbuf();
+			// std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
+			// pbuf->pubseekpos (0,file.in);
+			// // std::cout << "\nC2\n" << std::endl;
+			// char *buffer= new char[size];
+			// pbuf->sgetn(buffer, size);
+			// file.close();
+			// std::string content(buffer, size);
+
+	outputFile << PostContent;
+	outputFile.close();
+
+	std::ifstream input_file(".uploadtmp", std::ios::binary);
+    std::ofstream output_file(filename.c_str(), std::ios::binary);
+
+   int count = 0;
+   std::string tmpline;
+	while (getline(input_file, tmpline))
+	{
+		count++;
+	}
+	input_file.close();
+	input_file.open(".uploadtmp");
+	std::cout << "COUNT : " << count <<  std::endl;
+
+    if (!input_file.is_open() || !output_file.is_open()) {
+        std::cerr << "Failed to open file." << std::endl;
+    }
+
+    int line_number = 0;
+    std::string line;
+
+    while (std::getline(input_file, line)) {
+        ++line_number;
+        if (line_number <= 4 || line_number == count) {
+            continue; // skip first 4 lines and last line
+        }
+        output_file << line << std::endl;
+    }
+
+    input_file.close();
+    output_file.close();
+
 	
-	// // en dessous ca vient apres, il faut d'abord mettre les donnees ds un fichier
-	// std::ofstream outputFile("", std::ios::binary); // OK 1
-
-
 	
-	// 		std::string FileName = "./" + getFileName(FinalPath);
-	// 		// std::cout << "FILENAME : " << FileName << std::endl;
-	// 		std::string outfilename = FileName.c_str(); // PATH DU FICHIER DE SORTIE
-			
-	// 		std::ofstream outputFile(outfilename.c_str(), std::ios::binary); // OK 1
-
-	// 		std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
-	// 		// std::stringstream buffer;
-	// 		std::filebuf* pbuf = file.rdbuf();
-	// 		std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
-	// 		pbuf->pubseekpos (0,file.in);
-	// 		// std::cout << "\nC2\n" << std::endl;
-	// 		char *buffer= new char[size];
-	// 		pbuf->sgetn(buffer, size);
-	// 		file.close();
-	// 		std::string content(buffer, size);
-
-	// 		outputFile << content;
-	// 		outputFile.close();
-	// 		delete [] buffer;
-	// 		_ServerResponse = response.str();
-	// 		send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+	// std::string response = "HTTP/1.1 200 OK\r\n";
+	// send(conn_sock, response.c_str() , response.size(), 0);
+			// delete [] buffer;
+			// _ServerResponse = response.str();
+			// send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
 			// break ;
 }
 
@@ -657,6 +675,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			delete [] buffer;
 			_ServerResponse = response.str();
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+
 			break ;
 			/**
 			 If one or more resources has been created on the origin server as a result of successfully 

@@ -28,6 +28,7 @@ REQUETE
 GET /cgi-bin/POST.php HTTP/1.1
 Host: localhost:8080
 Connection: keep-alive
+Cache-Control: max-age=0
 sec-ch-ua: "Chromium";v="112", "Google Chrome";v="112", "Not:A-Brand";v="99"
 sec-ch-ua-mobile: ?0
 sec-ch-ua-platform: "Linux"
@@ -61,7 +62,7 @@ Version : HTTP/1.1
 Host : localhost:8080
 Connection : keep-alive
 MIME : text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
-Content Type : multipart/form-data; boundary=----WebKitFormBoundaryF9z6xtiNk5wAK13t
+Content Type : multipart/form-data; boundary=----WebKitFormBoundaryYpCWprO1kZ7gTJgA
 Content Length : 190
 
 Body : 
@@ -70,7 +71,7 @@ c1
 
 
 
-Méthode : ------WebKitFormBoundaryF9z6xtiNk5wAK13t
+Méthode : ------WebKitFormBoundaryYpCWprO1kZ7gTJgA
 Content-Disposition:
 Chemin : form-data;
 Type : html
@@ -82,7 +83,7 @@ Content Type : text/plain
 Content Length : 
 
 Body : TEST
-------WebKitFormBoundaryF9z6xtiNk5wAK13t--
+------WebKitFormBoundaryYpCWprO1kZ7gTJgA--
 
 
 c2
@@ -92,11 +93,15 @@ filename teSTEUR.txt
 PostContent.size() before : 0
 PostContent.size() after : 190
 TEST UPLOAD
-------WebKitFormBoundaryF9z6xtiNk5wAK13t
+------WebKitFormBoundaryYpCWprO1kZ7gTJgA
 Content-Disposition: form-data; name="image"; filename="teSTEUR.txt"
 Content-Type: text/plain
 
 TEST
-------WebKitFormBoundaryF9z6xtiNk5wAK13t--
+------WebKitFormBoundaryYpCWprO1kZ7gTJgA--
 
 c2.1
+
+
+TU Y ES
+COUNT : 6
