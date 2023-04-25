@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 18:05:27 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/25 16:48:43 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,10 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <netinet/in.h>
 #include <string.h>
 #include <iostream>
 #include <string>
 #include <sys/epoll.h>
-#include <iostream>
 #include <vector>
 #include <map>
 #include <iterator>
@@ -27,9 +25,7 @@
 #include <fcntl.h>
 #include <csignal>
 #include <utility>
-#include <arpa/inet.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
 
 #include "server_configuration.hpp"
 #include "server_response.hpp"
@@ -129,7 +125,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			request.append(buffer);
 		}
 	}
-	std::cout << "\n\nRequest :\n\n" << request << std::endl;
+	// std::cout << "\n\nRequest :\n\n" << request << std::endl;
 	server_request* ServerRequest = new server_request(request);
 	ServerRequest->request_parser();
 	// ici on a la requete qui est parsé, je peux donc trouver le bon et en envoyer qu'un
@@ -415,14 +411,6 @@ void PrintServer(std::vector<server_configuration*> servers)
 		std::cout << "Server " << i << ":" << std::endl;
 		std::cout << *server << std::endl;
 	}
-	
-	// ANOTHER WAY OF DOING IT USING ITERATOR
-	// for (std::vector<server_configuration*>::iterator it = servers.begin(); it != servers.end(); ++it)
-	// {
-	//     server_configuration* server = *it;
-	//     // std::cout << "Server " << std::distance(servers.begin(), it) << ":" << std::endl;
-	//     std::cout << *server << std::endl;
-	// }
 }
 
 std::vector<int> getPorts(std::vector<server_configuration*> servers)
@@ -476,7 +464,7 @@ int main(int argc, char const **argv)
 		signal(SIGINT, sigint_handler);
 
 		std::vector<server_configuration*> servers = SetupNewServers(argv[1]);
-		PrintServer(servers);
+		// PrintServer(servers);
 		StartServer(servers, getPorts(servers), getHosts(servers));
 		DeleteServers(servers);
 	}

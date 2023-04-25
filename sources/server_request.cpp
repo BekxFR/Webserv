@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/14 15:54:57 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/25 16:49:02 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,9 +173,9 @@ void server_request::request_parser()
 	if (body_start != body_end)
     	this->_body = _ServerRequest.substr(body_start + 4);
 
-		
+	
     // Afficher les résultats
-	if (0)
+	if (1)
 	{	
     std::cout << "\n\nMéthode : " << this->_method << std::endl;
     std::cout << "Chemin : " << this->_path << std::endl;
