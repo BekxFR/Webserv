@@ -12,91 +12,91 @@
 
 
 
-Méthode : POST
-Chemin : /lol/test.iso
-Type : iso
+Méthode : GET
+Chemin : /cgi-bin/POST.php
+Type : php
 Version : HTTP/1.1
 Host : localhost:8080
-Connection : 
-MIME : */*
+Connection : keep-alive
+MIME : text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
 Content Type : 
-Content Length : 0
+Content Length : 
 
 Body : 
 
 REQUETE
-POST /lol/test.iso HTTP/1.1
+GET /cgi-bin/POST.php HTTP/1.1
 Host: localhost:8080
-User-Agent: insomnia/2022.7.0
-Cookie: yummy_cookie=choco; my_cookie=123; Mathieu=Gruson; Path=/
-webserv:
-Accept: */*
-Content-Length: 0
+Connection: keep-alive
+sec-ch-ua: "Chromium";v="112", "Google Chrome";v="112", "Not:A-Brand";v="99"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9,fr;q=0.8
+Cookie: my_cookie=123; Path=/; Mathieu=Gruson; IdSession=1503634291; my_cookie=123; Path=/; Mathieu=Gruson
 
 
-BODY
 
+HEADER
 
-C2
-
-ER
-
-
-Méthode : POST
-Chemin : /lol/Bebepleure.mp4
-Type : mp4
-Version : HTTP/1.1
-Host : localhost:8080
-Connection : 
-MIME : */*
-Content Type : 
-Content Length : 0
-
-Body : 
-
-REQUETE
-POST /lol/Bebepleure.mp4 HTTP/1.1
-Host: localhost:8080
-User-Agent: insomnia/2022.7.0
-Cookie: yummy_cookie=choco; my_cookie=123; Mathieu=Gruson; Path=/
-webserv:
-Accept: */*
-Content-Length: 0
-
-
-BODY
-
-
-C2
-
+HTTP/1.1 200 OK
+Content-Type: text/html
+Set-Cookie: my_cookie=123
+Set-Cookie: Path=/
+Set-Cookie: Mathieu=Gruson
 
 
 
 Méthode : POST
-Chemin : /lol/Bebepleure.mp4
-Type : mp4
+Chemin : /cgi-bin/POST.php
+Type : php
 Version : HTTP/1.1
 Host : localhost:8080
-Connection : 
-MIME : */*
-Content Type : 
-Content Length : 0
+Connection : keep-alive
+MIME : text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Content Type : multipart/form-data; boundary=----WebKitFormBoundaryF9z6xtiNk5wAK13t
+Content Length : 190
 
 Body : 
 
-REQUETE
-POST /lol/Bebepleure.mp4 HTTP/1.1
-Host: localhost:8080
-User-Agent: insomnia/2022.7.0
-Cookie: yummy_cookie=choco; my_cookie=123; Mathieu=Gruson; Path=/
-webserv:
-Accept: */*
-Content-Length: 0
+c1
 
 
-BODY
+
+Méthode : ------WebKitFormBoundaryF9z6xtiNk5wAK13t
+Content-Disposition:
+Chemin : form-data;
+Type : html
+Version : name="image"; filename="teSTEUR.txt"
+Host : 
+Connection : 
+MIME : 
+Content Type : text/plain
+Content Length : 
+
+Body : TEST
+------WebKitFormBoundaryF9z6xtiNk5wAK13t--
 
 
-C2
+c2
+ContentSize : 190
+c2.0
+filename teSTEUR.txt
+PostContent.size() before : 0
+PostContent.size() after : 190
+TEST UPLOAD
+------WebKitFormBoundaryF9z6xtiNk5wAK13t
+Content-Disposition: form-data; name="image"; filename="teSTEUR.txt"
+Content-Type: text/plain
 
+TEST
+------WebKitFormBoundaryF9z6xtiNk5wAK13t--
 
+c2.1

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 17:56:19 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/25 19:41:42 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -405,6 +405,60 @@ std::string getFileName(std::string FinalPath)
 	return (FinalPath.substr(pos + 1));
 }
 
+void	server_response::SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent)
+{
+	(void)Server_Request;
+	(void)conn_sock;
+	(void)server;
+	(void)PostContent;
+	// il faudra faire en sorte que ca vienne la le nombre de fois necessaire
+	// std::string PostContent ;
+	// bool posting;
+	// unsigned long long ContentSize; 
+	// std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
+
+	// if (Server_Request.getMethod() == "POST")
+	// {
+	// 	posting = true;
+	// 	ContentSize = Server_Request.getContentLength();
+	// 	return ;
+	// }
+	
+	// while (PostContent.size() < ContentSize && posting)
+	// {
+	// 	PostContent =+ Server_Request.getContent();
+	// }
+	
+	// // en dessous ca vient apres, il faut d'abord mettre les donnees ds un fichier
+	// std::ofstream outputFile("", std::ios::binary); // OK 1
+
+
+	
+	// 		std::string FileName = "./" + getFileName(FinalPath);
+	// 		// std::cout << "FILENAME : " << FileName << std::endl;
+	// 		std::string outfilename = FileName.c_str(); // PATH DU FICHIER DE SORTIE
+			
+	// 		std::ofstream outputFile(outfilename.c_str(), std::ios::binary); // OK 1
+
+	// 		std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
+	// 		// std::stringstream buffer;
+	// 		std::filebuf* pbuf = file.rdbuf();
+	// 		std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
+	// 		pbuf->pubseekpos (0,file.in);
+	// 		// std::cout << "\nC2\n" << std::endl;
+	// 		char *buffer= new char[size];
+	// 		pbuf->sgetn(buffer, size);
+	// 		file.close();
+	// 		std::string content(buffer, size);
+
+	// 		outputFile << content;
+	// 		outputFile.close();
+	// 		delete [] buffer;
+	// 		_ServerResponse = response.str();
+	// 		send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+			// break ;
+}
+
 void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
 
@@ -509,6 +563,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	/************************************************/
 	
 	
+	
 	enum imethod {GET, POST, DELETE};
 	std::stringstream response;
 	int n = 0;
@@ -567,76 +622,51 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		}
 		case POST :
 		{
-			std::cout << "BODY\n" << Server_Request.getBody() << std::endl;
-			// std::string infilename = "./site/42.jpg";
-			// std::ifstream inputFile(infilename.c_str(), std::ios::binary);
-			// std::stringstream response1;
+			// std::cout << "BODY\n" << Server_Request.getBody() << std::endl;
+
 			std::string FileName = "./" + getFileName(FinalPath);
 			// std::cout << "FILENAME : " << FileName << std::endl;
 			std::string outfilename = FileName.c_str(); // PATH DU FICHIER DE SORTIE
 			
 			std::ofstream outputFile(outfilename.c_str(), std::ios::binary); // OK 1
 
-			// // Get the file size
-			// inputFile.seekg(0, std::ios::end);
-			// int fileSize = inputFile.tellg();
-			// inputFile.seekg(0, std::ios::beg);
-			
-			// // Read the contents of the file into a buffer
-			// std::vector<unsigned char> fileBuffer(fileSize);
-			// inputFile.read(reinterpret_cast<char*>(fileBuffer.data()), fileSize);
-			
-			// inputFile.close();
+			std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
+			// std::stringstream buffer;
+			std::filebuf* pbuf = file.rdbuf();
+			std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
+			pbuf->pubseekpos (0,file.in);
+			// std::cout << "\nC2\n" << std::endl;
+			char *buffer= new char[size];
+			pbuf->sgetn(buffer, size);
+			file.close();
+			std::string content(buffer, size);
 
-			// outputFile << reinterpret_cast<char*>(fileBuffer.data());
-			// outputFile.close();
-
-			/*OK 1*/
-            std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
-            // std::stringstream buffer;
-            std::filebuf* pbuf = file.rdbuf();
-            std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
-            pbuf->pubseekpos (0,file.in);
-			
-			
-			std::cout << "\nC2\n" << std::endl;
-            char *buffer= new char[size];
-            pbuf->sgetn(buffer, size);
-            file.close();
-            std::string content(buffer, size);
-			/*OK 1*/
-
-            // buffer << file.rdbuf();
-            // std::cout << "\nBUFFER = " << buffer.str() << "\r\n" << std::endl;
-            // std::string content = buffer.str();
-            response << "HTTP/1.1 200 OK\r\n";
+			response << "HTTP/1.1 200 OK\r\n";
 			
 			// response << _contentType.find(Server_Request.getType())->second;
 			response << "Content-Type: text/plain; charset=UTF-8\r\n";
 			// response << "content-Length: " << size << "\r\n";
 			response << "content-Length: " << 14 << "\r\n";
-            response << "\r\n";
+			response << "\r\n";
 			response << "Upload succeed" << '\0' << "\r\n";
-            // response << content << '\0' << "\r\n";
+			// response << content << '\0' << "\r\n";
 			outputFile << content;
 			outputFile.close();
-            // }
-            // response << "Hello world!\r\n";
-            std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
-            std::cout << buffer << std::endl;
+			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
+			// std::cout << buffer << std::endl;
 			delete [] buffer;
 			_ServerResponse = response.str();
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-/**********************************************************************************/
-			// std::cout << "Successfully wrote to " << outfilename << std::endl;
-			// response1 << "HTTP/1.1 200 OK\r\n";
-			// response1 << "Content-Length: " << fileSize << "\r\n";
-			// response1 << "\r\n";
-			// response1.write(reinterpret_cast<char*>(fileBuffer.data()), fileSize);
-			// std::string response_str1 = response1.str();
-			// send(conn_sock, response_str1.c_str() , response_str1.size(), 0);
-
 			break ;
+			/**
+			 If one or more resources has been created on the origin server as a result of successfully 
+			 processing a POST request, the origin server SHOULD send a 201 (Created) response containing 
+			 a Location header field that provides an identifier for the primary resource created 
+			 (Section 10.2.2) and a representation that describes the status of the request while referring to 
+			 the new resource(s).
+			 https://httpwg.org/specs/rfc9110.html#POST => A LIRE
+			 * 
+			*/
 		}
 		case DELETE :
 		{
