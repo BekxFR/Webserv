@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 17:39:45 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/25 17:56:19 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -618,7 +618,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
             response << "\r\n";
 			response << "Upload succeed" << '\0' << "\r\n";
             // response << content << '\0' << "\r\n";
-			outputFile << content ;
+			outputFile << content;
 			outputFile.close();
             // }
             // response << "Hello world!\r\n";

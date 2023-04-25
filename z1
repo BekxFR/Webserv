@@ -13,8 +13,8 @@
 
 
 MÃ©thode : POST
-Chemin : /lol/42.jpg
-Type : jpg
+Chemin : /lol/test.iso
+Type : iso
 Version : HTTP/1.1
 Host : localhost:8080
 Connection : 
@@ -25,7 +25,7 @@ Content Length : 0
 Body : 
 
 REQUETE
-POST /lol/42.jpg HTTP/1.1
+POST /lol/test.iso HTTP/1.1
 Host: localhost:8080
 User-Agent: insomnia/2022.7.0
 Cookie: yummy_cookie=choco; my_cookie=123; Mathieu=Gruson; Path=/
@@ -39,4 +39,64 @@ BODY
 
 C2
 
-ÿØÿâÿÿICC_PROFILE
+ER
+
+
+MÃ©thode : POST
+Chemin : /lol/Bebepleure.mp4
+Type : mp4
+Version : HTTP/1.1
+Host : localhost:8080
+Connection : 
+MIME : */*
+Content Type : 
+Content Length : 0
+
+Body : 
+
+REQUETE
+POST /lol/Bebepleure.mp4 HTTP/1.1
+Host: localhost:8080
+User-Agent: insomnia/2022.7.0
+Cookie: yummy_cookie=choco; my_cookie=123; Mathieu=Gruson; Path=/
+webserv:
+Accept: */*
+Content-Length: 0
+
+
+BODY
+
+
+C2
+
+
+
+
+MÃ©thode : POST
+Chemin : /lol/Bebepleure.mp4
+Type : mp4
+Version : HTTP/1.1
+Host : localhost:8080
+Connection : 
+MIME : */*
+Content Type : 
+Content Length : 0
+
+Body : 
+
+REQUETE
+POST /lol/Bebepleure.mp4 HTTP/1.1
+Host: localhost:8080
+User-Agent: insomnia/2022.7.0
+Cookie: yummy_cookie=choco; my_cookie=123; Mathieu=Gruson; Path=/
+webserv:
+Accept: */*
+Content-Length: 0
+
+
+BODY
+
+
+C2
+
+
