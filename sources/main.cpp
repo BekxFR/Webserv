@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 19:02:35 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 12:32:06 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@
 #define MAX_EVENTS 10
 
 static std::vector<int> open_ports;
+volatile std::sig_atomic_t	g_code = 0;
 
 void sigint_handler(int signum)
 {

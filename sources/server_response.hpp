@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 19:26:56 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 11:58:24 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/epoll.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -35,7 +36,6 @@
 #include <filesystem>
 #include <errno.h>
 #include <iostream>
-#include <sys/stat.h>
 
 #include "server_configuration.hpp"
 #include "server_request.hpp"
@@ -92,6 +92,7 @@ class server_response
 	std::string	getPath() const { return (_finalPath); }
 	server_request*	getReq() const { return (_req); }
 	std::vector<std::string>	getEnv() const { return (_env); }
+	std::vector<std::string>&	getEnv() { return (_env); }
 	std::map<std::string, std::string>	getContentType() const { return (_contentType); }
 	// Définition de la méthode pour obtenir la réponse _ServerResponse
 	std::string get_ServerResponse() const { return _ServerResponse; }
@@ -100,6 +101,7 @@ class server_response
 	int	getCgiFd() const { return (_cgiFd); }
 	int getStatusCode() const { return _status_code; }
 	void		setStatusCode(int st) { _status_code = (st); }
+	std::string	getFileName()	{ return (_fileName); }
 
 	void		addType();
 	std::string	getType(std::string type);

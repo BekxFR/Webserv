@@ -6,12 +6,14 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 19:26:29 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 14:14:28 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server_response.hpp"
 # define DEBUG1 1
+
+extern volatile std::sig_atomic_t	g_code;
 
 server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _req(NULL)
 {
@@ -512,7 +514,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 							std::stringstream	ouai;
 							ouai << k;
 							_fileName = ".cgi-tmp.txt" + ouai.str();
-							k++;
+						//	k++;
 							if (!doCgi(_finalPath,server))
 							{
 								buffer << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
@@ -525,6 +527,7 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 								_ServerResponse = buffer.str();
 								send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
 								std::cerr << "ServerResponse = '" << _ServerResponse << "'" << std::endl;
+								std::remove(_fileName.c_str());
 								break ;
 							}
 						}
@@ -1029,10 +1032,6 @@ std::string	itos(int nb)
 	convert << nb;
 	return (convert.str());
 }
-#include <sys/types.h>
-#include <sys/wait.h>
-
-
 
 int server_response::doCgi(std::string toexec, server_configuration * server) // envoyer path du cgi
 {
@@ -1093,23 +1092,14 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	try
 	{
 		int status = 0;
-		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName, _req);
-		cgi.setPid();
+		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName);
 		waitpid(cgi.getPid(), &status, 0);
-		if (WIFEXITED(status))
+		std::cerr << "EXIT STATUS = " << g_code << std::endl;
+		if (g_code == 1)
 		{
-			if (WEXITSTATUS(status) == 256)
-			{
-				_status_code = 406;
-				return (1);
-			}
-			else if (WEXITSTATUS(status) != 0)
-			{
-				_status_code = 500;
-				return (1);
-			}
-	//		status = WEXITSTATUS(status);
-			std::cerr << "EXIT STATUS = " << status << std::endl;
+			g_code = 0;
+			_status_code = 500;
+			return (1);
 		}
 		this->_cgiFd = -1;
 	}

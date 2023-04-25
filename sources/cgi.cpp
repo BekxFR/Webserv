@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/24 19:24:26 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 14:15:42 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string filen, server_request* request): _status(0), _request(request)
+extern volatile std::sig_atomic_t	g_code;
+
+Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string filen): _status(0)
 {
 	_cmd = new char*[3];
 	_cmd[0] = &(cgi_path[0]);
@@ -32,14 +34,16 @@ Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::strin
 	_input_fd = input_fd;
 	_output_fd = -1;
 	_pid = -1;
+	_pdes[0] = -1;
+	_pdes[1] = -1;
 	_fileName = filen;
 	_fp = NULL;
+	setPid();
 }
 
 Cgi::~Cgi()
 {
-	delete [] _cmd;
-	delete [] _envp;
+	del();
 }
 
 Cgi::Cgi(const Cgi & o)
@@ -65,6 +69,8 @@ Cgi	&Cgi::operator=(Cgi const &o)
 	for (i = 0; o.getEnvp()[i]; i++)
 		_envp[i] = o.getEnvp()[i];
 	_envp[i + 1] = NULL;
+	_pdes[0] = o.getPdes()[0];
+	_pdes[1] = o.getPdes()[1];
 	_status = o.getStatus();
 	return (*this);
 }
@@ -77,19 +83,42 @@ char**	Cgi::getEnvp() const { return (_envp); }
 int	Cgi::getStatus() const { return (_status); }
 server_request*	Cgi::getRequest() const { return (_request); }
 
+
+void	Cgi::del()
+{
+	if (_cmd)
+		delete [] _cmd;
+	if (_envp)
+		delete [] _envp;
+	closePdes();
+	if (_output_fd != -1)
+		close(_output_fd);
+	if (_fp)
+		fclose(_fp);
+}
+
 void	Cgi::setPid()
 {
 	_pid = fork();
 	if (static_cast<int>(_pid) == -1)
+	{
+		del();
 		throw ForkException();
+	}
 	else if (static_cast<int>(_pid) == 0)
 		setPdes();
+	else
+		if (_input_fd != -1)
+			close(_input_fd);
 }
 
 void	Cgi::setPdes()
 {
 	if (pipe(_pdes) == -1)
-		exit (2);
+	{
+		del();
+		throw PipeException();
+	}
 	dupping();
 }
 
@@ -115,14 +144,29 @@ void	Cgi::setStatus(int s)
 	_status = s;
 }
 
-const char *	DupException::what() const throw()
+const char *	Cgi::DupException::what() const throw()
 {
 	return ("Dup Error!");
 }
 
-const char *	OpenException::what() const throw()
+const char *	Cgi::OpenException::what() const throw()
 {
 	return ("Open Error!");
+}
+
+const char *	Cgi::PipeException::what() const throw()
+{
+	return ("Pipe Error!");
+}
+
+const char *	Cgi::ForkException::what() const throw()
+{
+	return ("Fork Error!");
+}
+
+const char *	Cgi::ExecveException::what() const throw()
+{
+	return ("Execve Error!");
 }
 
 void	Cgi::dupping()
@@ -132,52 +176,35 @@ void	Cgi::dupping()
 
 	_fp = fopen(filename.c_str(), "w");
 	if (_fp == NULL)
+	{
+		del();
 		throw OpenException();
+	}
 
 	_output_fd = fileno(_fp); // get file descriptor from file pointer
 
 	if (dup2(_output_fd, STDOUT_FILENO) == -1)
+	{
+		del();
 		throw DupException();
+	}
 
 	close (_pdes[1]);
+	_pdes[1] = -1;
 	close (_pdes[0]);
+	_pdes[0] = -1;
 	exeCgi();
 }
 
-const char *	PipeException::what() const throw()
-{
-	return ("Pipe Error!");
-}
-
-const char *	ForkException::what() const throw()
-{
-	return ("Fork Error!");
-}
-
-const char *	ExecveException::what() const throw()
-{
-	return ("Execve Error!");
-}
-
-void DeleteServers(std::vector<server_configuration*> servers);
-void PrintServer(std::vector<server_configuration*> servers);
-
 void	Cgi::exeCgi()
 {
-	std::cerr << "oscour " << _request->getAllServers().size() << std::endl;
-//	if (execve(_cmd[0], _cmd, _envp) == -1)
-//	{
-		DeleteServers(_request->getAllServers());
-		closePdes();
-		if (_output_fd != -1)
-			close(_output_fd);
-		delete(_request);
-		fclose(_fp);
-		exit (1);
-//	}
+	if (execve(_cmd[0], _cmd, _envp) == -1)
+	{
+		g_code = 1;
+	}
 }
 
-std::string	cgi_type(std::string const &type)
+/*std::string	cgi_type(std::string const &type)
 {
 	enum	status { PHP, PYTHON, AUTRE};
 
@@ -219,7 +246,7 @@ std::string	cgi_type(std::string const &type)
 	}
 }
 
-/*int	main(int ac, char **av, char **envp)
+int	main(int ac, char **av, char **envp)
 {
 	if (ac != 2)
 		return (1);
