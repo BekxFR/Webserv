@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 17:32:52 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/25 17:39:45 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -611,14 +611,14 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
             // std::string content = buffer.str();
             response << "HTTP/1.1 200 OK\r\n";
 			
-            response << "content-Type: image/jpeg\r\n";
-			std << "TEST POST " << _contentType.find(Server_Request.getType())->second << std::endl;
-            // response << "Content-Type: text/plain; charset=UTF-8\r\n";
-            response << "content-Length: " << size << "\r\n";
+			// response << _contentType.find(Server_Request.getType())->second;
+			response << "Content-Type: text/plain; charset=UTF-8\r\n";
+			// response << "content-Length: " << size << "\r\n";
+			response << "content-Length: " << 14 << "\r\n";
             response << "\r\n";
-            response << content << '\0' << "\r\n";
+			response << "Upload succeed" << '\0' << "\r\n";
+            // response << content << '\0' << "\r\n";
 			outputFile << content ;
-			std::cout << "CONTENT\n" << content << std::endl;
 			outputFile.close();
             // }
             // response << "Hello world!\r\n";
