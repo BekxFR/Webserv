@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/24 19:24:26 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 12:28:02 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,8 +165,8 @@ void PrintServer(std::vector<server_configuration*> servers);
 void	Cgi::exeCgi()
 {
 	std::cerr << "oscour " << _request->getAllServers().size() << std::endl;
-//	if (execve(_cmd[0], _cmd, _envp) == -1)
-//	{
+	if (execve(_cmd[0], _cmd, _envp) == -1)
+	{
 		DeleteServers(_request->getAllServers());
 		closePdes();
 		if (_output_fd != -1)
@@ -174,7 +174,7 @@ void	Cgi::exeCgi()
 		delete(_request);
 		fclose(_fp);
 		exit (1);
-//	}
+	}
 }
 
 std::string	cgi_type(std::string const &type)
