@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/25 18:37:35 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 19:29:51 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::strin
 	_fileName = filen;
 	_output_fd = -1;
 	_fp = NULL;
-//	setPdes(); // actuellement on n'utilise pas les pdes donc ils sont //
+	//	setPdes(); // actuellement on n'utilise pas les pdes donc ils sont //
 	setPid();
 }
 
@@ -69,14 +69,6 @@ Cgi	&Cgi::operator=(Cgi const &o)
 	return (*this);
 }
 
-const int*	Cgi::getPdes() const { return (_pdes); }
-pid_t	Cgi::getPid() const { return (_pid); }
-int	Cgi::getInputFd() const { return (_input_fd); }
-char**	Cgi::getCmd() const { return (_cmd); }
-char**	Cgi::getEnvp() const { return (_envp); }
-int	Cgi::getStatus() const { return (_status); }
-server_request*	Cgi::getRequest() const { return (_request); }
-
 void	Cgi::setStatus(int s)
 {
 	_status = s;
@@ -97,11 +89,11 @@ void	Cgi::del()
 
 void	Cgi::setPdes()
 {
-//	if (pipe(_pdes) == -1)
-//	{
-//		del();
-//		throw PipeException();
-//	}
+	//	if (pipe(_pdes) == -1)
+	//	{
+	//		del();
+	//		throw PipeException();
+	//	}
 }
 
 void	Cgi::setPid()
@@ -144,7 +136,7 @@ void	Cgi::print() const
 
 void	Cgi::dupping()
 {
-//	std::cout << "filename in cgi = '" << _fileName << "'" << std::endl;
+	//	std::cout << "filename in cgi = '" << _fileName << "'" << std::endl;
 	_fp = fopen(_fileName.c_str(), "w"); // on essaie d'ouvrir le fichier de sortie
 	if (_fp == NULL)
 	{
@@ -168,36 +160,11 @@ void	Cgi::dupping()
 		g_code = 1;
 		return ;
 	}
-//	close (_pdes[1]);
-//	_pdes[1] = -1;
-//	close (_pdes[0]);
-//	_pdes[0] = -1;
+	//	close (_pdes[1]);
+	//	_pdes[1] = -1;
+	//	close (_pdes[0]);
+	//	_pdes[0] = -1;
 
 	if (execve(_cmd[0], _cmd, _envp) == -1) // si execve rate, on laisse passer pour appeler les destructeurs mais en changeant le code global pour sortir une 500
 		g_code = 1;
-}
-
-const char *	Cgi::DupException::what() const throw()
-{
-	return ("Dup Error!");
-}
-
-const char *	Cgi::OpenException::what() const throw()
-{
-	return ("Open Error!");
-}
-
-const char *	Cgi::PipeException::what() const throw()
-{
-	return ("Pipe Error!");
-}
-
-const char *	Cgi::ForkException::what() const throw()
-{
-	return ("Fork Error!");
-}
-
-const char *	Cgi::ExecveException::what() const throw()
-{
-	return ("Execve Error!");
 }

@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/06 13:07:31 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/25 18:45:51 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 19:25:15 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,10 @@ class	ErrorCorresp
 		std::map<std::string, std::string>	getCorresp();
 
 	private:
+		std::map<std::string, std::string>	_Corresp;
+
 		ErrorCorresp(const ErrorCorresp &);
 		ErrorCorresp& operator=(const ErrorCorresp &);
-		std::map<std::string, std::string>	_Corresp;
 };
 
 #endif

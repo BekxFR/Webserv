@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/04 17:08:06 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 12:23:18 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 19:29:29 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,12 @@ server_location_configuration::server_location_configuration()
 }
 
 server_location_configuration::server_location_configuration(std::string location_conf) :
-_HttpMethodAccepted(findHttpMethodAccepted(location_conf)),
-_HttpRedirection(findHttpRedirection(location_conf)),
-_Root(findRoot(location_conf)),
-_DirectoryListing(findDirectoryListing(location_conf)),
-_DirectoryRequest(findDirectoryRequest(location_conf)),
-_UploadStore(findUploadStore(location_conf))
+	_HttpRedirection(findHttpRedirection(location_conf)),
+	_Root(findRoot(location_conf)),
+	_DirectoryListing(findDirectoryListing(location_conf)),
+	_DirectoryRequest(findDirectoryRequest(location_conf)),
+	_UploadStore(findUploadStore(location_conf)),
+	_HttpMethodAccepted(findHttpMethodAccepted(location_conf))
 {
 	setCgi(location_conf);
 	if (DEBUG)
@@ -63,7 +63,7 @@ std::vector<std::string> server_location_configuration::findHttpMethodAccepted(s
 	std::vector<std::string> MethodAccepted;
 	std::string delimiter = " ";
 	std::string methods;
-	
+
 	size_t pos = location_conf.find("limit_except");
 	if (pos != std::string::npos) {
 		pos += strlen("limit_except");
@@ -78,7 +78,7 @@ std::vector<std::string> server_location_configuration::findHttpMethodAccepted(s
 		MethodAccepted.push_back("NOT INDICATED");
 		return (MethodAccepted);
 	}
-	
+
 	size_t i = 0;
 	std::string token;
 	while ((i = methods.find(delimiter)) != std::string::npos)
@@ -88,7 +88,7 @@ std::vector<std::string> server_location_configuration::findHttpMethodAccepted(s
 		methods.erase(0, i + delimiter.length());
 	}
 	MethodAccepted.push_back(methods);
-		return (MethodAccepted);
+	return (MethodAccepted);
 }
 
 
@@ -136,7 +136,7 @@ std::string server_location_configuration::findHttpRedirection(std::string locat
 
 std::string server_location_configuration::findDirectoryRequest(std::string location_conf)
 {
-	
+
 	size_t pos = location_conf.find("	index");
 	if (pos != std::string::npos) {
 		pos += strlen("	index");
@@ -177,7 +177,7 @@ void server_location_configuration::setCgi(std::string location_conf)
 		return ;
 	for (; location_conf[pos] != ';' && location_conf[pos] != '\n';)
 		pos = fillCgi(pos, location_conf);
-	
+
 }
 
 std::string server_location_configuration::findUploadStore(std::string location_conf)
@@ -193,13 +193,3 @@ std::string server_location_configuration::findUploadStore(std::string location_
 	}
 	return ("");
 }
-
-std::vector<std::string>&	server_location_configuration::getHttpMethodAccepted() {return _HttpMethodAccepted;}
-std::vector<std::string>	server_location_configuration::getHttpMethodAccepted() const {return _HttpMethodAccepted;}
-std::string	server_location_configuration::getHttpRedirection() const { return _HttpRedirection;}
-std::string server_location_configuration::getRoot() const { return _Root;}
-std::string server_location_configuration::getDirectoryListing() const { return _DirectoryListing;}
-std::string server_location_configuration::getDirectoryRequest() const { return _DirectoryRequest;}
-std::map<std::string, std::string>&	server_location_configuration::getCgi() { return _Cgi;}
-std::map<std::string, std::string>	server_location_configuration::getCgi() const { return _Cgi;}
-std::string server_location_configuration::getUploadStore() const { return _UploadStore;}

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 19:01:38 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 19:18:58 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -513,35 +513,6 @@ std::ostream&	server_configuration::printLoc(std::ostream &out)
 		out << "\nUploadStore : " << it->second->getUploadStore();
 	}
 	return (out);
-}
-
-std::string	server_configuration::getConfigFile() const { return _ConfigFile;}
-std::string	server_configuration::getServerName() const { return _ServerName;}
-std::string	server_configuration::getRoot() const { return _Root;}
-std::string	server_configuration::getIndex() const { return _Index;}
-std::vector<int>	server_configuration::getPort() const { return _Port;}
-std::vector<std::string>	server_configuration::getEnv() const { return _env;}
-std::vector<std::string>	server_configuration::getHttpMethodAccepted() const { return (_HttpMethodAccepted); }
-std::vector<std::string>&	server_configuration::getHttpMethodAccepted() { return (_HttpMethodAccepted); }
-std::vector<std::string>	server_configuration::getHost() const { return _Host;}
-size_t	server_configuration::getClientMaxBodySize() const { return _ClientMaxBodySize;}
-std::map<std::string, std::string>	server_configuration::getCgi() const { return (_cgi); }
-std::map<std::string, std::string>&	server_configuration::getCgi() { return (_cgi); }
-std::map<std::string, std::string>	server_configuration::getLocation() const { return (_Location); }
-std::map<std::string, std::pair<std::string, std::string> >		server_configuration::getErrorPage() const { return _ErrorPage;}
-std::map<std::string, std::pair<std::string, std::string> >	server_configuration::getDefErrorPage() const { return _DefErrorPage;}
-std::map<std::string, class server_location_configuration*>	server_configuration::getLoc() const { return (_Loc);}
-std::map<std::string, class server_location_configuration*>&	server_configuration::getLoc() { return (_Loc);}
-int	server_configuration::getStatusCode()	 const { return (_StatusCode); }
-
-const char *	server_configuration::CgiException::what() const throw()
-{
-	return ("CGI parsing error\n");
-}
-
-const char *	server_configuration::ErrorPageException::what() const throw()
-{
-	return ("Error Page parsing error\n");
 }
 
 std::ostream& operator <<(std::ostream &out, server_configuration &ServConfig)
