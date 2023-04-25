@@ -6,21 +6,15 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/04 17:07:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/21 12:21:29 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 18:48:00 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_LOCATION_CONFIGURATION_HPP
 #define SERVER_LOCATION_CONFIGURATION_HPP
 
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <map>
-#include <vector>
+#include "lib.hpp"
+
 #define DEBUG 0
 class server_location_configuration
 {

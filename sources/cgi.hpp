@@ -6,23 +6,17 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:06 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/25 12:51:35 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 18:48:37 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CGI_HPP
 #define CGI_HPP
 
-#include "server_request.hpp"
-#include "server_response.hpp"
-#include <string>
-#include <cstring>
-#include <vector>
-#include <cstdlib>
-#include <cstdio>
-#include <iostream>
+#include "lib.hpp"
 
 class server_response;
+class server_request;
 
 class Cgi
 {
@@ -43,10 +37,10 @@ class Cgi
 		server_request*	getResponse() const;
 		void	setStatus(int);
 		void	setPid();
+		void	setPid(pid_t);
 		void	setPdes();
 		void	dupping();
 		void	closePdes();
-		void	exeCgi();
 
 		void	del();
 

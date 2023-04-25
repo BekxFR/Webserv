@@ -6,26 +6,15 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 18:59:44 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 18:46:50 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_CONFIGURATION_HPP
 #define SERVER_CONFIGURATION_HPP
 
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <fstream>
-#include <unistd.h>
-#include <sstream>
-#include <algorithm>
-#include "default_error.hpp"
-#include "ErrorCorresp.hpp"
-#include <sstream>
-#include <map>
-#include "server_location_configuration.hpp"
-#include <vector>
+#include "lib.hpp"
+
 #define DEBUG 0
 
 class ErrorCorresp;

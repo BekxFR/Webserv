@@ -6,33 +6,11 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 12:32:06 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 18:43:22 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <iostream>
-#include <string>
-#include <sys/epoll.h>
-#include <iostream>
-#include <vector>
-#include <map>
-#include <iterator>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <csignal>
-#include <utility>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
-#include "server_configuration.hpp"
-#include "server_response.hpp"
+#include "lib.hpp"
 
 #define READ_SIZE 1000
 #define MAX_EVENTS 10
@@ -469,8 +447,8 @@ int main(int argc, char const **argv, const char **envp)
 		std::cerr << "Wrong number of arguments" << std::endl;
 		return -1;
 	}
-	signal(SIGINT, sigint_handler);
-
+	std::signal(SIGINT, sigint_handler);
+	std::signal(SIGQUIT, sigint_handler);
 	std::string	config;
 	if (argc == 2)
 		config = argv[1];

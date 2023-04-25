@@ -6,42 +6,16 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 11:58:24 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 18:49:03 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_RESPONSE_HPP
 #define SERVER_RESPONSE_HPP
 
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/epoll.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <string>
-#include <vector>
-#include <iterator>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <csignal>
-#include <fstream>
-#include <sstream>
-#include <cstring>
-#include <ftw.h>
-#include <filesystem>
-#include <errno.h>
-#include <iostream>
+#include "lib.hpp"
 
-#include "server_configuration.hpp"
-#include "server_request.hpp"
-#include "cgi.hpp"
-
-class server_request;
+class server_configuration;
 
 class server_response
 {
@@ -67,7 +41,7 @@ class server_response
 	~server_response();
 	server_response &operator=(server_response const &obj);
 
-	void	todo(const server_request& Server_Request, int conn_sock, server_configuration* Root);
+	void	todo(const server_request& Server_Request, int socket, server_configuration* Root);
 	void	createResponse(server_configuration*, std::string, const server_request& Server_Request);
 	void	delete_dir(const char * path);
 	std::string	list_dir(std::string path);
@@ -96,6 +70,8 @@ class server_response
 	std::map<std::string, std::string>	getContentType() const { return (_contentType); }
 	// Définition de la méthode pour obtenir la réponse _ServerResponse
 	std::string get_ServerResponse() const { return _ServerResponse; }
+
+	bool	AnswerGet(const server_request& Server_Request, server_configuration *server);
 
 	// Définition de la méthode pour obtenir le code d'état de la réponse
 	int	getCgiFd() const { return (_cgiFd); }

@@ -6,21 +6,15 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/25 14:15:42 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 18:37:35 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cgi.hpp"
-#include <iostream>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <fstream>
-#include <fcntl.h>
-#include <unistd.h>
 
 extern volatile std::sig_atomic_t	g_code;
 
-Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string filen): _status(0)
+Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string filen): _input_fd(input_fd), _status(0) 
 {
 	_cmd = new char*[3];
 	_cmd[0] = &(cgi_path[0]);
@@ -31,13 +25,13 @@ Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::strin
 	for (std::vector<std::string>::iterator it = env.begin(); it != env.end(); it++, i++)
 		_envp[i] = &((*it)[0]);
 	_envp[env.size()] = NULL;
-	_input_fd = input_fd;
-	_output_fd = -1;
 	_pid = -1;
 	_pdes[0] = -1;
 	_pdes[1] = -1;
 	_fileName = filen;
+	_output_fd = -1;
 	_fp = NULL;
+//	setPdes(); // actuellement on n'utilise pas les pdes donc ils sont //
 	setPid();
 }
 
@@ -83,6 +77,10 @@ char**	Cgi::getEnvp() const { return (_envp); }
 int	Cgi::getStatus() const { return (_status); }
 server_request*	Cgi::getRequest() const { return (_request); }
 
+void	Cgi::setStatus(int s)
+{
+	_status = s;
+}
 
 void	Cgi::del()
 {
@@ -91,10 +89,19 @@ void	Cgi::del()
 	if (_envp)
 		delete [] _envp;
 	closePdes();
-	if (_output_fd != -1)
-		close(_output_fd);
 	if (_fp)
 		fclose(_fp);
+	if (_output_fd != -1)
+		close(_output_fd);
+}
+
+void	Cgi::setPdes()
+{
+//	if (pipe(_pdes) == -1)
+//	{
+//		del();
+//		throw PipeException();
+//	}
 }
 
 void	Cgi::setPid()
@@ -106,27 +113,23 @@ void	Cgi::setPid()
 		throw ForkException();
 	}
 	else if (static_cast<int>(_pid) == 0)
-		setPdes();
+		dupping();
 	else
 		if (_input_fd != -1)
-			close(_input_fd);
+			close (_input_fd);
+	return ;
 }
 
-void	Cgi::setPdes()
+void	Cgi::setPid(pid_t p)
 {
-	if (pipe(_pdes) == -1)
-	{
-		del();
-		throw PipeException();
-	}
-	dupping();
+	_pid = p;
 }
 
 void	Cgi::closePdes()
 {
-	if (_pdes[0] > 2)
+	if (_pdes[0] != -1)
 		close(_pdes[0]);
-	if (_pdes[1] > 2)
+	if (_pdes[1] != -1)
 		close(_pdes[1]);
 }
 
@@ -139,9 +142,39 @@ void	Cgi::print() const
 		printf("envp = '%s'\n", _envp[i]);
 }
 
-void	Cgi::setStatus(int s)
+void	Cgi::dupping()
 {
-	_status = s;
+//	std::cout << "filename in cgi = '" << _fileName << "'" << std::endl;
+	_fp = fopen(_fileName.c_str(), "w"); // on essaie d'ouvrir le fichier de sortie
+	if (_fp == NULL)
+	{
+		del();
+		g_code = 1;
+		return ;
+	}
+	_output_fd = fileno(_fp); // get file descriptor from file pointer
+	if (_input_fd != -1) // si un fichier d'entre est specifie sinon stdin
+	{
+		if (dup2(_input_fd, STDIN_FILENO) == -1)
+		{
+			del();
+			g_code = 1;
+			return ;
+		}
+	}
+	if (dup2(_output_fd, STDOUT_FILENO) == -1) // attribution de la sortie au fichier ouvert precedemment
+	{
+		del();
+		g_code = 1;
+		return ;
+	}
+//	close (_pdes[1]);
+//	_pdes[1] = -1;
+//	close (_pdes[0]);
+//	_pdes[0] = -1;
+
+	if (execve(_cmd[0], _cmd, _envp) == -1) // si execve rate, on laisse passer pour appeler les destructeurs mais en changeant le code global pour sortir une 500
+		g_code = 1;
 }
 
 const char *	Cgi::DupException::what() const throw()
@@ -168,102 +201,3 @@ const char *	Cgi::ExecveException::what() const throw()
 {
 	return ("Execve Error!");
 }
-
-void	Cgi::dupping()
-{
-	std::cout << "filename in cgi = '" << _fileName << "'" << std::endl;
-	std::string filename(_fileName.c_str());
-
-	_fp = fopen(filename.c_str(), "w");
-	if (_fp == NULL)
-	{
-		del();
-		throw OpenException();
-	}
-
-	_output_fd = fileno(_fp); // get file descriptor from file pointer
-
-	if (dup2(_output_fd, STDOUT_FILENO) == -1)
-	{
-		del();
-		throw DupException();
-	}
-
-	close (_pdes[1]);
-	_pdes[1] = -1;
-	close (_pdes[0]);
-	_pdes[0] = -1;
-	exeCgi();
-}
-
-void	Cgi::exeCgi()
-{
-	if (execve(_cmd[0], _cmd, _envp) == -1)
-	{
-		g_code = 1;
-	}
-}
-
-/*std::string	cgi_type(std::string const &type)
-{
-	enum	status { PHP, PYTHON, AUTRE};
-
-	const std::string ftab[3] = {"php", ".py", "others"};
-	// const std::string ftab[3] = {"/usr/bin/php-cgi", "/usr/bin/python3", "/usr/bin/autre"};
-	int n = 0;
-	for (; n < 4; n++)
-	{
-		if (n != 3 && ftab[n] == type) // OK 
-		{
-			break ;
-		}
-	}
-	switch (n)
-	{
-		case PHP:
-		{
-			// std::cout << "JE SUIS DANS CGI PHP" << std::endl;
-			return ("/usr/bin/php-cgi");
-			break;
-		}
-		case PYTHON:
-		{
-			// std::cout << "JE SUIS DANS CGI PYTHON" << std::endl;
-			return ("/usr/bin/python3");
-			break;
-		}
-		case AUTRE:
-		{
-			// std::cout << "JE SUIS DANS CGI AUTRE" << std::endl;
-			return ("/usr/bin/autre");
-			break;
-		}
-		default :
-		{
-			return ("NONE");
-			break ;
-		}
-	}
-}
-
-int	main(int ac, char **av, char **envp)
-{
-	if (ac != 2)
-		return (1);
-	std::vector<std::string>	env;
-	for (size_t i = 0; envp[i]; i++)
-		env.push_back(envp[i]);
-	std::string a = cgi_type("php");
-	std::string cmd(av[1]);
-	try {
-		//ajout d'une commande conditionnee pour voir si on fait un cgi ou pas (si le cgi en question est precise dans le fichier de configue. Sinon, on renvoie la reponse en dur, sans traitement)
-		Cgi	cgi(a, cmd, env, -1);
-		exeCgi(cgi);
-		cgi.closePdes();
-	}
-	catch ( std::exception& e )
-	{
-		return (std::cerr << e.what() << std::endl, 1);
-	}
-	return (0);
-}*/

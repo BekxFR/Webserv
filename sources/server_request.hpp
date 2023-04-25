@@ -6,25 +6,18 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:29:37 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/24 19:00:39 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 18:49:35 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_REQUEST_HPP
 #define SERVER_REQUEST_HPP
 
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include "server_configuration.hpp"
+#include "lib.hpp"
 
 #define DEBUG 0
+
+class server_configuration;
 
 class server_request
 {

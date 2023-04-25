@@ -6,11 +6,12 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 14:14:28 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/25 18:44:49 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server_response.hpp"
+
 # define DEBUG1 1
 
 extern volatile std::sig_atomic_t	g_code;
@@ -157,7 +158,6 @@ std::string	server_response::list_dir(std::string path)
 		closedir(dir);
 		return ("");
 	}
-//	path.erase(0,1);
 	response << "<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>" << path << "</title></head><body style=\"height: 100%;\"><h1 style=\"padding-top:0.5em;font-size:3em;\">Index of " << path << "/</h1></br><ul style=\"margin-top:10px;margin-bottom:10px;padding-top:10px;padding-bottom:10px;border-size:0.5em;border-top-style:solid;border-bottom-style:solid;\">";
 	while (send)
 	{
@@ -389,6 +389,58 @@ std::string server_response::getRedir(std::string MethodUsed, server_configurati
 	return ("CE RETURN NE SERA JAMAIS EMPRUNTE");
 }
 
+bool	server_response::AnswerGet(const server_request& Server_Request, server_configuration *server)
+{
+	if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
+	{
+		std::cerr << _finalPath << std::endl;
+		_status_code = 404;
+	}
+	else
+	{
+		std::stringstream buffer;
+		if (is_dir(_finalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
+		{
+			std::cout << "AUTOLISTING ON" << std::endl;
+			buffer << list_dir(_finalPath);
+		}
+		else if (is_dir(_finalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
+			_status_code = 403;
+		else if (_status_code == 200)
+		{
+			if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end())
+			{
+			//	std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
+				if (_fileName == "")
+					_fileName = ".cgi-tmp.txt";
+				if (!doCgi(_finalPath,server))
+				{
+					buffer << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
+					std::ifstream	cgiContent(_fileName.c_str());
+					std::getline(cgiContent, _content, '\0'); // on recupere le retour du cgi
+					cgiContent.close();
+					addLength(); // ajout content-length en fonction du retour des cgi
+					buffer << _content << "\0";
+					_ServerResponse = buffer.str(); // on a mis header et body dans la reponse
+					std::remove(_fileName.c_str()); // suppression du fichier tmp contenant le retour du cgi
+					return (1);
+				}
+			}
+			else
+			{
+			//	std::cout << "Affichage classique" << std::endl;
+				std::ifstream file(_finalPath.c_str());
+				if (!file.is_open())
+					_status_code = 403;
+				else
+					buffer << file.rdbuf();
+				_content = buffer.str();
+			}
+		}
+	}
+	return (0);
+}
+
 void	server_response::todo(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
 	// std::cout << "SERVER CONFIG" << std::endl;
@@ -477,7 +529,6 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
 	
-	static int	k = 0;
 	for (; n < 4; n++)
 	{
 		if (n != 3 && ftab[n] == Server_Request.getMethod()) // OK 
@@ -490,73 +541,12 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		case GET :
 		{
 			if (_status_code == 200)
-			{
-				if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
-				{
-					std::cerr << _finalPath << std::endl;
-					_status_code = 404;
-				}
-				else
-				{
-					std::stringstream buffer;
-					if (is_dir(_finalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
-					{
-						std::cout << "AUTOLISTING ON" << std::endl;
-						buffer << list_dir(_finalPath);
-					}
-					else if (is_dir(_finalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
-						_status_code = 403;
-					else if (_status_code == 200)
-					{
-						if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end())
-						{
-							std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
-							std::stringstream	ouai;
-							ouai << k;
-							_fileName = ".cgi-tmp.txt" + ouai.str();
-						//	k++;
-							if (!doCgi(_finalPath,server))
-							{
-								buffer << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
-								_content.clear();
-								std::ifstream	cgiContent(_fileName.c_str());
-								std::getline(cgiContent, _content, '\0');
-								cgiContent.close();
-								addLength();
-								buffer << _content << "\0";
-								_ServerResponse = buffer.str();
-								send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-								std::cerr << "ServerResponse = '" << _ServerResponse << "'" << std::endl;
-								std::remove(_fileName.c_str());
-								break ;
-							}
-						}
-						else
-						{
-							std::cout << "d0" << std::endl;
-							std::ifstream file(_finalPath.c_str());
-							if (!file.is_open())
-							{
-								/* cela ne marche pas car il ne rentre pas mm si file est un dir*/
-								_status_code = 403;
-							}
-							else
-							{
-								buffer << file.rdbuf();
-							}
-						}
-					}
-					_content = buffer.str();
-				}
-			}
+				if (!AnswerGet(Server_Request, server))
+					createResponse(server, _content, Server_Request);
 			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
-			createResponse(server, _content, Server_Request);
-			// std::cout << std::endl << "SERVER RESPONSE CONSTRUITE -> " << std::endl << _ServerResponse << std::endl << std::endl;
+	//		std::cout << std::endl << "SERVER RESPONSE CONSTRUITE -> " << std::endl << _ServerResponse << std::endl << std::endl;
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			// std::cerr << "\nREPONSE SEND :\n";
-			// std::cerr << this->_ServerResponse << std::endl;			
 			break ;
-
 		}
 		case POST :
 		{
@@ -680,7 +670,7 @@ std::string	server_response::addHeader(std::string statusMsg, std::pair<std::str
 			response << this->getType(statusContent.first.substr(statusContent.first.find('.', 0) + 1));
 	}
 	else
-		response << this->getType(Server_Request.getType()); // modif text/html (parsing) -> peut etre faire map de content type / mime en fonction de .py = /truc .html = text/html etc.
+		response << this->getType(Server_Request.getType());
 	_header = response.str();
 	return (_header);
 }
@@ -702,11 +692,10 @@ void	server_response::addLength()
 	std::string	tmp = "Content-Length: ";
 
  	if (_content.size() > 0)
-		l << _content.size() - (_content.find_first_of("\n\n") + 4); // on retire les \n et les retours a la ligne generees par le cgi
+		l << _content.size() - (_content.find_first_of("\n\n") + 4) << "\r\n"; // on retire les \n et les retours a la ligne generees par le cgi
 	else
-		l << 0;
+		l << 0 << "\r\n";
 	tmp += l.str();
-	tmp += "\r\n";
 	_content.insert(0, tmp);
 }
 
@@ -715,14 +704,12 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	std::stringstream	response;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
 	int	n = 0;
-	// std::cout << "status code Create Response " << _status_code << std::endl;
 	int	tmp = _status_code / 100 - 1;
 	for (; n != tmp && n < 5; n++) {}
 	switch (n)
 	{
 		case INFO:
 		{
-			// std::cout << "JE SUIS DANS INFO" << std::endl;
 			switch (_status_code)
 			{
 				case 100:
@@ -742,7 +729,6 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case SUCCESS:
 		{
-			// std::cout << "JE SUIS DANS SUCCESS" << std::endl;
 			switch (_status_code)
 			{
 				case 200:
@@ -794,7 +780,6 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case REDIRECTION:
 		{
-			// std::cout << "JE SUIS DANS REDIRECTION" << std::endl;
 			switch (_status_code)
 			{
 				case 300:
@@ -844,7 +829,6 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case CLIENT:
 		{
-			// std::cout << "JE SUIS DANS CLIENT" << std::endl;
 			switch (_status_code)
 			{
 				case 400:
@@ -960,7 +944,6 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case SERVER:
 		{
-			// std::cout << "JE SUIS DANS SERVER" << std::endl;
 			switch (_status_code)
 			{
 				case 500:
@@ -1033,51 +1016,39 @@ std::string	itos(int nb)
 	return (convert.str());
 }
 
+//https://docstore.mik.ua/orelly/linux/cgi/ch03_02.htm
 int server_response::doCgi(std::string toexec, server_configuration * server) // envoyer path du cgi
 {
 	char	buff[256];
 	std::string	cgiPath;
-	std::string	tmp;
-	std::stringstream	length;
 
-	length << _contentLength;
-	if (server->getCgi().find("." + _req->getType()) != server->getCgi().end())
-		cgiPath = server->getCgi().find("." + _req->getType())->second;
-	else
-	{
-		_status_code = 400; //a test avec nginx
-		return (-1);
-	}
 	_env.push_back("SERVER_SOFTWARE=Webserv/1.0");
-	std::string		servName = server->getServerName();
 	std::string		servNameEnv = "SERVER_NAME=";
 	if (_req->getHost().find("host") != std::string::npos)
 		servNameEnv += _req->getHost();
 	else
 	{
-		if (servName.size())
-			servNameEnv += servName[0];
+		if (server->getServerName()[0])
+			servNameEnv += server->getServerName()[0];
 		else
 			servNameEnv += "localhost";
 	}
 	_env.push_back(servNameEnv);
+	_env.push_back("AUTH_TYPE=");
 	_env.push_back("SERVER_PROTOCOL=" + _req->getVersion());
-	tmp = itos(server->getPort()[0]);
-	_env.push_back("SERVER_PORT=" + tmp);
-	tmp.clear();
+	_env.push_back("SERVER_PORT=" + itos(server->getPort()[0]));
 	std::string	cwd = getcwd(buff, 256);
 	_env.push_back("DOCUMENT_ROOT=" + cwd);
-	_env.push_back("REQUEST_METHOD=" + _req->getType());
+	_env.push_back("REQUEST_METHOD=" + _req->getMethod());
 	_env.push_back("SCRIPT_FILENAME=" + toexec);
+	cgiPath = server->getCgi().find("." + _req->getType())->second;
 	_env.push_back("SCRIPT_NAME=" + cgiPath);
-//	_env.push_back("QUERY_STRING=" + _req->getQuery()); a pas l'info dans la requete
+//	_env.push_back("QUERY_STRING" + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
 	_env.push_back("PATH_INFO=" + cgiPath);
-	tmp = (_req->getRequestURI().size());
 	_env.push_back("REQUEST_URI=" + _req->getRequestURI());
-	tmp.clear();
 	_env.push_back("REDIRECT_STATUS=1");
 	if (_body.find(std::string("content-length")) != std::string::npos)
-		_env.push_back(std::string("CONTENT_LENGTH=") + length.str());
+		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
 	if (this->getType(_req->getType()) != "")
 		_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
 	if (_body.size() > 0)
@@ -1094,12 +1065,17 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 		int status = 0;
 		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName);
 		waitpid(cgi.getPid(), &status, 0);
-		std::cerr << "EXIT STATUS = " << g_code << std::endl;
+		if (WIFEXITED(status))
+		{
+			if (WEXITSTATUS(status) == 1)
+				_status_code = 406;
+			else if (WEXITSTATUS(status) != 0)
+				_status_code = 500;
+		}
 		if (g_code == 1)
 		{
-			g_code = 0;
 			_status_code = 500;
-			return (1);
+			g_code = 0;
 		}
 		this->_cgiFd = -1;
 	}
@@ -1107,7 +1083,8 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	{
 		std::cerr << e.what() << std::endl;
 		_status_code = 500;
-		return (1);
 	}
+	if (_status_code != 200)
+		return (1);
 	return (0);
 }
