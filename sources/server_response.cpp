@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 17:13:24 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/25 17:32:52 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -571,10 +571,9 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			// std::string infilename = "./site/42.jpg";
 			// std::ifstream inputFile(infilename.c_str(), std::ios::binary);
 			// std::stringstream response1;
-			std::cout << "c1" << std::endl;
-			std::string FileName = getFileName(FinalPath);
-			std::cout << "FILENAME : " << FileName << std::endl;
-			std::string outfilename = "./test.txt"; // OK 1
+			std::string FileName = "./" + getFileName(FinalPath);
+			// std::cout << "FILENAME : " << FileName << std::endl;
+			std::string outfilename = FileName.c_str(); // PATH DU FICHIER DE SORTIE
 			
 			std::ofstream outputFile(outfilename.c_str(), std::ios::binary); // OK 1
 
@@ -593,7 +592,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			// outputFile.close();
 
 			/*OK 1*/
-			std::cout << "FINAL_PATH : " << FinalPath << std::endl;
             std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
             // std::stringstream buffer;
             std::filebuf* pbuf = file.rdbuf();
@@ -612,7 +610,9 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
             // std::cout << "\nBUFFER = " << buffer.str() << "\r\n" << std::endl;
             // std::string content = buffer.str();
             response << "HTTP/1.1 200 OK\r\n";
+			
             response << "content-Type: image/jpeg\r\n";
+			std << "TEST POST " << _contentType.find(Server_Request.getType())->second << std::endl;
             // response << "Content-Type: text/plain; charset=UTF-8\r\n";
             response << "content-Length: " << size << "\r\n";
             response << "\r\n";
