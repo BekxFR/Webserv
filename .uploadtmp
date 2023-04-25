@@ -1,6 +1,11 @@
-------WebKitFormBoundaryYpCWprO1kZ7gTJgA
-Content-Disposition: form-data; name="image"; filename="teSTEUR.txt"
+------WebKitFormBoundary6SFBOIulk2CTxUOA
+Content-Disposition: form-data; name="fileToUpload"; filename="txt.txt"
 Content-Type: text/plain
 
-TEST
-------WebKitFormBoundaryYpCWprO1kZ7gTJgA--
+je suis un test
+
+------WebKitFormBoundary6SFBOIulk2CTxUOA
+Content-Disposition: form-data; name="submit"
+
+Upload File
+------WebKitFormBoundary6SFBOIulk2CTxUOA--

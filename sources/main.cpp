@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 20:00:13 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/25 20:44:34 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,6 +154,8 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	static bool posting;
 	static unsigned long long ContentSize; 
 	static int j = 0;
+	static int k = 0;
+	static int l = 0;
 	static std::string filename;
 	// static std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
 	
@@ -166,6 +168,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	}
 	else if (PostContent.size() < ContentSize && posting)
 	{
+		k++;
 		std::cout << "c2\n" << "ContentSize : " << ContentSize << std::endl;
 		if (j == 1)
 		{
@@ -179,7 +182,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		std::cout << "PostContent.size() before : " << PostContent.size() << std::endl;
 		PostContent = PostContent + ServerRequest->getServerRequest();
 		std::cout << "PostContent.size() after : " << PostContent.size() << std::endl;
-		std::cout << "TEST UPLOAD\n" << PostContent << std::endl;
+		// std::cout << "TEST UPLOAD\n" << PostContent << std::endl;
 		if (PostContent.size() >= ContentSize)
 		{
 			std::cout << "c2.1" << std::endl;
@@ -190,6 +193,8 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	else
 		ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf);
 	delete ServerRequest;
+	l++;
+	std::cout << "c3\n" << "l = " << l << " k : " << k << std::endl;
 }
 
 
