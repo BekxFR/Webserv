@@ -19,11 +19,11 @@ server_location_configuration::server_location_configuration()
 }
 
 server_location_configuration::server_location_configuration(std::string location_conf) :
-	_HttpRedirection(findHttpRedirection(location_conf)),
-	_Root(findRoot(location_conf)),
-	_DirectoryListing(findDirectoryListing(location_conf)),
-	_DirectoryRequest(findDirectoryRequest(location_conf)),
-	_UploadStore(findUploadStore(location_conf)),
+	_HttpRedirection(findElement(location_conf, "return 301")),
+	_Root(findElement(location_conf, "root")),
+	_DirectoryListing(findElement(location_conf, "autoindex")),
+	_DirectoryRequest(findElement(location_conf, "\tindex")),
+	_UploadStore(findElement(location_conf, "upload_store")),
 	_HttpMethodAccepted(findHttpMethodAccepted(location_conf))
 {
 	setCgi(location_conf);
@@ -42,7 +42,7 @@ server_location_configuration::~server_location_configuration()
 		std::cout << "server_location_configuration Destructor called" << std::endl;
 }
 
-server_location_configuration &server_location_configuration::operator=(server_location_configuration const &obj)
+server_location_configuration	&server_location_configuration::operator=(server_location_configuration const &obj)
 {
 	if (this == &obj)
 		return (*this);
@@ -58,7 +58,7 @@ server_location_configuration &server_location_configuration::operator=(server_l
 	return *this;
 }
 
-std::vector<std::string> server_location_configuration::findHttpMethodAccepted(std::string location_conf)
+std::vector<std::string>	server_location_configuration::findHttpMethodAccepted(std::string location_conf)
 {
 	std::vector<std::string> MethodAccepted;
 	std::string delimiter = " ";
@@ -91,8 +91,23 @@ std::vector<std::string> server_location_configuration::findHttpMethodAccepted(s
 	return (MethodAccepted);
 }
 
+std::string	server_location_configuration::findElement(std::string location_conf, std::string elem)
+{
+	size_t pos = location_conf.find(elem);
+	if (pos != std::string::npos) {
+		pos += elem.size();
+		std::string element = location_conf.substr(pos + 1);
+		size_t space_pos = element.find_first_of(" \n;");
+		if (space_pos != std::string::npos) {
+			return (element.substr(0, space_pos));
+		}
+	}
+	if (elem == "autoindex")
+		return ("off");
+	return ("");
+}
 
-std::string server_location_configuration::findRoot(std::string location_conf)
+/*std::string server_location_configuration::findRoot(std::string location_conf)
 {
 	size_t pos = location_conf.find("root");
 	if (pos != std::string::npos) {
@@ -137,9 +152,9 @@ std::string server_location_configuration::findHttpRedirection(std::string locat
 std::string server_location_configuration::findDirectoryRequest(std::string location_conf)
 {
 
-	size_t pos = location_conf.find("	index");
+	size_t pos = location_conf.find("\tindex");
 	if (pos != std::string::npos) {
-		pos += strlen("	index");
+		pos += strlen("\tindex");
 		std::string root = location_conf.substr(pos + 1);
 		size_t space_pos = root.find_first_of(" \n;");
 		if (space_pos != std::string::npos) {
@@ -148,6 +163,20 @@ std::string server_location_configuration::findDirectoryRequest(std::string loca
 	}
 	return ("");
 }
+
+std::string server_location_configuration::findUploadStore(std::string location_conf)
+{
+	size_t pos = location_conf.find("upload_store");
+	if (pos != std::string::npos) {
+		pos += strlen("upload_store");
+		std::string root = location_conf.substr(pos + 1);
+		size_t space_pos = root.find_first_of(" \n;");
+		if (space_pos != std::string::npos) {
+			return (root.substr(0, space_pos));
+		}
+	}
+	return ("");
+}*/
 
 int server_location_configuration::fillCgi(size_t pos, std::string location_conf)
 {
@@ -178,18 +207,4 @@ void server_location_configuration::setCgi(std::string location_conf)
 	for (; location_conf[pos] != ';' && location_conf[pos] != '\n';)
 		pos = fillCgi(pos, location_conf);
 
-}
-
-std::string server_location_configuration::findUploadStore(std::string location_conf)
-{
-	size_t pos = location_conf.find("upload_store");
-	if (pos != std::string::npos) {
-		pos += strlen("upload_store");
-		std::string root = location_conf.substr(pos + 1);
-		size_t space_pos = root.find_first_of(" \n;");
-		if (space_pos != std::string::npos) {
-			return (root.substr(0, space_pos));
-		}
-	}
-	return ("");
 }

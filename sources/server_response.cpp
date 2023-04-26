@@ -41,7 +41,7 @@ server_response::~server_response()
 		std::cout << "server_response Destructor called" << std::endl;
 }
 
-server_response &server_response::operator=(server_response const &obj)
+server_response	&server_response::operator=(server_response const &obj)
 {
 	if (this == &obj)
 		return (*this);
@@ -102,38 +102,17 @@ std::string server_response::getType(std::string type)
 {
 	// std::cout << "TEST : " << type << std::endl;
 	for (std::map<std::string, std::string>::iterator it = _contentType.begin(); it != _contentType.end(); it++)
-	{
 		if (type == it->first)
 			return (it->second);
-	}
 	return ("Content-Type: text/html; charset=utf-8\r\n");
-}
-
-bool	is_dir(const char* path, server_response& sr)
-{
-	struct stat tab;
-
-	if (stat(path, &tab) == -1)
-		return (sr.setStatusCode(500), 1);
-	if (S_ISDIR(tab.st_mode))
-		return (1);
-	return (0);
-}
-
-std::string	prev_link(std::string path)
-{
-	unsigned int	i = 0;
-	for (; path.find("/") != std::string::npos; i++){} 
-
-	return (path);
 }
 
 std::string	server_response::list_dir(std::string path)
 {
 	DIR	*dir = NULL;
 	struct dirent *send = NULL;
-	std::string	content;
 	std::stringstream	response;
+	//std::string	content;
 
 	std::cout << "PATH : '" << path << "'" << std::endl;
 	while (path.find("//") != std::string::npos)
@@ -166,24 +145,9 @@ std::string	server_response::list_dir(std::string path)
 	}
 	closedir(dir);
 	response << "</ul><p style=\"text-align: center;\">webserv</p></body></html>";
-	content = response.str();
-	return (content);
-}
-
-bool	isGenerallyAuthorised(std::string MethodUsed, server_configuration *server, std::string ite)
-{
-	if (ite == "NOT INDICATED")
-	{
-		std::vector<std::string>	tmp = server->getHttpMethodAccepted();
-		for (std::vector<std::string>::iterator ite2 = tmp.begin(); ite2 != tmp.end(); ite2++)
-			{
-				if (MethodUsed == *ite2)
-				{
-					return (1);
-				}
-			}
-	}
-	return (0);
+	//content = response.str();
+	//return (response.str());
+	return (response.str());
 }
 
 int server_response::isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
@@ -485,7 +449,6 @@ void	server_response::todo(const server_request& Server_Request, int conn_sock, 
 		/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		_status_code = 404;
-		std::cerr << "ici" <<std::endl;
 		// std::cout << " BOOL FALSE" << std::endl;
     }
 	else
@@ -735,8 +698,6 @@ void	server_response::createResponse(server_configuration * server, std::string 
 				{
 					response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request);
 					response << addBody(file);
-					std::cerr << response.str() << std::endl;
-
 					break;
 				}
 				case 201:
@@ -1007,14 +968,6 @@ void	server_response::createResponse(server_configuration * server, std::string 
 // SCRIPT_NAME=(the name of the cgi script)
 // SERVER_NAME=(hostname or ip address)
 // SERVER_SOFWARE=(name and version of the software the server is running)
-
-std::string	itos(int nb)
-{
-	std::stringstream	convert;
-
-	convert << nb;
-	return (convert.str());
-}
 
 //https://docstore.mik.ua/orelly/linux/cgi/ch03_02.htm
 int server_response::doCgi(std::string toexec, server_configuration * server) // envoyer path du cgi

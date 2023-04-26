@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 19:18:58 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/26 15:53:54 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ server_configuration::server_configuration()
 
 server_configuration::server_configuration(std::string ConfigFile, const char **env) : 
 _ConfigFile(ConfigFile),
-_ServerName(findServerName()),
-_Root(findRoot()),
-_Index(findIndex()),
+_ServerName(findElement("server_name")),
+_Root(findElement("root")),
+_Index(findElement("index")),
 _HttpMethodAccepted(findHttpMethodAccepted()),
 _Port(findPort()),
 _Host(findHost()),
@@ -69,7 +69,7 @@ server_configuration::~server_configuration()
 		std::cout << "server_configuration Destructor called" << std::endl;
 }
 
-server_configuration &server_configuration::operator=(server_configuration const &obj)
+server_configuration	&server_configuration::operator=(server_configuration const &obj)
 {
 	if (this == &obj)
 		return (*this);
@@ -95,7 +95,25 @@ server_configuration &server_configuration::operator=(server_configuration const
 
 void	server_configuration::setStatusCode(int nb) { _StatusCode = nb; }
 
-std::string server_configuration::findServerName()
+std::string	server_configuration::findElement(std::string elem)
+{
+	size_t pos = _ConfigFile.find(elem); // find the position of "server_name" in the string
+	if (pos != std::string::npos) { // check if "server_name" was found
+		pos += elem.size(); // move the position to the end of "server_name"
+		std::string element = _ConfigFile.substr(pos + 1); // extract the substring starting from the next character
+		size_t space_pos = element.find_first_of(" \n;"); // find the position of the first space or newline character
+		if (space_pos != std::string::npos) { // check if a space character was found
+			if (DEBUG)
+				std::cout << "std::string server_configuration::findElement(" << elem << "): " << elem.substr(0, space_pos) << std::endl;
+			return(element.substr(0, space_pos)); // extract the substring before the space character
+		}
+	}
+	if (elem == "server_name")
+		return ("localhost");
+	return ("");
+}
+
+/*std::string	server_configuration::findServerName()
 {
 	size_t pos = _ConfigFile.find("server_name"); // find the position of "server_name" in the string
 	if (pos != std::string::npos) { // check if "server_name" was found
@@ -111,7 +129,7 @@ std::string server_configuration::findServerName()
 	return ("localhost");
 }
 
-std::string server_configuration::findRoot()
+std::string	server_configuration::findRoot()
 {
 	size_t pos = _ConfigFile.find("root");
 	if (pos != std::string::npos) {
@@ -125,7 +143,7 @@ std::string server_configuration::findRoot()
 	return ("");
 }
 
-std::string server_configuration::findIndex()
+std::string	server_configuration::findIndex()
 {
 	size_t pos = _ConfigFile.find("index");
 	if (pos != std::string::npos) {
@@ -137,9 +155,9 @@ std::string server_configuration::findIndex()
 		}
 	}
 	return ("");
-}
+}*/
 
-int server_configuration::fillCgi(size_t pos)
+int	server_configuration::fillCgi(size_t pos)
 {
 	size_t tmp = 0;
 	std::pair<std::string, std::string> cgi_pair;
@@ -155,7 +173,7 @@ int server_configuration::fillCgi(size_t pos)
 	return (pos + 1);
 }
 
-void server_configuration::setCgi()
+void	server_configuration::setCgi()
 {
 	size_t pos = _ConfigFile.find("cgi");
 	if (pos == std::string::npos)
@@ -168,27 +186,7 @@ void server_configuration::setCgi()
 		pos = fillCgi(pos);
 }
 
-std::string	readingFileEP( std::string file )
-{
-	std::ifstream input_file(file.c_str());
-
-	if (!input_file.is_open()) {
-		if (0)
-			std::cout << "Can't open file " << file << " using default error page" << std::endl;
-		return ("");
-	}
-
-	std::stringstream buffer;
-	std::string fileContent;
-
-	buffer << input_file.rdbuf();
-	fileContent = buffer.str();
-//	std::getline(input_file, fileContent, '\0');
-	input_file.close();
-	return (fileContent.substr(0, fileContent.size()));
-}
-
-void server_configuration::setErrorPage()
+void	server_configuration::setErrorPage()
 {
 	std::string	first;
 	std::string	second;
@@ -219,7 +217,7 @@ void server_configuration::setErrorPage()
 	}
 }
 
-void server_configuration::setDefErrorPage()
+void	server_configuration::setDefErrorPage()
 {
 	_DefErrorPage.insert(std::make_pair(STATUS100, std::make_pair("", HTML100)));
 	_DefErrorPage.insert(std::make_pair(STATUS101, std::make_pair("", HTML101)));
@@ -261,10 +259,8 @@ void server_configuration::setDefErrorPage()
 	_DefErrorPage.insert(std::make_pair(STATUS503, std::make_pair("", HTML503)));
 	_DefErrorPage.insert(std::make_pair(STATUS504, std::make_pair("", HTML504)));
 	_DefErrorPage.insert(std::make_pair(STATUS505, std::make_pair("", HTML505)));
-//	for (std::map<std::string, std::string>::iterator it = _DefErrorPage.begin(); it != _DefErrorPage.end(); it++) // Print Def error pages
-//		std::cout << "Error code = '" << it->first << "' && Error HTML = '" << it->second << "'" << std::endl; // Print Def error pages
 }
-std::vector<std::string> server_configuration::findHttpMethodAccepted()
+std::vector<std::string>	server_configuration::findHttpMethodAccepted()
 {
 	std::vector<std::string> MethodAccepted;
 	std::string delimiter = " ;";
@@ -296,7 +292,7 @@ std::vector<std::string> server_configuration::findHttpMethodAccepted()
 		return (MethodAccepted);
 }
 
-std::vector<std::string> server_configuration::findHost()
+std::vector<std::string>	server_configuration::findHost()
 {
 	size_t pos = 0;
 	size_t end_pos = 0;
@@ -346,7 +342,7 @@ std::vector<std::string> server_configuration::findHost()
 
 /* Il faut que je la modifie car cela restreint trop les cas gérés */
 
-std::vector<int> server_configuration::findPort()
+std::vector<int>	server_configuration::findPort()
 {
 	size_t pos = 0;
 	size_t end_pos = 0;
@@ -393,7 +389,7 @@ std::vector<int> server_configuration::findPort()
 	return (Port);
 }
 
-size_t server_configuration::findClientMaxBodySize()
+size_t	server_configuration::findClientMaxBodySize()
 {
 	size_t pos = _ConfigFile.find("client_max_body_size");
 	if (pos != std::string::npos) {
@@ -417,7 +413,7 @@ size_t server_configuration::findClientMaxBodySize()
 	return (1048576);
 }
 
-std::map<std::string, std::string> server_configuration::findLocation()
+std::map<std::string, std::string>	server_configuration::findLocation()
 {
 	std::map<std::string, std::string> location_map;
 	std::pair<std::string, std::string> location_pair;
@@ -467,7 +463,7 @@ std::map<std::string, std::string> server_configuration::findLocation()
 	return (location_map);
 }
 
-std::map<std::string, class server_location_configuration*> server_configuration::findLoc()
+std::map<std::string, class server_location_configuration*>	server_configuration::findLoc()
 {
 	std::map<std::string, class server_location_configuration*>	map_location;
 	std::pair<std::string, class server_location_configuration*>	pair_location;
@@ -481,13 +477,6 @@ std::map<std::string, class server_location_configuration*> server_configuration
 	}
 	return (map_location);
 	
-}
-
-template<class T>
-void	server_configuration::printMap(std::map<T, T> map)
-{
-	for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); it++)
-		std::cout << "- first = '" << it->first << "' && second = '" << it->second << "'" << std::endl;
 }
 
 std::ostream&	server_configuration::printLoc(std::ostream &out)
@@ -515,7 +504,7 @@ std::ostream&	server_configuration::printLoc(std::ostream &out)
 	return (out);
 }
 
-std::ostream& operator <<(std::ostream &out, server_configuration &ServConfig)
+std::ostream&	operator<<(std::ostream &out, server_configuration &ServConfig)
 {
 	out << "Server name : " << ServConfig.getServerName() \
 		<< "\nRoot : " << ServConfig.getRoot();
@@ -525,13 +514,13 @@ std::ostream& operator <<(std::ostream &out, server_configuration &ServConfig)
 			out << "\nHost : " << ServConfig.getHost()[i];
 		out << "\nCliend Body Limit : " << ServConfig.getClientMaxBodySize() \
 		<< "\nCGI (first = extension, second = root):" << std::endl;
-		ServConfig.printMap(ServConfig.getCgi());
+		printMap(ServConfig.getCgi());
 		out << "\n\n***\n" \
 		<< "\nLocation : "; ServConfig.printLoc(out);
 		out << std::endl \
 		<< "\n***\n" << std::endl;
 		
 	//out << "\nERROR_PAGES (first = status, second = root):" << std::endl;
-	//ServConfig.printMap(ServConfig.getErrorPage());
+	//printMap(ServConfig.getErrorPage());
 	return (out);
 }

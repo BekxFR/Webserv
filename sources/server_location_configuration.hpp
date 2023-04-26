@@ -50,11 +50,12 @@ class server_location_configuration
 		// SETTERS
 		int							fillCgi(size_t pos, std::string location_conf);
 		void						setCgi(std::string location_conf);
-		std::string					findHttpRedirection(std::string location_conf);
-		std::string					findRoot(std::string location_conf);
-		std::string					findDirectoryListing(std::string location_conf);
-		std::string					findDirectoryRequest(std::string location_conf);
-		std::string					findUploadStore(std::string location_conf);
+		std::string					findElement(std::string location_conf, std::string elem);
+//	 	std::string					findHttpRedirection(std::string location_conf);
+//		std::string					findRoot(std::string location_conf);
+//		std::string					findDirectoryListing(std::string location_conf);
+//		std::string					findDirectoryRequest(std::string location_conf);
+//		std::string					findUploadStore(std::string location_conf);
 		std::vector<std::string>	findHttpMethodAccepted(std::string location_conf);
 
 };

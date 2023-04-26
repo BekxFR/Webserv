@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 19:24:31 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/26 15:43:55 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,6 @@
 #define SERVER_CONFIGURATION_HPP
 
 #include "lib.hpp"
-
-#define DEBUG 0
 
 class ErrorCorresp;
 
@@ -72,9 +70,10 @@ class server_configuration
 		void														setDefErrorPage();
 		void														setStatusCode(int);
 		size_t														findClientMaxBodySize();
-		std::string													findServerName();
-		std::string													findRoot();
-		std::string													findIndex();
+		std::string													findElement(std::string);
+//		std::string													findServerName();
+//		std::string													findRoot();
+//		std::string													findIndex();
 		std::vector<int>											findPort();
 		std::vector<std::string>									findHost();
 		std::vector<std::string>									findHttpMethodAccepted();
@@ -85,8 +84,6 @@ class server_configuration
 		int		fillCgi(size_t pos);
 
 		//PRINT
-		template<class T>
-			void	printMap(std::map<T,T>);
 		std::ostream&	printLoc(std::ostream &out);
 
 		//EXCEPTION
