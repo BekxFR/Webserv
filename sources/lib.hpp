@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   lib.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 18:38:10 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 15:44:00 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/26 20:10:52 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,11 @@
 #define READ_SIZE 1000
 #define MAX_EVENTS 10
 #define DEBUG 0
+#define DEBUG1 0
 
 #include <algorithm>
 #include <arpa/inet.h>
+#include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <csignal>

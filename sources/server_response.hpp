@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 19:04:54 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/26 20:24:08 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,15 +58,15 @@ class server_response
 	std::map<std::string, std::string>	getContentType() const { return (_contentType); }
 
 	// OTHER
-	void		todo(const server_request& Server_Request, int socket, server_configuration* Root);
+	void		SendingResponse(const server_request& Server_Request, int socket, server_configuration* Root);
 	void		addLength();
 	void		setStatusCode(int st) { _status_code = (st); }
 	void		addType();
-	void		createResponse(server_configuration*, std::string, const server_request& Server_Request);
+	void		createResponse(server_configuration*, std::string, const server_request& Server_Request, int IdSession);
 	void		delete_dir(const char * path);
 	std::string	getRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string	list_dir(std::string path);
-	std::string	addHeader(std::string statusMsg, std::pair<std::string, std::string> statusContent, const server_request& Server_Request);
+	std::string	addHeader(std::string statusMsg, std::pair<std::string, std::string> statusContent, const server_request& Server_Request, server_configuration *server, int IdSession);
 	std::string	addBody(std::string body);
 	std::string	getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string	getRealPathIndex(std::string MethodUsed, server_configuration *server, std::string RequestURI);
@@ -76,7 +76,8 @@ class server_response
 	bool		isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool		autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool		AnswerGet(const server_request& Server_Request, server_configuration *server);
-
+	void		SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent, std::string filename);
+	int			getIdSessionOrSetError401(const server_request& Server_Request);
 	// Définition de la méthode pour obtenir le corps de la réponse
 	// Définition de la méthode pour obtenir la réponse _ServerResponse
 	// Définition de la méthode pour obtenir le code d'état de la réponse

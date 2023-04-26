@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_configuration.hpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/26 15:43:55 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/26 20:28:08 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ class server_configuration
 		std::map<std::string, std::string>							_cgi;
 		std::vector<int>											_Port;
 		std::vector<std::string>									_Host;
+		std::vector<std::string>									_CookieHeader;
+		std::string													_DirectoryListing;
 		int															_StatusCode;
 		size_t														_ClientMaxBodySize;
 		std::map<std::string,std::pair<std::string,std::string> >	_ErrorPage;
@@ -61,8 +63,11 @@ class server_configuration
 		std::map<std::string, std::pair<std::string, std::string> >		getErrorPage() const { return _ErrorPage;}
 		std::map<std::string, std::pair<std::string, std::string> >		getDefErrorPage() const { return _DefErrorPage;}
 		std::map<std::string, class server_location_configuration*>		getLoc() const { return (_Loc);}
+		// std::map<std::string, class server_location_configuration*>* 	getLoc() { return (&_Loc);}
 		std::map<std::string, class server_location_configuration*>&	getLoc() { return (_Loc);}
-		int	getStatusCode()												const { return (_StatusCode); }
+		std::vector<std::string> 										getCookieHeader() { return _CookieHeader;}
+		int																getStatusCode()	const { return (_StatusCode); }
+		std::string														getDirectoryListing() { return (_DirectoryListing);}
 
 		// SETTER
 		void														setCgi();
@@ -79,9 +84,13 @@ class server_configuration
 		std::vector<std::string>									findHttpMethodAccepted();
 		std::map<std::string, std::string>							findLocation();
 		std::map<std::string, class server_location_configuration*>	findLoc();
+		std::vector<std::string>									findCookieHeader();
+		std::string													findDirectoryListing();
+
 
 		//OTHER
 		int		fillCgi(size_t pos);
+		bool	is_in_location(size_t conf_pos, std::string str);
 
 		//PRINT
 		std::ostream&	printLoc(std::ostream &out);
@@ -94,6 +103,10 @@ class server_configuration
 		class ErrorPageException: public std::exception {
 			public:
 				virtual const char *	what() const throw() { return ("Error Page parsing error\n"); }
+		};
+		class RootException: public std::exception {
+			public:
+				virtual const char *	what() const throw() { return ("Error Root parsing error\n"); }
 		};
 };
 

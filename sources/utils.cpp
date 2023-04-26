@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:20:43 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 15:51:58 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/26 19:35:33 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,14 +51,6 @@ void PrintServer(std::vector<server_configuration*> servers)
 		std::cout << "Server " << i << ":" << std::endl;
 		std::cout << *server << std::endl;
 	}
-	
-	// ANOTHER WAY OF DOING IT USING ITERATOR
-	// for (std::vector<server_configuration*>::iterator it = servers.begin(); it != servers.end(); ++it)
-	// {
-	//     server_configuration* server = *it;
-	//     // std::cout << "Server " << std::distance(servers.begin(), it) << ":" << std::endl;
-	//     std::cout << *server << std::endl;
-	// }
 }
 
 void	CloseSockets(int *listen_sock, sockaddr_in *addr, std::vector<int> Ports)

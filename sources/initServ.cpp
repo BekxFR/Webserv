@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   initServ.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 15:51:10 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/26 20:35:18 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ server_configuration*	getGoodServer(std::vector<server_configuration*> servers, 
 	return (SamePort.at(0));
 }
 
-void	handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus)
+void handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus)
 {
 	(void)CodeStatus;
 	server_configuration *GoodServerConf;
@@ -85,7 +85,7 @@ void	handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			request.append(buffer);
 		}
 	}
-	// std::cout << "\n\nRequest :\n" << request << std::endl;
+	// std::cout << "\n\nRequest :\n\n" << request << std::endl;
 	server_request* ServerRequest = new server_request(request);
 	ServerRequest->request_parser();
 	// ici on a la requete qui est parsé, je peux donc trouver le bon et en envoyer qu'un
@@ -105,10 +105,56 @@ void	handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	// std::cout << "PORT TEST : " << Port << std::endl;
 	// std::cout << "e1.0" << std::endl;
 	GoodServerConf = getGoodServer(servers, ServerRequest, Port);
+	// std::cout << "e1.1" << std::endl;
 	server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
-	ServerResponse.todo(*ServerRequest, conn_sock, GoodServerConf);
-	// std::cout << "e2" << std::endl;
+	// std::cout << "e1.2" << std::endl;
+	/**************************************/
+	/* TENTATIVE DE UPLOAD */
+	// static std::string PostContent ;
+	// static bool posting;
+	// static unsigned long long ContentSize; 
+	// static int j = 0;
+	// static int k = 0;
+	// static int l = 0;
+	static std::string filename;
+	// static std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
+	
+	// if (ServerRequest->getMethod() == "POST")
+	// {
+	// 	std::cout << "c1\n" << std::endl;
+	// 	posting = true;
+	// 	ContentSize = ServerRequest->getContentLength();
+	// 	j++;
+	// }
+	// else if (PostContent.size() < ContentSize && posting)
+	// {
+	// 	k++;
+	// 	std::cout << "c2\n" << "ContentSize : " << ContentSize << std::endl;
+	// 	if (j == 1)
+	// 	{
+	// 		int pos = 0;
+	// 		filename = ServerRequest->getVersion();
+	// 		pos = filename.find("filename=\"") + strlen("filename=\"");
+	// 		filename = filename.substr(pos, filename.size() - pos - 1);
+	// 		std::cout << "c2.0" << std::endl;
+	// 		std::cout << "filename " << filename << std::endl;
+	// 	}
+	// 	std::cout << "PostContent.size() before : " << PostContent.size() << std::endl;
+	// 	PostContent = PostContent + ServerRequest->getServerRequest();
+	// 	std::cout << "PostContent.size() after : " << PostContent.size() << std::endl;
+	// 	// std::cout << "TEST UPLOAD\n" << PostContent << std::endl;
+	// 	if (PostContent.size() >= ContentSize)
+	// 	{
+	// 		std::cout << "c2.1" << std::endl;
+	// 		ServerResponse.SendingPostResponse(*ServerRequest, conn_sock, GoodServerConf, PostContent, filename);
+	// 		posting = false;
+	// 	}
+	// }
+	// else
+	ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf);
 	delete ServerRequest;
+	// l++;
+	// std::cout << "c3\n" << "l = " << l << " k : " << k << std::endl;
 }
 
 void	ChangePort(std::map<int, int>& StorePort, int conn_sock, int listen_sock)

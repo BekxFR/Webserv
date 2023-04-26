@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/26 15:40:33 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/26 19:34:44 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,23 +37,31 @@ void sigint_handler(int signum)
 
 int main(int argc, char const **argv, const char **envp)
 {
-	if (argc > 2)
+	try 
 	{
-		std::cerr << "Wrong number of arguments" << std::endl;
-		return -1;
+		if (argc > 2)
+		{
+			std::cerr << "Wrong number of arguments" << std::endl;
+			return -1;
+		}
+		std::signal(SIGINT, sigint_handler);
+		std::signal(SIGQUIT, sigint_handler);
+		std::string	config;
+		if (argc == 2)
+			config = std::string(argv[1]);
+		else
+			config = std::string("server {\nlisten 8080;\nroot ./;\n}\n");
+		std::vector<server_configuration*> servers = SetupNewServers(config, argc, envp);
+		if (servers.size() == 0)
+			return (1);
+//		PrintServer(servers);
+		StartServer(servers, getPorts(servers), getHosts(servers));
+		DeleteServers(servers);
 	}
-	std::signal(SIGINT, sigint_handler);
-	std::signal(SIGQUIT, sigint_handler);
-	std::string	config;
-	if (argc == 2)
-		config = std::string(argv[1]);
-	else
-		config = std::string("server {\nlisten 8080;\nroot ./;\n}\n");
-	std::vector<server_configuration*> servers = SetupNewServers(config, argc, envp);
-	if (servers.size() == 0)
+	catch(const std::exception& e)
+	{
+		std::cerr << "Webserv error : " << e.what() << '\n';
 		return (1);
-//	PrintServer(servers);
-	StartServer(servers, getPorts(servers), getHosts(servers));
-	DeleteServers(servers);
+	}
 	return 0;
 }

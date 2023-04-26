@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_configuration.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/26 15:53:54 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/26 20:02:50 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ _Index(findElement("index")),
 _HttpMethodAccepted(findHttpMethodAccepted()),
 _Port(findPort()),
 _Host(findHost()),
+_CookieHeader(findCookieHeader()),
+_DirectoryListing(findDirectoryListing()),
 _StatusCode(200),
 _ClientMaxBodySize(findClientMaxBodySize()),
 _Location(findLocation()),
@@ -95,9 +97,73 @@ server_configuration	&server_configuration::operator=(server_configuration const
 
 void	server_configuration::setStatusCode(int nb) { _StatusCode = nb; }
 
+bool server_configuration::is_in_location(size_t conf_pos, std::string str)
+{
+	size_t pos = 0;
+	size_t end_loc = 0;
+	// std::cout << "TEST\n\n" << "\n\n" << conf_pos << std::endl;
+	while (pos != std::string::npos)
+		{
+			// std::cout << "c0" << std::endl;
+			pos = str.find("location /", pos);
+			if (pos != std::string::npos)
+			{
+				// std::cout << "c1" << std::endl;
+				pos += strlen("location /"); 
+				pos = str.find_first_of("{", pos);
+				if (pos == std::string::npos) 
+					return 0;
+				end_loc = str.find_first_of("{}", pos + 1);
+				if (end_loc == std::string::npos) 
+					return 0;
+				int i = 0;;
+				while (str[end_loc] == '{')
+				{
+					i++;
+					// std::cout << "c1 : " << str.substr(end_loc, 10) << std::endl;
+					end_loc = str.find_first_of("{}", end_loc + 1);
+					// std::cout << "c2 : " << str.substr(end_loc, 10) << std::endl;
+				}
+				while (str[end_loc] == '}' && i > 0)
+				{
+					// std::cout << "c3 : " << str.substr(end_loc, 10) << std::endl;
+					i--;
+					end_loc = str.find_first_of("{}", end_loc + 1);
+					// std::cout << "c4 : " << str.substr(end_loc, 10) << std::endl;
+				}
+				// std::cout << "c5" << std::endl;
+				if (end_loc == std::string::npos)
+				{
+					// std::cout << "NO END LOC" << std::endl;
+					return 0;
+				}
+				if (conf_pos > pos && conf_pos < end_loc)
+				{
+					// std::cout << "IN LOC" << std::endl;
+					return (1);
+				}
+				pos = end_loc;
+				end_loc = 0;
+			}
+			else
+			{
+				// std::cout << "NO LOC" << std::endl;
+				return 0;
+			}
+		}
+		// std::cout << "NO = LOC" << std::endl;
+
+		return (0);
+}
+
 std::string	server_configuration::findElement(std::string elem)
 {
-	size_t pos = _ConfigFile.find(elem); // find the position of "server_name" in the string
+	size_t pos = 0;
+	while (is_in_location(_ConfigFile.find(elem, pos + 1), _ConfigFile))
+	{
+		pos = _ConfigFile.find(elem, pos + 1);
+	}
+	pos = _ConfigFile.find(elem, pos + 1);
 	if (pos != std::string::npos) { // check if "server_name" was found
 		pos += elem.size(); // move the position to the end of "server_name"
 		std::string element = _ConfigFile.substr(pos + 1); // extract the substring starting from the next character
@@ -175,7 +241,13 @@ int	server_configuration::fillCgi(size_t pos)
 
 void	server_configuration::setCgi()
 {
-	size_t pos = _ConfigFile.find("cgi");
+	size_t pos = 0;
+	while (is_in_location(_ConfigFile.find("cgi", pos + 1), _ConfigFile))
+	{
+		// std::cout << "IS_IN_LOC" << std::endl;
+		pos = _ConfigFile.find("cgi", pos + 1);
+	}
+	pos = _ConfigFile.find("cgi", pos + 1);
 	if (pos == std::string::npos)
 		return ;
 	pos += strlen("cgi");
@@ -192,8 +264,12 @@ void	server_configuration::setErrorPage()
 	std::string	second;
 	std::string	file;
 
-	size_t pos = _ConfigFile.find("error_page");
-
+	size_t pos = 0;
+	while (is_in_location(_ConfigFile.find("error_page", pos + 1), _ConfigFile))
+	{
+		pos = _ConfigFile.find("error_page", pos + 1);
+	}
+	pos = _ConfigFile.find("error_page", pos + 1);
 	if (pos == std::string::npos)
 		return ;
 	pos += strlen("error_page");
@@ -260,14 +336,21 @@ void	server_configuration::setDefErrorPage()
 	_DefErrorPage.insert(std::make_pair(STATUS504, std::make_pair("", HTML504)));
 	_DefErrorPage.insert(std::make_pair(STATUS505, std::make_pair("", HTML505)));
 }
-std::vector<std::string>	server_configuration::findHttpMethodAccepted()
+
+std::vector<std::string> server_configuration::findHttpMethodAccepted()
 {
 	std::vector<std::string> MethodAccepted;
 	std::string delimiter = " ;";
 	std::string methods;
 	size_t end_pos = 0;
-		
-	size_t pos = _ConfigFile.find("	allow_methods ");
+	
+	
+	size_t pos = 0;
+	while (is_in_location(_ConfigFile.find("	allow_methods ", pos + 1), _ConfigFile))
+	{
+		pos = _ConfigFile.find("	allow_methods ", pos + 1);
+	}
+	pos = _ConfigFile.find("	allow_methods ", pos + 1);
 	if (pos != std::string::npos) {
 		pos += strlen("	allow_methods ");
 		methods = _ConfigFile.substr(pos);
@@ -292,7 +375,7 @@ std::vector<std::string>	server_configuration::findHttpMethodAccepted()
 		return (MethodAccepted);
 }
 
-std::vector<std::string>	server_configuration::findHost()
+std::vector<std::string> server_configuration::findHost()
 {
 	size_t pos = 0;
 	size_t end_pos = 0;
@@ -340,9 +423,70 @@ std::vector<std::string>	server_configuration::findHost()
 	return (Host);
 }
 
+std::vector<std::string>	server_configuration::findCookieHeader()
+{
+	size_t pos = 0;
+	size_t pos2 = 1;
+	size_t mid_pos = 0;
+	std::vector<std::string> Cookie;
+
+	if (_ConfigFile.find("add_header Set-Cookie ") != std::string::npos)
+	{
+		pos = _ConfigFile.find("add_header Set-Cookie \"") + strlen("add_header Set-Cookie ");
+		std::string CookieConf = _ConfigFile.substr(pos);
+		// std::cout << "c1 " << CookieConf.at(CookieConf.find_first_of(";\"", mid_pos + 1)) << std::endl;
+		while (CookieConf.at(CookieConf.find_first_of(";\"", mid_pos + 1)) != '"')
+		{
+			// std::cout << "c2" << std::endl;
+			pos2 = CookieConf.find_first_of("_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", mid_pos);
+			mid_pos = CookieConf.find_first_of(";\"", mid_pos + 1);
+			// std::cout << "c2.1 " << mid_pos << " " << CookieConf.at(mid_pos) << std::endl;
+			if (CookieConf.at(mid_pos) == ';')
+			{
+				// std::cout << "c3 " << CookieConf.substr(pos2, (mid_pos - pos2)) << std::endl;
+				// std::cout << "c4 " << pos2 << std::endl;
+				Cookie.push_back(CookieConf.substr(pos2, (mid_pos - pos2)));
+			
+			}
+			pos2 = mid_pos;
+		}
+	}
+	// int i = 0;
+	// std::cout << "\nCOOKIE HEADER\n" << std::endl;
+	// for (std::vector<std::string>::iterator it = Cookie.begin(); it != Cookie.end(); it++)
+	// {
+	// 	std::cout << i++ << std::endl;
+	// 	std::cout << *it << std::endl;
+	// }
+	return (Cookie);
+}
+
+std::string server_configuration::findDirectoryListing()
+{
+	size_t pos = 0;
+	// std::cout << "START" << std::endl;
+	while (is_in_location(_ConfigFile.find("autoindex", pos + 1), _ConfigFile))
+	{
+		// std::cout << "IS_IN_LOC" << std::endl;
+		pos = _ConfigFile.find("autoindex", pos + 1);
+	}
+	pos = _ConfigFile.find("autoindex", pos + 1);
+	// std::cout << "END" << std::endl;
+	pos = _ConfigFile.find("autoindex", pos);
+	if (pos != std::string::npos) {
+		pos += strlen("autoindex");
+		std::string root = _ConfigFile.substr(pos + 1);
+		size_t space_pos = root.find_first_of(" \n;");
+		// std::cout << "TEST sur OFF ON " << root.substr(0, space_pos) << std::endl;
+		if (space_pos != std::string::npos) {
+			return (root.substr(0, space_pos));
+		}
+	}
+	return ("off");
+}
 /* Il faut que je la modifie car cela restreint trop les cas gérés */
 
-std::vector<int>	server_configuration::findPort()
+std::vector<int> server_configuration::findPort()
 {
 	size_t pos = 0;
 	size_t end_pos = 0;
@@ -389,9 +533,14 @@ std::vector<int>	server_configuration::findPort()
 	return (Port);
 }
 
-size_t	server_configuration::findClientMaxBodySize()
+size_t server_configuration::findClientMaxBodySize()
 {
-	size_t pos = _ConfigFile.find("client_max_body_size");
+	size_t pos = 0;
+	while (is_in_location(_ConfigFile.find("client_max_body_size", pos + 1), _ConfigFile))
+	{
+		pos = _ConfigFile.find("client_max_body_size", pos + 1);
+	}
+	pos = _ConfigFile.find("client_max_body_size", pos + 1);
 	if (pos != std::string::npos) {
 		pos += strlen("client_max_body_size");
 		std::string port = _ConfigFile.substr(pos + 1);
@@ -413,7 +562,7 @@ size_t	server_configuration::findClientMaxBodySize()
 	return (1048576);
 }
 
-std::map<std::string, std::string>	server_configuration::findLocation()
+std::map<std::string, std::string> server_configuration::findLocation()
 {
 	std::map<std::string, std::string> location_map;
 	std::pair<std::string, std::string> location_pair;
@@ -450,7 +599,7 @@ std::map<std::string, std::string>	server_configuration::findLocation()
 				location_pair.first = "";
 				location_pair.second = "";
 			}
-			location_pair.second = location_path.substr(space_pos + 1, end_loc);
+			location_pair.second = location_path.substr(space_pos + 1, (end_loc - space_pos) );
 			pos = pos + end_loc;
 			end_loc = 0;
 		}
@@ -462,6 +611,7 @@ std::map<std::string, std::string>	server_configuration::findLocation()
 	}
 	return (location_map);
 }
+
 
 std::map<std::string, class server_location_configuration*>	server_configuration::findLoc()
 {
