@@ -3,18 +3,18 @@ server {
 		listen 8083;
 		listen [::]:8080;
 
-		root ./site;
-		index indRex.html;
+		root ./site/;
+		index indeex.html;
 		client_max_body_size 10;
 		error_page 404 site/42.jpg 405 error.html 406 e;
+		cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
+
 		autoindex on;
-		add_header Set-Cookie "my_cookie=123; Path=/; Mathieu=Gruson;";
-		
 		location /upload/ {
 
 			root ./site/upload/;
 
-			autoindex off;
+			autoindex on;
 
 			index index2.html;
 
@@ -44,8 +44,8 @@ server {
 			index indexr.html;
 			root ./site/;
 			autoindex off;
-		}
 
+		}
 		allow_methods GET POST;
 }
 

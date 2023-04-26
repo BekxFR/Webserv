@@ -6,14 +6,14 @@
 #    By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/01 12:07:22 by chillion          #+#    #+#              #
-#    Updated: 2023/04/21 15:02:05 by mgruson          ###   ########.fr        #
+#    Updated: 2023/04/26 15:41:36 by nflan            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 .PHONY : all clean fclean re test client
 
 CXX := c++
-CXXFLAGS := -std=c++98 -g -Wall -Wextra -Werror -MMD -MP -Isources/
+CXXFLAGS := -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/
 # CXXFLAGS += -fsanitize=address
 CXXFLAGS += -g3
 SRC_DIR := sources/
@@ -32,7 +32,7 @@ MAGENTA = \033[0;35m
 CYAN = \033[0;36m
 NC = \033[0m
 
-SRCS =	main.cpp server_configuration.cpp server_request.cpp server_response.cpp server_location_configuration.cpp ErrorCorresp.cpp \
+SRCS =	main.cpp server_configuration.cpp server_request.cpp server_response.cpp server_location_configuration.cpp ErrorCorresp.cpp cgi.cpp utils.cpp initServ.cpp\
 
 SRCS2 =	cgi.cpp	\
 

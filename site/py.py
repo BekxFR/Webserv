@@ -1,4 +1,5 @@
-Content-type: text/html
+print ("Content-type: text/html\n\n")
+
 
 
 <html>

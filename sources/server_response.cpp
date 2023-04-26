@@ -6,21 +6,22 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 20:34:29 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/26 20:59:48 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server_response.hpp"
-# define DEBUG1 1
 
-server_response::server_response() : _status_code(200), _body(""), _content(""), _ServerResponse("")
+extern volatile std::sig_atomic_t	g_code;
+
+server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _req(NULL)
 {
 	this->addType();
 	if (0)
 		std::cout << "server_response Default Constructor called" << std::endl;
 }
 
-server_response::server_response(int stat) : _status_code(stat), _body(""), _content(""), _ServerResponse("")
+server_response::server_response(int stat, std::vector<std::string> env, server_request* req) : _status_code(stat), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(env), _req(req)
 {
 	this->addType();
 	if (0)
@@ -38,57 +39,91 @@ server_response::~server_response()
 		std::cout << "server_response Destructor called" << std::endl;
 }
 
-server_response &server_response::operator=(server_response const &obj)
+server_response	&server_response::operator=(server_response const &obj)
 {
-	(void)obj;
+	if (this == &obj)
+		return (*this);
+	_status_code = obj.getStatusCode();
+	_cgiFd = obj.getCgiFd();
+	_header = obj.getHeader();
+	_body = obj.getBody();
+	_content = obj.getContent();
+	_contentLength = obj.getContentLength();
+	_ServerResponse = obj.getServerResponse();
+	_finalPath = obj.getPath();
+	_req = obj.getReq();
+	_env = obj.getEnv();
+	_contentType = obj.getContentType();
 	if (0)
 		std::cout << "server_response Copy assignment operator called" << std::endl;
 	return *this;
 }
 
+// https://techcommunity.microsoft.com/t5/image/serverpage/image-id/456929i280730750B92FE12/
 void	server_response::addType()
 {
-	_contentType.insert(std::make_pair<std::string, std::string>("html", "Content-Type: text/html\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("html", "Content-Type: text/html; charset=utf-8\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("htm", "Content-Type: text/html\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("shtml", "Content-Type: text/html\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("css", "Content-Type: text/css\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("xml", "Content-Type: text/xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("gif", "Content-Type: image/gif\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jpg", "Content-Type: image/jpeg\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("js", "Content-Type: image/jpeg\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("mjs", "Content-Type: application/javascript\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("atom", "Content-Type: application/atom+xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("rss", "Content-Type: application/rss+xml\r\n"));
+
+	_contentType.insert(std::make_pair<std::string, std::string>("mml", "Content-Type: text/mathml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("txt", "Content-Type: text/plain\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("jad", "Content-Type: text/vnd.sun.j2me.app-descriptor\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("wml", "Content-Type: text/vnd.wap.wml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("htc", "Content-Type: text/x-component\r\n"));
+
+	_contentType.insert(std::make_pair<std::string, std::string>("avif", "Content-Type: image/avif\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("png", "Content-Type: image/png\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("svg", "Content-Type: image/svg+xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("svgz", "Content-Type: image/svg+xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("tif", "Content-Type: image/tiff\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("tiff", "Content-Type: image/tiff\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("wbmp", "Content-Type: image/vnd.wap.wbmp\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("webp", "Content-Type: image/webp\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("ico", "Content-Type: image/x-icon\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("jng", "Content-Type: image/x-jng\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("bmp", "Content-Type: image/x-ms-bmp\r\n"));
+
+	_contentType.insert(std::make_pair<std::string, std::string>("font", "Content-Type: font/woff\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("font", "Content-Type: font/woff2\r\n"));
 }
 
 std::string server_response::getType(std::string type)
 {
 	// std::cout << "TEST : " << type << std::endl;
 	for (std::map<std::string, std::string>::iterator it = _contentType.begin(); it != _contentType.end(); it++)
-	{
 		if (type == it->first)
 			return (it->second);
+	return ("Content-Type: text/html; charset=utf-8\r\n");
+}
+
+std::string findFileName(std::string FinalPath)
+{
+
+	size_t pos = 0;
+	while (FinalPath.find("/", pos + 1) != std::string::npos)
+	{
+		pos = FinalPath.find("/", pos + 1);
 	}
-	return ("Content-Type: text/html\r\n");
-}
-
-bool	is_dir(const char* path, server_response& sr)
-{
-	struct stat tab;
-
-	if (stat(path, &tab) == -1)
-		return (sr.setStatusCode(500), 1);
-	if (S_ISDIR(tab.st_mode))
-		return (1);
-	return (0);
-}
-
-std::string	prev_link(std::string path)
-{
-	unsigned int	i = 0;
-	for (; path.find("/") != std::string::npos; i++){} 
-
-	return (path);
+	return (FinalPath.substr(pos + 1));
 }
 
 std::string	server_response::list_dir(std::string path)
 {
 	DIR	*dir = NULL;
 	struct dirent *send = NULL;
-	std::string	content;
 	std::stringstream	response;
+	//std::string	content;
 
+	std::cout << "PATH : '" << path << "'" << std::endl;
 	while (path.find("//") != std::string::npos)
 		path = path.erase(path.find("//"), 1);
 	errno = 0;
@@ -97,9 +132,7 @@ std::string	server_response::list_dir(std::string path)
 	if (errno == EACCES || errno == EMFILE || errno == ENFILE || errno == ENOENT || errno == ENOMEM || errno == ENOTDIR)
 	{
 		if (errno == ENOENT || errno == ENOTDIR)
-		{
 			_status_code = 404;
-		}
 		else if (errno == EACCES)
 			_status_code = 403;
 		else if (errno == EMFILE || errno == ENFILE || errno == ENOMEM)
@@ -113,37 +146,22 @@ std::string	server_response::list_dir(std::string path)
 		closedir(dir);
 		return ("");
 	}
-	path.erase(0,1);
 	response << "<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>" << path << "</title></head><body style=\"height: 100%;\"><h1 style=\"padding-top:0.5em;font-size:3em;\">Index of " << path << "/</h1></br><ul style=\"margin-top:10px;margin-bottom:10px;padding-top:10px;padding-bottom:10px;border-size:0.5em;border-top-style:solid;border-bottom-style:solid;\">";
 	while (send)
 	{
-		response << "<li><a href=\"" << path << "/" << send->d_name << "\">" << send->d_name << "</a></li>";
+		response << "<li><a href=\"" << path << send->d_name << "\">" << send->d_name << "</a></li>";
 		send = readdir(dir);
 	}
 	closedir(dir);
 	response << "</ul><p style=\"text-align: center;\">webserv</p></body></html>";
-	content = response.str();
-	return (content);
-}
-
-bool	isGenerallyAuthorised(std::string MethodUsed, server_configuration *server, std::string ite)
-{
-	if (ite == "NOT INDICATED")
-	{
-		for (std::vector<std::string>::iterator ite2 = server->getHttpMethodAccepted().begin(); ite2 != server->getHttpMethodAccepted().end(); ite2++)
-			{
-				if (MethodUsed == *ite2)
-				{
-					return (1);
-				}
-			}
-	}
-	return (0);
+	//content = response.str();
+	//return (response.str());
+	return (response.str());
 }
 
 int server_response::isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
@@ -167,7 +185,7 @@ int server_response::isMethodAuthorised(std::string MethodUsed, server_configura
 
 std::string server_response::getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		/* Ici, on compare le path donné dans location avec le début de la requestURI, car le path de la location part
 		du début de l'URI */
@@ -203,7 +221,7 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 {
 	std::string IndexPath;
 	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 
 		if (it->first == RequestURI.substr(0, it->first.size()))
@@ -248,7 +266,7 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 
 std::string server_response::getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
@@ -273,7 +291,7 @@ std::string server_response::getPathToStore(std::string MethodUsed, server_confi
 
 bool server_response::autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
@@ -297,7 +315,7 @@ bool server_response::autoindex_is_on(std::string MethodUsed, server_configurati
 
 bool server_response::isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
@@ -326,7 +344,7 @@ bool server_response::isRedir(std::string MethodUsed, server_configuration *serv
 
 std::string server_response::getRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc()->rbegin(); it != server->getLoc()->rend(); it++)
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
@@ -392,17 +410,6 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 		}
 	}
 	return (0);
-}
-
-std::string getFileName(std::string FinalPath)
-{
-
-	size_t pos = 0;
-	while (FinalPath.find("/", pos + 1) != std::string::npos)
-	{
-		pos = FinalPath.find("/", pos + 1);
-	}
-	return (FinalPath.substr(pos + 1));
 }
 
 void	server_response::SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent, std::string filename)
@@ -477,9 +484,62 @@ void	server_response::SendingPostResponse(const server_request& Server_Request, 
 			// break ;
 }
 
+bool	server_response::AnswerGet(const server_request& Server_Request, server_configuration *server)
+{
+	if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
+	{
+		std::cout << "404 ICI " << std::endl;
+		std::cerr << _finalPath << std::endl;
+		_status_code = 404;
+	}
+	else
+	{
+		std::stringstream buffer;
+		if (is_dir(_finalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
+		{
+			std::cout << "AUTOLISTING ON" << std::endl;
+			buffer << list_dir(_finalPath);
+		}
+		else if (is_dir(_finalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
+			_status_code = 403;
+		else if (_status_code == 200)
+		{
+			if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end())
+			{
+			//	std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
+				if (_fileName == "")
+					_fileName = ".cgi-tmp.txt";
+				if (!doCgi(_finalPath,server))
+				{
+					buffer << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
+					std::ifstream	cgiContent(_fileName.c_str());
+					std::getline(cgiContent, _content, '\0'); // on recupere le retour du cgi
+					cgiContent.close();
+					addLength(); // ajout content-length en fonction du retour des cgi
+					buffer << _content << "\0";
+					_ServerResponse = buffer.str(); // on a mis header et body dans la reponse
+					std::remove(_fileName.c_str()); // suppression du fichier tmp contenant le retour du cgi
+					return (1);
+				}
+			}
+			else
+			{
+			//	std::cout << "Affichage classique" << std::endl;
+				std::ifstream file(_finalPath.c_str());
+				if (!file.is_open())
+					_status_code = 403;
+				else
+					buffer << file.rdbuf();
+				_content = buffer.str();
+			}
+		}
+	}
+	return (0);
+}
+
 void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
-
+	std::cout << " c8 status code : " << _status_code << std::endl;
 	std::cout << "REQUETE\n" << Server_Request.getServerRequest() << std::endl;
 	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
 		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
@@ -527,7 +587,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	std::string PathToStore;
 	std::string FinalPath;
 	
-
+	std::cout << " c9 status code : " << _status_code << std::endl;
 	RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPath.find("//") != std::string::npos)
 		RealPath = RealPath.erase(RealPath.find("//"), 1);
@@ -577,15 +637,16 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			FinalPath = RealPath;
 		}
 	}
-	// std::cout << "FinalPath : " << FinalPath << std::endl;
+	/* A VOIR DEMAIN MAIS FINAL PATH ETAIT MAL INITIALISE DS ANSWER GET*/
+	std::cout << "FinalPath : " << FinalPath << std::endl;
+	_finalPath = FinalPath;
+	
 	/************************************************/
-	
-	
-	
-	enum imethod {GET, POST, DELETE};
-	std::stringstream response;
+	std::cout << " c10 status code : " << _status_code << std::endl;
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
+	enum imethod {GET, POST, DELETE};
+	std::stringstream response;
 	for (; n < 4; n++)
 	{
 		if (n != 3 && ftab[n] == Server_Request.getMethod()) // OK 
@@ -598,51 +659,18 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		case GET :
 		{
 			if (_status_code == 200)
-			{
-				if (access(FinalPath.c_str(), F_OK) && FinalPath != "./")
-					_status_code = 404;
-				else
-				{
-					std::stringstream buffer;
-					if (is_dir(FinalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
-					{
-						buffer << list_dir(FinalPath);
-					}
-					else if (is_dir(FinalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
-					{
-						_status_code = 403;
-					}
-					else if (_status_code == 200)
-					{
-						std::ifstream file(FinalPath.c_str());
-						if (!file.is_open())
-						{
-							/* cela ne marche pas car il ne rentre pas mm si file est un dir*/
-							_status_code = 403;
-						}
-						else
-						{
-							buffer << file.rdbuf();
-						}
-					}
-					_content = buffer.str();
-				}
-			}
+				if (!AnswerGet(Server_Request, server))
+					createResponse(server, _content, Server_Request, id_session);
 			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
-			// std::cout << "CREATE RESPONSE 200 : " << _status_code << std::endl;
-			createResponse(server, _content, Server_Request, id_session);
-			// std::cout << std::endl << "SERVER RESPONSE CONSTRUITE -> " << std::endl << _ServerResponse << std::endl << std::endl;
+			std::cout << std::endl << "Response\n " << _ServerResponse << std::endl << std::endl;
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			// std::cerr << "\nREPONSE SEND :\n";
-			// std::cerr << this->_ServerResponse << std::endl;			
 			break ;
-
 		}
 		case POST :
 		{
 			// std::cout << "BODY\n" << Server_Request.getBody() << std::endl;
 
-			std::string FileName = "./" + getFileName(FinalPath);
+			std::string FileName = "./" + findFileName(FinalPath);
 			// std::cout << "FILENAME : " << FileName << std::endl;
 			std::string outfilename = FileName.c_str(); // PATH DU FICHIER DE SORTIE
 			
@@ -686,10 +714,11 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			 https://httpwg.org/specs/rfc9110.html#POST => A LIRE
 			 * 
 			*/
+			break ;
 		}
 		case DELETE :
 		{
-			this->delete_dir(FinalPath.c_str());
+			this->delete_dir(_finalPath.c_str());
 			if (_status_code == 200)
 				_content = server->getErrorPage()[STATUS200].second;
 			createResponse(server, _content, Server_Request, id_session);
@@ -698,7 +727,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		}
 		default :
 		{
-			std::cout << "PASSE TU ICI " << std::endl;
 			response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, id_session);
 			response << addBody(server->getErrorPage()[STATUS500].second);
 			_ServerResponse = response.str();
@@ -736,10 +764,8 @@ void	server_response::delete_dir(const char* path)
 
 std::string	server_response::addHeader(std::string statusMsg, std::pair<std::string, std::string> statusContent, const server_request& Server_Request, server_configuration *server, int IdSession)
 {
-	std::string	header;
 	std::stringstream	response;
 	
-	(void)server;
 	response << Server_Request.getVersion() << " " << _status_code << " " << statusMsg << "\r\n";
 	if (statusContent.first != "")
 	{
@@ -747,7 +773,7 @@ std::string	server_response::addHeader(std::string statusMsg, std::pair<std::str
 			response << this->getType(statusContent.first.substr(statusContent.first.find('.', 0) + 1));
 	}
 	else
-		response << this->getType(Server_Request.getType()); // modif text/html (parsing) -> peut etre faire map de content type / mime en fonction de .py = /truc .html = text/html etc.
+		response << this->getType(Server_Request.getType());
 	if (Server_Request.getServerRequest().find("IdSession=") == std::string::npos && _status_code != 401)
 		response << "Set-Cookie: " << "IdSession=" << IdSession << "\n"; // tentative d'implementation des cookies
 	if (server->getCookieHeader().size() != 0)
@@ -759,20 +785,32 @@ std::string	server_response::addHeader(std::string statusMsg, std::pair<std::str
 			response << "Set-Cookie: " << *it << "\n"; // tentative d'implementation des cookies
 		}
 	}
-	header = response.str();
-	std::cout << "\nHEADER\n\n" << header << std::endl;
-	return (header);
+	_header = response.str();
+	return (_header);
 }
 
 std::string	server_response::addBody(std::string msg)
 {
-	std::string	body;
 	std::stringstream	response;
 
-	response << "Content-Length: " << msg.size() << "\r\n\r\n";
+	_contentLength = msg.size();
+	response << "Content-Length: " << _contentLength << "\r\n\r\n";
 	response << msg << "\r\n";
-	body = response.str();
-	return (body);
+	_body = response.str();
+	return (_body);
+}
+
+void	server_response::addLength()
+{
+	std::stringstream	l;
+	std::string	tmp = "Content-Length: ";
+
+ 	if (_content.size() > 0)
+		l << _content.size() - (_content.find_first_of("\n\n") + 4) << "\r\n"; // on retire les \n et les retours a la ligne generees par le cgi
+	else
+		l << 0 << "\r\n";
+	tmp += l.str();
+	_content.insert(0, tmp);
 }
 
 void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request, int IdSession)
@@ -780,15 +818,14 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	std::stringstream	response;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
 	int	n = 0;
-	// std::cout << "status code Create Response " << _status_code << std::endl;
 	int	tmp = _status_code / 100 - 1;
 	for (; n != tmp && n < 5; n++) {}
 	switch (n)
 	{
 		case INFO:
 		{
-			// std::cout << "JE SUIS DANS INFO" << std::endl;
 			switch (_status_code)
+			{
 				case 100:
 				{
 					response << addHeader(STATUS100, server->getErrorPage().find(STATUS100)->second, Server_Request, server, IdSession);
@@ -801,11 +838,11 @@ void	server_response::createResponse(server_configuration * server, std::string 
 					response << addBody(server->getErrorPage()[STATUS101].second);
 					break;
 				}
+			}
 			break;
 		}
 		case SUCCESS:
 		{
-			// std::cout << "JE SUIS DANS SUCCESS" << std::endl;
 			switch (_status_code)
 			{
 				case 200:
@@ -855,8 +892,8 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case REDIRECTION:
 		{
-			// std::cout << "JE SUIS DANS REDIRECTION" << std::endl;
 			switch (_status_code)
+			{
 				case 300:
 				{
 					response << addHeader(STATUS300, server->getErrorPage().find(STATUS300)->second, Server_Request, server, IdSession);
@@ -899,11 +936,11 @@ void	server_response::createResponse(server_configuration * server, std::string 
 					response << addBody(server->getErrorPage()[STATUS307].second);
 					break;
 				}
+			}
 			break;
 		}
 		case CLIENT:
 		{
-			// std::cout << "JE SUIS DANS CLIENT" << std::endl;
 			switch (_status_code)
 			{
 				case 400:
@@ -914,7 +951,6 @@ void	server_response::createResponse(server_configuration * server, std::string 
 				}
 				case 401:
 				{
-					std::cout << " 401 HEADER" << std::endl;
 					response << addHeader(STATUS401, server->getErrorPage().find(STATUS401)->second, Server_Request, server, IdSession);
 					response << addBody(server->getErrorPage()[STATUS401].second);
 					break;
@@ -1020,7 +1056,6 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		}
 		case SERVER:
 		{
-			// std::cout << "JE SUIS DANS SERVER" << std::endl;
 			switch (_status_code)
 			{
 				case 500:
@@ -1070,3 +1105,90 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	_ServerResponse = response.str();
 }
 
+// ajouter dans l'env avant exec (source https://www.youtube.com/watch?v=37choLzDTgY) :
+// CONTENT_TYPE=
+// CONTENT_LENGTH=
+// HTTP_COOKIE=(askip dans le header)
+// HTTP_USER_AGENT=(web browser surement dans le header requete)
+// PATH_INFO=(path cgi script (on l'a))
+// QUERY_STRING=(the url-encoded information that is sent with GET method request)
+// REMOTE_ADDR=(the ip address of the remote host making the request. pour authentification)
+// REMOTE_HOST=(the fully qualified name of the host making the request, not mandatory)
+// REQUEST_MET_HOD=(the method used to make the request (GET / POST / DELETE))
+// SCRIPT_FILENAME=(the full path to the cgi script)
+// SCRIPT_NAME=(the name of the cgi script)
+// SERVER_NAME=(hostname or ip address)
+// SERVER_SOFWARE=(name and version of the software the server is running)
+
+//https://docstore.mik.ua/orelly/linux/cgi/ch03_02.htm
+int server_response::doCgi(std::string toexec, server_configuration * server) // envoyer path du cgi
+{
+	char	buff[256];
+	std::string	cgiPath;
+
+	_env.push_back("SERVER_SOFTWARE=Webserv/1.0");
+	std::string		servNameEnv = "SERVER_NAME=";
+	if (_req->getHost().find("host") != std::string::npos)
+		servNameEnv += _req->getHost();
+	else
+	{
+		if (server->getServerName()[0])
+			servNameEnv += server->getServerName()[0];
+		else
+			servNameEnv += "localhost";
+	}
+	_env.push_back(servNameEnv);
+	_env.push_back("AUTH_TYPE=");
+	_env.push_back("SERVER_PROTOCOL=" + _req->getVersion());
+	_env.push_back("SERVER_PORT=" + itos(server->getPort()[0]));
+	std::string	cwd = getcwd(buff, 256);
+	_env.push_back("DOCUMENT_ROOT=" + cwd);
+	_env.push_back("REQUEST_METHOD=" + _req->getMethod());
+	_env.push_back("SCRIPT_FILENAME=" + toexec);
+	cgiPath = server->getCgi().find("." + _req->getType())->second;
+	_env.push_back("SCRIPT_NAME=" + cgiPath);
+//	_env.push_back("QUERY_STRING" + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
+	_env.push_back("PATH_INFO=" + cgiPath);
+	_env.push_back("REQUEST_URI=" + _req->getRequestURI());
+	_env.push_back("REDIRECT_STATUS=1");
+	if (_body.find(std::string("content-length")) != std::string::npos)
+		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
+	if (this->getType(_req->getType()) != "")
+		_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
+	if (_body.size() > 0)
+	{
+		this->_cgiFd = open(this->_req->getBody().data(), O_RDONLY);
+		if (this->_cgiFd < 0)
+		{
+			_status_code = 500;
+			return (-1);
+		}
+	}
+	try
+	{
+		int status = 0;
+		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName);
+		waitpid(cgi.getPid(), &status, 0);
+		if (WIFEXITED(status))
+		{
+			if (WEXITSTATUS(status) == 1)
+				_status_code = 406;
+			else if (WEXITSTATUS(status) != 0)
+				_status_code = 500;
+		}
+		if (g_code == 1)
+		{
+			_status_code = 500;
+			g_code = 0;
+		}
+		this->_cgiFd = -1;
+	}
+	catch (std::exception const &e)
+	{
+		std::cerr << e.what() << std::endl;
+		_status_code = 500;
+	}
+	if (_status_code != 200)
+		return (1);
+	return (0);
+}

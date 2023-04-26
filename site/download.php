@@ -1,4 +1,5 @@
 <?php
+header("Content-type: text/html; charset-utf8");
 if(isset($_GET['file'])){
     $file = 'uploads/'.$_GET['file'];
     if(file_exists($file)){
