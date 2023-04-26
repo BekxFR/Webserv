@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   initServ.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 20:35:18 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/26 21:23:05 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,50 +110,50 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	// std::cout << "e1.2" << std::endl;
 	/**************************************/
 	/* TENTATIVE DE UPLOAD */
-	// static std::string PostContent ;
-	// static bool posting;
-	// static unsigned long long ContentSize; 
-	// static int j = 0;
-	// static int k = 0;
-	// static int l = 0;
+	static std::string PostContent ;
+	static bool posting;
+	static unsigned long long ContentSize; 
+	static int j = 0;
+	static int k = 0;
+	static int l = 0;
 	static std::string filename;
 	// static std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
 	
-	// if (ServerRequest->getMethod() == "POST")
-	// {
-	// 	std::cout << "c1\n" << std::endl;
-	// 	posting = true;
-	// 	ContentSize = ServerRequest->getContentLength();
-	// 	j++;
-	// }
-	// else if (PostContent.size() < ContentSize && posting)
-	// {
-	// 	k++;
-	// 	std::cout << "c2\n" << "ContentSize : " << ContentSize << std::endl;
-	// 	if (j == 1)
-	// 	{
-	// 		int pos = 0;
-	// 		filename = ServerRequest->getVersion();
-	// 		pos = filename.find("filename=\"") + strlen("filename=\"");
-	// 		filename = filename.substr(pos, filename.size() - pos - 1);
-	// 		std::cout << "c2.0" << std::endl;
-	// 		std::cout << "filename " << filename << std::endl;
-	// 	}
-	// 	std::cout << "PostContent.size() before : " << PostContent.size() << std::endl;
-	// 	PostContent = PostContent + ServerRequest->getServerRequest();
-	// 	std::cout << "PostContent.size() after : " << PostContent.size() << std::endl;
-	// 	// std::cout << "TEST UPLOAD\n" << PostContent << std::endl;
-	// 	if (PostContent.size() >= ContentSize)
-	// 	{
-	// 		std::cout << "c2.1" << std::endl;
-	// 		ServerResponse.SendingPostResponse(*ServerRequest, conn_sock, GoodServerConf, PostContent, filename);
-	// 		posting = false;
-	// 	}
-	// }
-	// else
-	ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf);
+	if (ServerRequest->getMethod() == "POST")
+	{
+		std::cout << "c1\n" << std::endl;
+		posting = true;
+		ContentSize = ServerRequest->getContentLength();
+		j++;
+	}
+	else if (PostContent.size() < ContentSize && posting)
+	{
+		k++;
+		std::cout << "c2\n" << "ContentSize : " << ContentSize << std::endl;
+		if (j == 1)
+		{
+			int pos = 0;
+			filename = ServerRequest->getVersion();
+			pos = filename.find("filename=\"") + strlen("filename=\"");
+			filename = filename.substr(pos, filename.size() - pos - 1);
+			std::cout << "c2.0" << std::endl;
+			std::cout << "filename " << filename << std::endl;
+		}
+		std::cout << "PostContent.size() before : " << PostContent.size() << std::endl;
+		PostContent = PostContent + ServerRequest->getServerRequest();
+		std::cout << "PostContent.size() after : " << PostContent.size() << std::endl;
+		// std::cout << "TEST UPLOAD\n" << PostContent << std::endl;
+		if (PostContent.size() >= ContentSize)
+		{
+			std::cout << "c2.1" << std::endl;
+			ServerResponse.SendingPostResponse(*ServerRequest, conn_sock, GoodServerConf, PostContent, filename);
+			posting = false;
+		}
+	}
+	else
+		ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf);
 	delete ServerRequest;
-	// l++;
+	l++;
 	// std::cout << "c3\n" << "l = " << l << " k : " << k << std::endl;
 }
 

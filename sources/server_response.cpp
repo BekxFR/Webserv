@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/26 20:59:48 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/26 21:30:45 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -488,7 +488,7 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 {
 	if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
 	{
-		std::cout << "404 ICI " << std::endl;
+		std::cout << "d0 " << std::endl;
 		std::cerr << _finalPath << std::endl;
 		_status_code = 404;
 	}
@@ -539,7 +539,6 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 
 void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
-	std::cout << " c8 status code : " << _status_code << std::endl;
 	std::cout << "REQUETE\n" << Server_Request.getServerRequest() << std::endl;
 	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
 		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
@@ -587,7 +586,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	std::string PathToStore;
 	std::string FinalPath;
 	
-	std::cout << " c9 status code : " << _status_code << std::endl;
 	RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPath.find("//") != std::string::npos)
 		RealPath = RealPath.erase(RealPath.find("//"), 1);
@@ -640,9 +638,9 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	/* A VOIR DEMAIN MAIS FINAL PATH ETAIT MAL INITIALISE DS ANSWER GET*/
 	std::cout << "FinalPath : " << FinalPath << std::endl;
 	_finalPath = FinalPath;
-	
+	std::cout << "StatusCode : " << _status_code << std::endl;
 	/************************************************/
-	std::cout << " c10 status code : " << _status_code << std::endl;
+	
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
 	enum imethod {GET, POST, DELETE};
@@ -658,9 +656,12 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	{
 		case GET :
 		{
-			if (_status_code == 200)
+			// if (_status_code == 200) // J ENLEVE CA CAR JE COMPRENDS PAS PQ ON A MIS CA
 				if (!AnswerGet(Server_Request, server))
+				{
+					std::cout << "c10 " << std::endl;
 					createResponse(server, _content, Server_Request, id_session);
+				}
 			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
 			std::cout << std::endl << "Response\n " << _ServerResponse << std::endl << std::endl;
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
