@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 21:23:05 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/26 21:59:29 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	// std::cout << "e1.2" << std::endl;
 	/**************************************/
 	/* TENTATIVE DE UPLOAD */
+	
 	static std::string PostContent ;
 	static bool posting;
 	static unsigned long long ContentSize; 
