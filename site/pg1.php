@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8">
-    <title>WebServ</title>
+	<title>Page des fichiers uploadés</title>
     <style>
         body {
             background-color: #fa94b6;
@@ -153,16 +152,29 @@
 	<header>
 		<a href="/index.html">WebServ</a>
 	</header>
-    <main>
-        <ul id="menu">
-            <li><a href="/pg1.php">File Management</a></li>
-            <li><a href="/list.php">List Data</a></li>
-            <li><a href="/cgi-bin/t2.py">Python CGI</a></li>
-            <li><a href="/index.php">PHP CGI</a></li>
-            <li><a href="/page5">Page 5</a></li>
-        </ul>
-    </main>
-	<img id="sheep" src="happysheep.gif" alt="Sheep Happy">
+	<h1>Liste des fichiers uploadés</h1>
+	<div id="files">
+		<?php
+			if (!is_dir('./upload')) {
+				echo "<p>Le répertoire upload n'existe pas.</p>";
+			} else {
+				$files = glob('./upload/*');
+				if (count($files) == 0) {
+					echo "<p>Le répertoire upload est vide.</p>";
+				} else {
+					foreach ($files as $file) {
+						echo "<p>" . basename($file) . " - <a href='del.php?file=" . urlencode(basename($file)) . "'>Supprimer</a> | <a href='upload/" . urlencode(basename($file)) . "' download>Télécharger</a></p>";
+					}
+				}
+		?>
+	</div>
+	<hr>
+	<h2>Envoyer un fichier</h2>
+	<form action="up.php" method="POST" enctype="multipart/form-data">
+		<input type="file" name="file">
+		<input type="submit" value="Envoyer">
+	</form>
+	<?php } ?>
     <footer>Site web créé par Nicolas, Mathieu et Cyril</footer>
 	<script>
 		let sheep = document.querySelector('#sheep')
