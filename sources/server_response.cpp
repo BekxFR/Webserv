@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 15:32:08 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/27 15:55:15 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -497,7 +497,6 @@ void	server_response::SendingPostResponse(const server_request& Server_Request, 
 bool	server_response::manageCgi(const server_request& Server_Request, server_configuration *server)
 {
 	std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
-	std::cerr << "path cgi appele : '" << server->getCgi().find("." + Server_Request.getType())->second.data() << "'" << std::endl;
 	if (access(server->getCgi().find("." + Server_Request.getType())->second.data(), X_OK))
 		_status_code = 502;
 	else
@@ -821,7 +820,7 @@ void	server_response::addLength()
 	std::stringstream	l;
 	std::string	tmp = "Content-Length: ";
 
-	if (_content.size() > 0)
+	if (_content.size() > 0 && _content.find_first_of("\n\n") + 4 < _content.size())
 		l << _content.size() - (_content.find_first_of("\n\n") + 4) << "\r\n"; // on retire les \n et les retours a la ligne generees par le cgi
 	else
 		l << 0 << "\r\n";

@@ -155,12 +155,6 @@
 	<h1>Liste des fichiers uploadés</h1>
 	<div id="files">
 		<?php
-$url = "http://localhost:8083/uploads/42.jpg";
-
-$curl = curl_init($url);
-curl_setopt($curl, CURLOPT_URL, $url);
-curl_setopt($curl, CURLOPT_DELETE, true);
-curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 			if (!is_dir('./upload')) {
 				echo "<p>Le répertoire upload n'existe pas.</p>";
 			} else {
@@ -169,7 +163,7 @@ curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 					echo "<p>Le répertoire upload est vide.</p>";
 				} else {
 					foreach ($files as $file) {
-						echo "<p>" . basename($file) . " - <a href='curl -X DELETE ". urlencode(basename($file)) . "'>Supprimer</a> | <a href='upload/" . urlencode(basename($file)) . "' download>Télécharger</a></p>";
+						echo "<p>" . basename($file) . " - <a href='del.php?file=" . urlencode(basename($file)) . "'>Supprimer</a> | <a href='upload/" . urlencode(basename($file)) . "' download>Télécharger</a></p>";
 					}
 				}
 		?>
