@@ -6,8 +6,8 @@ server {
 		root ./site/;
 		index indeex.html;
 		client_max_body_size 10;
-		error_page 404 site/42.jpg 405 error.html 406 e;
-		cgi .php /mnt/nfs/homes/nflan/Documents/projets42/Webserv/site/cgi-bin/php-cgi .py /usr/bin/python3;
+		error_page 405 error.html 406 e;
+		cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
 
 		autoindex on;
 		location /upload/ {
@@ -52,12 +52,12 @@ server {
 
 server {
 	server_name webserv2;
-	listen 0.0.0.0:8083;
+	listen 0.0.0.0:8085;
 
 	root ./;
 	index index.html;
 
-	allow_methods GET;
+	allow_methods GET DELETE;
 	cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
 }
 

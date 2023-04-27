@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 from art import *
-
 Art = text2art("SHEEP ART", font='block', chr_ignore=True)
-
 print('Content-Type: text/html')
 print('')
 print('<!DOCTYPE html>')

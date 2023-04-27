@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 12:50:51 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/27 15:32:08 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,8 +119,11 @@ std::string findFileName(std::string FinalPath)
 std::string	server_response::list_dir(std::string path)
 {
 	DIR	*dir = NULL;
-	struct dirent *send = NULL;
+	struct dirent*	send = NULL;
+	struct stat	sb;
 	std::stringstream	response;
+	std::string	testDir;
+	std::string	route;
 
 	std::cout << "PATH : '" << path << "'" << std::endl;
 	while (path.find("//") != std::string::npos)
@@ -145,14 +148,24 @@ std::string	server_response::list_dir(std::string path)
 		closedir(dir);
 		return ("");
 	}
-	response << "<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>" << path << "</title></head><body style=\"height: 100%;\"><h1 style=\"padding-top:0.5em;font-size:3em;\">Index of " << path << "/</h1></br><ul style=\"margin-top:10px;margin-bottom:10px;padding-top:10px;padding-bottom:10px;border-size:0.5em;border-top-style:solid;border-bottom-style:solid;\">";
+	response << "<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>" << path << "</title></head><body style=\"height: 100%;\"><h1 style=\"padding-top:0.5em;font-size:3em;\">Index of " << path << "</h1></br><ul style=\"margin-top:10px;margin-bottom:10px;padding-top:10px;padding-bottom:10px;border-size:0.5em;border-top-style:solid;border-bottom-style:solid;\">";
 	while (send)
 	{
-		response << "<li><a href=\"" << path << send->d_name << "\">" << send->d_name << "</a></li>";
+		testDir = path + send->d_name;
+		route = send->d_name;
+		if ((strcmp(route.data(), ".") || strcmp(route.data(), "..")) && stat(testDir.data(), &sb) == -1)
+		{
+			_status_code = 500;
+			closedir(dir);
+			return ("");
+		}
+		if (S_ISDIR(sb.st_mode) == 1)
+			route += "/";
+		response << "<li><a href=\"" << route << "\">" << send->d_name << "</a></li>";
 		send = readdir(dir);
 	}
 	closedir(dir);
-	response << "</ul><p style=\"text-align: center;\">webserv</p></body></html>";
+	response << "</ul><footer style=\"position:fixed;bottom:0;left:0;right:0;background-color:#111;color:white;text-align:center;padding:10px 0;font-size:0.8em;\">Site web créé par Nicolas, Mathieu et Cyril</footer></body></html>";
 	return (response.str());
 }
 
