@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/26 20:37:15 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/26 21:36:43 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -488,6 +488,7 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 {
 	if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
 	{
+		std::cout << "d0 " << std::endl;
 		std::cerr << _finalPath << std::endl;
 		_status_code = 404;
 	}
@@ -585,7 +586,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	std::string PathToStore;
 	std::string FinalPath;
 	
-
 	RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPath.find("//") != std::string::npos)
 		RealPath = RealPath.erase(RealPath.find("//"), 1);
@@ -635,7 +635,10 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			FinalPath = RealPath;
 		}
 	}
-	// std::cout << "FinalPath : " << FinalPath << std::endl;
+	/* A VOIR DEMAIN MAIS FINAL PATH ETAIT MAL INITIALISE DS ANSWER GET*/
+	std::cout << "FinalPath : " << FinalPath << std::endl;
+	_finalPath = FinalPath;
+	std::cout << "StatusCode : " << _status_code << std::endl;
 	/************************************************/
 	
 	int n = 0;

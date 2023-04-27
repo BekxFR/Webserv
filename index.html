@@ -23,10 +23,18 @@
             animation-play-state: paused; /* pause de l'animation au survol */
             transform: scale(1.1); /* agrandissement de l'image au survol */
         }
+        
+        @keyframes rotate { /* définition de l'animation rotation */
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
     <h1>WebServ</h1>
-    <img src="happysheep.gif" alt="Sheep Happy">
 </body>
 </html>

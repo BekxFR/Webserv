@@ -49,15 +49,6 @@ server {
 		allow_methods GET POST;
 }
 
-server {
-	server_name webserv2.com;
-		listen 0.0.0.0:8080;
-
-		root ./test;
-		index index.html;
-
-		allow_methods GET;
-}
 
 server {
 	server_name webserv2;
