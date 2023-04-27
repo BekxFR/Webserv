@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/27 16:57:22 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/27 17:57:17 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,12 +68,9 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	int n = read(conn_sock, buffer, 2048);
 	int Port = 0;
 	if (n <= 0) {
-		// close(conn_sock);
 		return;
 	}
-	// buffer[n] = '\0';
-	// std::cout.write(buffer, 2048);
-	static std::string request;
+	std::string request;
 	request.append(buffer, n);
 	memset(buffer, 0, n);
 	while (n > 0)
@@ -81,127 +78,94 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		n = read(conn_sock, buffer, n);
 		if (n > 0)
 		{
-			// buffer[n] = '\0';
-			// std::cout.write(buffer, n);
 			request.append(buffer, n);
 			memset(buffer, 0, n);
 		}
 	}
 	
-	// static bool go = false;
 	std::cout << "\nREQUEST SUR LAQUELLE JE BOSSE\n\n" << std::endl;
 	std::cout.write(request.c_str(), request.size());
-	// std::cout << "\nRESULT FIND POS\n" << request.find("POST") << std::endl;
-	// std::cout << "\nSIZE\n" << request.size() << std::endl;
-	// if (request.find("POST") != std::string::npos)
-	// {
-	// 	std::cout << "\na1\n" << std::endl;
-	// 	go = true;
-	// }
-	int y = 0;
-	int pos = 0;
-	int posfinal = 0;
-	int posinit = 0;
-	while (request.find("WebKitFormBoundary", pos) != std::string::npos)
-	{
-		y++;
-		std::cout << "\nTAILLE Y\n" << y << std::endl; 
-		pos = request.find("WebKitFormBoundary", pos) + strlen("------WebKitFormBoundary");
-		if (y == 2)
-			posinit = pos;
-		if (y == 3)
-			posfinal = pos;
-	}
-	if (y == 3)
-	{
-		std::cout << "\nOUTPUT\n" << std::endl;
-		std::ofstream file("output.mp4", std::ios::binary);
-		// size_t pos = request.find("------WebKitFormBoundary");
-		// std::cout << "\nBOUNDARY POS\n" << pos << std::endl;
-		pos = request.find("\r\n\r\n", posinit) + strlen("\r\n\r\n");
-		std::cout << "\nSTART OF THE STRING\n" << pos << std::endl;
-		std::string start = request.substr(pos);
-		std::cout << start << std::endl;
-		// std::cout.write(start.c_str(), start.size());
-		size_t end_pos = request.find("------WebKitFormBoundary", pos);
-		std::cout << "\nEND_POS\n" << end_pos << std::endl;
-		std::cout << "\nFIN\n" << (end_pos - pos) << std::endl; 
-		request = request.substr(pos, (end_pos - pos));
-		file.write(request.c_str(), request.size());
-		file.close();
-	}
 
+	
 	// std::cout << "\n\nRequest :\n\n" << request << std::endl;
+	/*	Cette partie permet de parser la requete afin de pouvoir travailler
+		sur chaque élément indépendemment */
 	server_request* ServerRequest = new server_request(request);
 	ServerRequest->request_parser();
-	// ici on a la requete qui est parsé, je peux donc trouver le bon et en envoyer qu'un
-	
-	// std::cout << "c5" << std::endl;
+	/********************************************************************/
+
+	/* Cette partie permet de connaitre le port utilisé afin de d'avoir les 
+	bonnes configurations de serveur */
 	for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
 	{
-		// std::cout << "TROUVER LE BON PORT" << std::endl;
-		// std::cout << "it->second : " << it->second << std::endl;
-		// std::cout << "conn_sock : " << conn_sock << std::endl;
-		// std::cout << "it->first : " << it->first << std::endl;
 		if (it->second == conn_sock)
 			Port = it->first;
 	}
-	// std::cout << "c6" << std::endl;
-	
-	// std::cout << "PORT TEST : " << Port << std::endl;
-	// std::cout << "e1.0" << std::endl;
 	GoodServerConf = getGoodServer(servers, ServerRequest, Port);
-	// std::cout << "e1.1" << std::endl;
+	/********************************************************************/
+	
+	static bool upload = false;
+	static std::string StrUpload;
+	static std::string UploadFileName;
+	if (ServerRequest->findMethod() == "POST" || upload)
+	{
+		if (ServerRequest->findMethod() == "POST")
+		{
+			if (GoodServerConf->getClientMaxBodySize() < ServerRequest->getContentLength())
+			{
+				upload = false;
+				_status_code = 413;
+			}
+		}
+		upload = true;
+		StrUpload = StrUpload + request;
+		/* Cette partie permet de uploader les requete POST */
+		int y = 0;
+		int pos = 0;
+		int posfinal = 0;
+		int posinit = 0;	
+		while (request.find("WebKitFormBoundary", pos) != std::string::npos)
+		{
+			y++;
+			// std::cout << "\nTAILLE Y\n" << y << std::endl; 
+			pos = request.find("WebKitFormBoundary", pos) + strlen("WebKitFormBoundary");
+			if (y == 2)
+			{
+				posinit = pos;
+				int posfilename = request.find("filename=", pos) + strlen("filename=");
+				UploadFileName = request.substr(posfilename, request.find("\"", posfilename + 1));
+			}
+			if (y == 3)
+				posfinal = pos;
+		}
+		if (y == 3)
+		{
+			// std::cout << "\nOUTPUT\n" << std::endl;
+			std::ofstream file(UploadFileName.c_str(), std::ios::binary);
+			// size_t pos = request.find("------WebKitFormBoundary");
+			// std::cout << "\nBOUNDARY POS\n" << pos << std::endl;
+			pos = StrUpload.find("\r\n\r\n", posinit) + strlen("\r\n\r\n");
+			// std::cout << "\nSTART OF THE STRING\n" << pos << std::endl;
+			std::string start = StrUpload.substr(pos);
+			// std::cout << start << std::endl;
+			// std::cout.write(start.c_str(), start.size());
+			size_t end_pos = StrUpload.find("------WebKitFormBoundary", pos);
+			// std::cout << "\nEND_POS\n" << end_pos << std::endl;
+			// std::cout << "\nFIN\n" << (end_pos - pos) << std::endl; 
+			StrUpload = StrUpload.substr(pos, (end_pos - pos));
+			file.write(StrUpload.c_str(), StrUpload.size());
+			file.close();
+			upload = false;
+			StrUpload.clear();
+		}
+		else
+			return ;
+	}
+	/************************************************************************/
+	
 	server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
-	// std::cout << "e1.2" << std::endl;
-	/**************************************/
-	/* TENTATIVE DE UPLOAD */
-	
-	static std::string PostContent ;
-	static bool posting;
-	static unsigned long long ContentSize; 
-	static int j = 0;
-	static int k = 0;
-	static int l = 0;
-	static std::string filename;
-	// static std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
-	
-	if (ServerRequest->getMethod() == "POST")
-	{
-		std::cout << "c1\n" << std::endl;
-		posting = true;
-		ContentSize = ServerRequest->getContentLength();
-		j++;
-	}
-	else if (PostContent.size() < ContentSize && posting)
-	{
-		k++;
-		std::cout << "c2\n" << "ContentSize : " << ContentSize << std::endl;
-		if (j == 1)
-		{
-			int pos = 0;
-			filename = ServerRequest->getVersion();
-			pos = filename.find("filename=\"") + strlen("filename=\"");
-			filename = filename.substr(pos, filename.size() - pos - 1);
-			std::cout << "c2.0" << std::endl;
-			std::cout << "filename " << filename << std::endl;
-		}
-		std::cout << "PostContent.size() before : " << PostContent.size() << std::endl;
-		PostContent = PostContent + ServerRequest->getServerRequest();
-		std::cout << "PostContent.size() after : " << PostContent.size() << std::endl;
-		// std::cout << "TEST UPLOAD\n" << PostContent << std::endl;
-		if (PostContent.size() >= ContentSize)
-		{
-			std::cout << "c2.1" << std::endl;
-			ServerResponse.SendingPostResponse(*ServerRequest, conn_sock, GoodServerConf, PostContent, filename);
-			posting = false;
-		}
-	}
-	else
-		ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf);
+	ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf);
 	delete ServerRequest;
-	l++;
-	// std::cout << "c3\n" << "l = " << l << " k : " << k << std::endl;
 }
 
 void	ChangePort(std::map<int, int>& StorePort, int conn_sock, int listen_sock)
