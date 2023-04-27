@@ -73,7 +73,7 @@ class server_configuration
 		void														setCgi();
 		void														setErrorPage();
 		void														setDefErrorPage();
-		void														setStatusCode(int);
+		void														setStatusCode(int s) { _StatusCode = s; }
 		size_t														findClientMaxBodySize();
 		std::string													findElement(std::string);
 //		std::string													findServerName();
