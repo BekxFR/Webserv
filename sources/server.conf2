@@ -1,45 +1,10 @@
 server {
 	server_name webserv.com;
-		listen 8083;
-		listen 8087;
+		listen 8080;
 
 		root ./site/;
-		index index.html
-		client_max_body_size 2M
-		error_page 404 site/42.jpg 405 error.html 406 e;
-
-		location /upload/ {
-
-			limit_except POST GET {
-				deny all;
-			}
-			
-			return 301 https://www.example.com/new-page.html;
-
-			root ./files;
-
-			autoindex on;
-
-			index index2.html;
-
-			cgi .php /usr/bin/php-cgi ;
-
-			upload_store /var/www/uploads;
-		}
-
-		location /download/ {
-			index index.html;
-		}
-
-		allow_methods GET ;
-}
-
-server {
-	server_name webserv2.com;
-		listen 0.0.0.0:8080;
-
-		root ./test;
 		index index.html;
+		client_max_body_size 2M
 
 		allow_methods GET;
 }
@@ -60,7 +25,8 @@ server {
 		listen 0.0.0.0:8084;
 
 		root ./;
-		index index.php;
+		index inoodex.html;
 
+		autoindex off;
 		allow_methods GET;
 }
