@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/27 11:45:09 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/27 12:58:34 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,16 +67,15 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	char buffer[100000];
 	int n = read(conn_sock, buffer, 100000);
 	int Port = 0;
-	
 	if (n <= 0) {
 		// close(conn_sock);
 		return;
 	}
 	// buffer[n] = '\0';
-	std::cout << "BUFFER\n" << std::endl;
+	std::cout << "\nBUFFER 1\n" << std::endl;
 	std::cout.write(buffer, 2048);
 	std::string request;
-	request.append(buffer);
+	request.append(buffer, 2048);
 	memset(buffer, 0, 2048);
 	while (n > 0)
 	{
@@ -84,12 +83,43 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		if (n > 0)
 		{
 			// buffer[n] = '\0';
-			std::cout << "BUFFER\n" << std::endl;
+			std::cout << "\nBUFFER 2\n" << std::endl;
 			std::cout.write(buffer, 2048);
-			request.append(buffer);
+			request.append(buffer, 2048);
 			memset(buffer, 0, 2048);
 		}
 	}
+	
+	static bool go = false;
+	
+	std::cout << "\nREQUEST SUR LAQUELLE JE BOSSE\n\n" << std::endl;
+	std::cout.write(request.c_str(), request.size());
+	std::cout << "\nRESULT FIND POS\n" << request.find("POST") << std::endl;
+	std::cout << "\nSIZE\n" << request.size() << std::endl;
+	if (request.find("POST") != std::string::npos)
+	{
+		std::cout << "\na1\n" << std::endl;
+		go = true;
+	}
+	else if (go && request.find("------WebKitFormBoundary") != std::string::npos)
+	{
+		std::cout << "\na2\n" << std::endl;
+		std::ofstream file("output.png", std::ios::binary);
+		size_t pos = request.find("------WebKitFormBoundary");
+		std::cout << "\nBOUNDARY POS\n" << pos << std::endl;
+		pos = request.find("\r\n\r\n") + strlen("\r\n\r\n");
+		std::cout << "\nSTART OF THE STRING\n" << pos << std::endl;
+		std::string start = request.substr(pos);
+		std::cout << start << std::endl;
+		// std::cout.write(start.c_str(), start.size());
+		size_t end_pos = request.find("------WebKitFormBoundary", pos);
+		std::cout << "\nEND_POS\n" << end_pos << std::endl;
+		std::cout << "\nFIN\n" << (end_pos - pos) << std::endl; 
+		request = request.substr(pos, (end_pos - pos));
+		file.write(request.c_str(), request.size());
+		file.close();
+	}
+
 	// std::cout << "\n\nRequest :\n\n" << request << std::endl;
 	server_request* ServerRequest = new server_request(request);
 	ServerRequest->request_parser();
