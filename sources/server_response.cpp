@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/26 21:36:43 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/27 11:35:49 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -584,7 +584,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	std::string RealPath;
 	std::string RealPathIndex;
 	std::string PathToStore;
-	std::string FinalPath;
 	
 	RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPath.find("//") != std::string::npos)
@@ -627,17 +626,16 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		else if (dir)
 		{
 			// std::cout << " BOOL INDEX " << dir << std::endl;
-			FinalPath = RealPathIndex;
+			_finalPath = RealPathIndex;
 		}
 		else
 		{
 			// std::cout << " BOOL DIR " << dir << std::endl;
-			FinalPath = RealPath;
+			_finalPath = RealPath;
 		}
 	}
 	/* A VOIR DEMAIN MAIS FINAL PATH ETAIT MAL INITIALISE DS ANSWER GET*/
-	std::cout << "FinalPath : " << FinalPath << std::endl;
-	_finalPath = FinalPath;
+	std::cout << "FinalPath : " << _finalPath << std::endl;
 	std::cout << "StatusCode : " << _status_code << std::endl;
 	/************************************************/
 	
@@ -656,12 +654,11 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	{
 		case GET :
 		{
-			// if (_status_code == 200) // J ENLEVE CA CAR JE COMPRENDS PAS PQ ON A MIS CA
-				if (!AnswerGet(Server_Request, server))
-				{
-					std::cout << "c10 " << std::endl;
-					createResponse(server, _content, Server_Request, id_session);
-				}
+			if (!AnswerGet(Server_Request, server))
+			{
+				std::cout << "c10 " << std::endl;
+				createResponse(server, _content, Server_Request, id_session);
+			}
 			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
 			std::cout << std::endl << "Response\n " << _ServerResponse << std::endl << std::endl;
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
@@ -671,13 +668,13 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		{
 			// std::cout << "BODY\n" << Server_Request.getBody() << std::endl;
 
-			std::string FileName = "./" + findFileName(FinalPath);
+			std::string FileName = "./" + findFileName(_finalPath);
 			// std::cout << "FILENAME : " << FileName << std::endl;
 			std::string outfilename = FileName.c_str(); // PATH DU FICHIER DE SORTIE
 			
 			std::ofstream outputFile(outfilename.c_str(), std::ios::binary); // OK 1
 
-			std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
+			std::ifstream file(_finalPath.c_str(), std::ifstream::binary);
 			// std::stringstream buffer;
 			std::filebuf* pbuf = file.rdbuf();
 			std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
