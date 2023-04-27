@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 16:39:51 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/27 18:25:51 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -539,7 +539,7 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 
 void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
-	std::cout << "REQUETE\n" << Server_Request.getServerRequest() << std::endl;
+	// std::cout << "REQUETE\n" << Server_Request.getServerRequest() << std::endl;
 	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
 		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
 	// if (_status_code == 200 && Server_Request.getContentLength() > server->getClientMaxBodySize())

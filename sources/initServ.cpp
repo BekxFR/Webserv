@@ -83,8 +83,8 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		}
 	}
 	
-	std::cout << "\nREQUEST SUR LAQUELLE JE BOSSE\n\n" << std::endl;
-	std::cout.write(request.c_str(), request.size());
+	// std::cout << "\nREQUEST SUR LAQUELLE JE BOSSE\n\n" << std::endl;
+	// std::cout.write(request.c_str(), request.size());
 
 	
 	// std::cout << "\n\nRequest :\n\n" << request << std::endl;
@@ -114,7 +114,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			if (GoodServerConf->getClientMaxBodySize() < ServerRequest->getContentLength())
 			{
 				upload = false;
-				_status_code = 413;
+				// _status_code = 413;
 			}
 		}
 		upload = true;
@@ -122,25 +122,26 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		/* Cette partie permet de uploader les requete POST */
 		int y = 0;
 		int pos = 0;
-		int posfinal = 0;
 		int posinit = 0;	
-		while (request.find("WebKitFormBoundary", pos) != std::string::npos)
+		while (StrUpload.find("WebKitFormBoundary", pos) != std::string::npos)
 		{
 			y++;
 			// std::cout << "\nTAILLE Y\n" << y << std::endl; 
-			pos = request.find("WebKitFormBoundary", pos) + strlen("WebKitFormBoundary");
+			pos = StrUpload.find("WebKitFormBoundary", pos) + strlen("WebKitFormBoundary");
 			if (y == 2)
 			{
 				posinit = pos;
-				int posfilename = request.find("filename=", pos) + strlen("filename=");
-				UploadFileName = request.substr(posfilename, request.find("\"", posfilename + 1));
+				// std::cout << "STRUPLOAD\n" << std::endl;
+				// std::cout.write(StrUpload.c_str(), StrUpload.size());
+				int posfilename = StrUpload.find("filename=\"", pos) + strlen("filename=\"");
+				UploadFileName = StrUpload.substr(posfilename, StrUpload.find("\"", posfilename) - posfilename);
 			}
-			if (y == 3)
-				posfinal = pos;
 		}
 		if (y == 3)
 		{
-			// std::cout << "\nOUTPUT\n" << std::endl;
+
+			std::cout << "\nOUTPUT\n" << std::endl;
+			std::cout << "UPLOADNAME : " << UploadFileName << " FIN" << std::endl;
 			std::ofstream file(UploadFileName.c_str(), std::ios::binary);
 			// size_t pos = request.find("------WebKitFormBoundary");
 			// std::cout << "\nBOUNDARY POS\n" << pos << std::endl;
@@ -434,4 +435,3 @@ std::vector<std::string>	getHosts(std::vector<server_configuration*> servers)
 	}
 	return Hosts;
 }
-
