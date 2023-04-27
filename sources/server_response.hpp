@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/26 20:24:08 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/27 12:33:12 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ class server_response
 	int			doCgi(std::string toexec, server_configuration * server); // envoyer fichier a cgiser + return fd du cgi
 	bool		isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool		autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI);
+	bool		manageCgi(const server_request& Server_Request, server_configuration *server);
 	bool		AnswerGet(const server_request& Server_Request, server_configuration *server);
 	void		SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent, std::string filename);
 	int			getIdSessionOrSetError401(const server_request& Server_Request);

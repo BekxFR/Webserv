@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 11:43:25 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/27 12:50:51 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -481,6 +481,33 @@ void	server_response::SendingPostResponse(const server_request& Server_Request, 
 	// break ;
 }
 
+bool	server_response::manageCgi(const server_request& Server_Request, server_configuration *server)
+{
+	std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
+	std::cerr << "path cgi appele : '" << server->getCgi().find("." + Server_Request.getType())->second.data() << "'" << std::endl;
+	if (access(server->getCgi().find("." + Server_Request.getType())->second.data(), X_OK))
+		_status_code = 502;
+	else
+	{
+		std::stringstream buffer;
+		if (_fileName == "")
+			_fileName = ".cgi-tmp.txt";
+		if (!doCgi(_finalPath,server))
+		{
+			buffer << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
+			std::ifstream	cgiContent(_fileName.c_str());
+			std::getline(cgiContent, _content, '\0'); // on recupere le retour du cgi
+			cgiContent.close();
+			addLength(); // ajout content-length en fonction du retour des cgi
+			buffer << _content << "\0";
+			_ServerResponse = buffer.str(); // on a mis header et body dans la reponse
+			std::remove(_fileName.c_str()); // suppression du fichier tmp contenant le retour du cgi
+			return (1);
+		}
+	}
+	return (0);
+}
+
 bool	server_response::AnswerGet(const server_request& Server_Request, server_configuration *server)
 {
 	if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
@@ -502,26 +529,10 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 		else if (_status_code == 200)
 		{
 			if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end())
-			{
-			//	std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
-				if (_fileName == "")
-					_fileName = ".cgi-tmp.txt";
-				if (!doCgi(_finalPath,server))
-				{
-					buffer << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
-					std::ifstream	cgiContent(_fileName.c_str());
-					std::getline(cgiContent, _content, '\0'); // on recupere le retour du cgi
-					cgiContent.close();
-					addLength(); // ajout content-length en fonction du retour des cgi
-					buffer << _content << "\0";
-					_ServerResponse = buffer.str(); // on a mis header et body dans la reponse
-					std::remove(_fileName.c_str()); // suppression du fichier tmp contenant le retour du cgi
-					return (1);
-				}
-			}
+				return (manageCgi(Server_Request, server));
 			else
 			{
-			//	std::cout << "Affichage classique" << std::endl;
+				//	std::cout << "Affichage classique" << std::endl;
 				std::ifstream file(_finalPath.c_str());
 				if (!file.is_open())
 					_status_code = 403;
@@ -1162,12 +1173,8 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName);
 		waitpid(cgi.getPid(), &status, 0);
 		if (WIFEXITED(status))
-		{
-			if (WEXITSTATUS(status) == 1)
-				_status_code = 406;
-			else if (WEXITSTATUS(status) != 0)
+			if (WEXITSTATUS(status) != 0)
 				_status_code = 500;
-		}
 		if (g_code == 1)
 		{
 			_status_code = 500;
