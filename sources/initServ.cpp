@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/27 13:46:59 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/27 16:57:22 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,107 +60,65 @@ server_configuration*	getGoodServer(std::vector<server_configuration*> servers, 
 	return (SamePort.at(0));
 }
 
-void	upload_small_file(std::string request)
-{
-	std::cout << "\na2\n" << std::endl;
-	std::ofstream file("smalloutput.png", std::ios::binary);
-	size_t pos = request.find("------WebKitFormBoundary");
-	std::cout << "\nBOUNDARY POS\n" << pos << std::endl;
-	pos = request.find("\r\n\r\n") + strlen("\r\n\r\n");
-	std::cout << "\nSTART OF THE STRING\n" << pos << std::endl;
-	std::string start = request.substr(pos);
-	std::cout << start << std::endl;
-	// std::cout.write(start.c_str(), start.size());
-	size_t end_pos = request.find("------WebKitFormBoundary", pos);
-	std::cout << "\nEND_POS\n" << end_pos << std::endl;
-	std::cout << "\nFIN\n" << (end_pos - pos) << std::endl; 
-	request = request.substr(pos, (end_pos - pos));
-	file.write(request.c_str(), request.size());
-	file.close();
-}
-
-
 void handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus)
 {
 	(void)CodeStatus;
 	server_configuration *GoodServerConf;
-	char buffer[100000];
-	int n = read(conn_sock, buffer, 100000);
+	char buffer[2048];
+	int n = read(conn_sock, buffer, 2048);
 	int Port = 0;
 	if (n <= 0) {
 		// close(conn_sock);
 		return;
 	}
 	// buffer[n] = '\0';
-	std::cout << "\nBUFFER 1\n" << std::endl;
-	std::cout.write(buffer, 2048);
-	std::string request;
-	request.append(buffer, 2048);
-	memset(buffer, 0, 2048);
+	// std::cout.write(buffer, 2048);
+	static std::string request;
+	request.append(buffer, n);
+	memset(buffer, 0, n);
 	while (n > 0)
 	{
-		n = read(conn_sock, buffer, 2048);
+		n = read(conn_sock, buffer, n);
 		if (n > 0)
 		{
 			// buffer[n] = '\0';
-			std::cout << "\nBUFFER 2\n" << std::endl;
-			std::cout.write(buffer, 2048);
-			request.append(buffer, 2048);
-			memset(buffer, 0, 2048);
+			// std::cout.write(buffer, n);
+			request.append(buffer, n);
+			memset(buffer, 0, n);
 		}
 	}
 	
-	static bool go = false;
-	static bool uploading = false;
-	static int Webkit = 0;
-	static int nb_of_webkitboudary = 0;
-	static int pos_web = 0;
+	// static bool go = false;
 	std::cout << "\nREQUEST SUR LAQUELLE JE BOSSE\n\n" << std::endl;
 	std::cout.write(request.c_str(), request.size());
-	std::cout << "\nRESULT FIND POS\n" << request.find("POST") << std::endl;
-	std::cout << "\nSIZE\n" << request.size() << std::endl;
-	if (request.find("POST") != std::string::npos)
+	// std::cout << "\nRESULT FIND POS\n" << request.find("POST") << std::endl;
+	// std::cout << "\nSIZE\n" << request.size() << std::endl;
+	// if (request.find("POST") != std::string::npos)
+	// {
+	// 	std::cout << "\na1\n" << std::endl;
+	// 	go = true;
+	// }
+	int y = 0;
+	int pos = 0;
+	int posfinal = 0;
+	int posinit = 0;
+	while (request.find("WebKitFormBoundary", pos) != std::string::npos)
 	{
-		std::cout << "\na1\n" << std::endl;
-		go = true;
+		y++;
+		std::cout << "\nTAILLE Y\n" << y << std::endl; 
+		pos = request.find("WebKitFormBoundary", pos) + strlen("------WebKitFormBoundary");
+		if (y == 2)
+			posinit = pos;
+		if (y == 3)
+			posfinal = pos;
 	}
-	if (request.find("------WebKitFormBoundary") != std::string::npos && go) // pas de elseif car peut etre ds la mm requete
+	if (y == 3)
 	{
-		size_t pos_web = 0;
-		while (request.find("------WebKitFormBoundary", pos_web) != std::string::npos)
-		{
-			nb_of_webkitboudary++
-			pos_web = request.find("------WebKitFormBoundary", pos_web);
-		}
-		if (nb_of_webkitboudary == 2)
-			upload_small_file(request)
-		if (nb_of_webkitboudary == 1 && pos_web < 10)
-			upload_start_file(request)
-			// cela veut dire que il n y a que au debut que y aura pas d autres
-		if (nb_of_webkitboudary == 1 && pos_web > 10)
-			upload_end_file(request)
-			// cela veut dire que il n y a que a la fin que y aura pas d autres
-		if (nb_of_webkitboudary == 0)
-			upload_midlle_file(request)
-			// cela veut dire que on est plein dedans ();
-		if (Webkit == 0)
-			uploading = true;
-		Webkit++;
-		if (Webkit == 2)
-		{
-			uploading = false;
-			Webkit == 0;
-		}
-	}
-	if ()
-	while (go && Webkit < 2) (request.find("------WebKitFormBoundary") != std::string::npos || w
-	if (go && request.find("------WebKitFormBoundary") != std::string::npos)
-	{
-		std::cout << "\na2\n" << std::endl;
-		std::ofstream file("output.png", std::ios::binary);
-		size_t pos = request.find("------WebKitFormBoundary");
-		std::cout << "\nBOUNDARY POS\n" << pos << std::endl;
-		pos = request.find("\r\n\r\n") + strlen("\r\n\r\n");
+		std::cout << "\nOUTPUT\n" << std::endl;
+		std::ofstream file("output.mp4", std::ios::binary);
+		// size_t pos = request.find("------WebKitFormBoundary");
+		// std::cout << "\nBOUNDARY POS\n" << pos << std::endl;
+		pos = request.find("\r\n\r\n", posinit) + strlen("\r\n\r\n");
 		std::cout << "\nSTART OF THE STRING\n" << pos << std::endl;
 		std::string start = request.substr(pos);
 		std::cout << start << std::endl;
