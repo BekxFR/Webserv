@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 13:37:16 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/27 17:51:11 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ class server_response
 	std::string							_fileName;
 	std::vector<std::string>			_env;
 	server_request*						_req;
+	bool								_isCgi;
 	std::map<std::string, std::string>	_contentType;
 
 	server_response();
@@ -44,6 +45,7 @@ class server_response
 	// GETTERS
 	int									getCgiFd() const { return (_cgiFd); }
 	int									getStatusCode() const { return _status_code; }
+	bool								getIsCgi() const { return (_isCgi); }
 	size_t								getContentLength() const { return _contentLength; }
 	std::string							getFileName() { return (_fileName); }
 	std::string							getHeader() const { return _header; }
@@ -57,6 +59,7 @@ class server_response
 	std::vector<std::string>&			getEnv() { return (_env); }
 	std::map<std::string, std::string>	getContentType() const { return (_contentType); }
 
+	void								setIsCgi(bool i) { _isCgi = i; }
 	// OTHER
 	void		SendingResponse(const server_request& Server_Request, int socket, server_configuration* Root);
 	void		addLength();

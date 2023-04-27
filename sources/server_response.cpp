@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 15:55:15 by nflan            ###   ########.fr       */
+/*   Updated: 2023/04/27 19:16:24 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,14 @@
 
 extern volatile std::sig_atomic_t	g_code;
 
-server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _req(NULL)
+server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _req(NULL), _isCgi(0)
 {
 	this->addType();
 	if (0)
 		std::cout << "server_response Default Constructor called" << std::endl;
 }
 
-server_response::server_response(int stat, std::vector<std::string> env, server_request* req) : _status_code(stat), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(env), _req(req)
+server_response::server_response(int stat, std::vector<std::string> env, server_request* req) : _status_code(stat), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(env), _req(req), _isCgi(0)
 {
 	this->addType();
 	if (0)
@@ -53,6 +53,7 @@ server_response	&server_response::operator=(server_response const &obj)
 	_finalPath = obj.getPath();
 	_req = obj.getReq();
 	_env = obj.getEnv();
+	_isCgi = obj.getIsCgi();
 	_contentType = obj.getContentType();
 	if (0)
 		std::cout << "server_response Copy assignment operator called" << std::endl;
@@ -131,6 +132,7 @@ std::string	server_response::list_dir(std::string path)
 	errno = 0;
 	dir = opendir(path.c_str());
 	if (dir == NULL)
+	{
 		if (errno == EACCES || errno == EMFILE || errno == ENFILE || errno == ENOENT || errno == ENOMEM || errno == ENOTDIR)
 		{
 			if (errno == ENOENT || errno == ENOTDIR)
@@ -139,8 +141,10 @@ std::string	server_response::list_dir(std::string path)
 				_status_code = 403;
 			else if (errno == EMFILE || errno == ENFILE || errno == ENOMEM)
 				_status_code = 500;
+			errno = 0;
 			return ("");
 		}
+	}
 	send = readdir(dir);
 	if (!send)
 	{
@@ -224,6 +228,7 @@ std::string server_response::getRealPath(std::string MethodUsed, server_configur
 	   dans une location */
 	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
 		return (server->getRoot() + "/" + RequestURI);
+	_status_code = 501;
 	return ("");
 }
 
@@ -506,14 +511,17 @@ bool	server_response::manageCgi(const server_request& Server_Request, server_con
 			_fileName = ".cgi-tmp.txt";
 		if (!doCgi(_finalPath,server))
 		{
-			buffer << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
-			std::ifstream	cgiContent(_fileName.c_str());
+			std::ifstream	cgiContent(_fileName.data());
 			std::getline(cgiContent, _content, '\0'); // on recupere le retour du cgi
 			cgiContent.close();
+			std::ofstream	cgiChange(_fileName.data(), std::ios::out | std::ios::trunc);
+			cgiChange << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
 			addLength(); // ajout content-length en fonction du retour des cgi
-			buffer << _content << "\0";
-			_ServerResponse = buffer.str(); // on a mis header et body dans la reponse
-			std::remove(_fileName.c_str()); // suppression du fichier tmp contenant le retour du cgi
+			if (cgiChange)
+				cgiChange << _content << "\0";
+			else
+				_status_code = 500;
+			_isCgi = 1;
 			return (1);
 		}
 	}
@@ -540,21 +548,17 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 			_status_code = 403;
 		else if (_status_code == 200)
 		{
-			if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end())
-				return (manageCgi(Server_Request, server));
+			if (_isCgi == 1)
+				_finalPath = _fileName;
+			std::ifstream file(_finalPath.c_str());
+			if (!file.is_open())
+				_status_code = 403;
 			else
-			{
-				//	std::cout << "Affichage classique" << std::endl;
-				std::ifstream file(_finalPath.c_str());
-				if (!file.is_open())
-					_status_code = 403;
-				else
-					buffer << file.rdbuf();
-			}
+				buffer << file.rdbuf();
 		}
 		_content = buffer.str();
 	}
-	return (0);
+	return (1);
 }
 
 void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server)
@@ -625,13 +629,14 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	  un message erreur */
 	struct stat path_info;
 	bool dir;
-	if (stat(RealPath.c_str(), &path_info) != 0) {
+	if (stat(RealPath.c_str(), &path_info) != 0 && _status_code == 200) {
 		/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
 		   Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		_status_code = 404;
-		// std::cout << " BOOL FALSE" << std::endl;
+	//	std::cerr << "real path = " << RealPath.data() << std::endl;
+		std::cout << " BOOL FALSE" << std::endl;
 	}
-	else
+	else if (_status_code == 200)
 	{
 		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
 		   C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
@@ -640,7 +645,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		// std::cout << " BOOL TEST " << RealPath.at(RealPath.size() - 1) << std::endl;
 		if (dir && RealPath.at(RealPath.size() - 1) != '/')
 		{
-			// std::cout << " BOOL 404 " << dir << std::endl;
+			//std::cout << " BOOL 404 " << dir << std::endl;
 			_status_code = 404;
 		}
 		else if (dir)
@@ -659,6 +664,11 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	std::cout << "StatusCode : " << _status_code << std::endl;
 	/************************************************/
 
+	if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end() && _status_code == 200)
+	{
+		std::cerr << "cgi" << std::endl;
+		manageCgi(Server_Request, server);
+	}
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
 	enum imethod {GET, POST, DELETE};
@@ -674,8 +684,9 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	{
 		case GET :
 			{
-				if (!AnswerGet(Server_Request, server))
-					createResponse(server, _content, Server_Request, id_session);
+				if (_status_code == 200)
+					AnswerGet(Server_Request, server);
+				createResponse(server, _content, Server_Request, id_session);
 				// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
 				std::cout << std::endl << "SERVER RESPONSE CONSTRUITE -> " << std::endl << _ServerResponse << std::endl << std::endl;
 				send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
@@ -683,6 +694,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			}
 		case POST :
 			{
+				std::cerr << "post" << std::endl;
 				// std::cout << "BODY\n" << Server_Request.getBody() << std::endl;
 
 				std::string FileName = "./" + findFileName(_finalPath);
@@ -733,7 +745,8 @@ https://httpwg.org/specs/rfc9110.html#POST => A LIRE
 			}
 		case DELETE :
 			{
-				this->delete_dir(_finalPath.c_str());
+				if (_status_code == 200)
+					this->delete_dir(_finalPath.c_str());
 				if (_status_code == 200)
 					_content = server->getErrorPage()[STATUS200].second;
 				createResponse(server, _content, Server_Request, id_session);
@@ -749,6 +762,9 @@ https://httpwg.org/specs/rfc9110.html#POST => A LIRE
 				break ;
 			}
 	}
+	if (_isCgi)
+		std::remove(_fileName.data());
+	_isCgi = 0;
 	return ;
 }
 
@@ -809,7 +825,8 @@ std::string	server_response::addBody(std::string msg)
 	std::stringstream	response;
 
 	_contentLength = msg.size();
-	response << "Content-Length: " << _contentLength << "\r\n\r\n";
+	if (_isCgi == 0)
+		response << "Content-Length: " << _contentLength << "\r\n\r\n";
 	response << msg << "\r\n";
 	_body = response.str();
 	return (_body);
@@ -862,7 +879,8 @@ void	server_response::createResponse(server_configuration * server, std::string 
 				{
 					case 200:
 						{
-							response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request, server, IdSession);
+							if (_isCgi == 0)
+								response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request, server, IdSession);
 							response << addBody(file);
 							break;
 						}
@@ -1161,7 +1179,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	_env.push_back("REQUEST_METHOD=" + _req->getMethod());
 	_env.push_back("SCRIPT_FILENAME=" + toexec);
 	cgiPath = server->getCgi().find("." + _req->getType())->second;
-	_env.push_back("SCRIPT_NAME=" + cgiPath);
+	_env.push_back("SCRIPT_NAME=" + toexec);
 	//	_env.push_back("QUERY_STRING" + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
 	_env.push_back("PATH_INFO=" + cgiPath);
 	_env.push_back("REQUEST_URI=" + _req->getRequestURI());

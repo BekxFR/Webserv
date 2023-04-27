@@ -52,13 +52,13 @@ server {
 
 server {
 	server_name webserv2;
-	listen 0.0.0.0:8085;
+	listen 0.0.0.0:8083;
 
 	root ./;
 	index index.html;
 
+	autoindex off;
 	allow_methods GET DELETE;
-	cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
 }
 
 server {

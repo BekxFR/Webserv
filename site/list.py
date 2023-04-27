@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+from wsgiref.handlers import CGIHandler
+
+import os
 print ("Content-type: text/html\n\n")
 print()
-import os
 
 # Fonction pour générer une liste de fichiers dans le répertoire courant
 def list_files():
@@ -29,3 +31,5 @@ print ("<h1>Liste des fichiers dans le répertoire courant :</h1>")
 print (list_files()) # Appelle la fonction list_files() pour générer la liste de fichiers
 print ("</body>")
 print ("</html>")
+
+CGIHandler().run(app)
