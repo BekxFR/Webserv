@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 11:35:49 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/27 11:44:25 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -530,9 +530,9 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 					_status_code = 403;
 				else
 					buffer << file.rdbuf();
-				_content = buffer.str();
 			}
 		}
+		_content = buffer.str();
 	}
 	return (0);
 }

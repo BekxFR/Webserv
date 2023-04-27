@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 21:59:29 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/27 11:45:09 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,25 +64,30 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 {
 	(void)CodeStatus;
 	server_configuration *GoodServerConf;
-	char buffer[1024];
-	int n = read(conn_sock, buffer, 1024);
+	char buffer[100000];
+	int n = read(conn_sock, buffer, 100000);
 	int Port = 0;
 	
-	// std::cout << "e1" << std::endl;
 	if (n <= 0) {
 		// close(conn_sock);
 		return;
 	}
-	buffer[n] = '\0';
+	// buffer[n] = '\0';
+	std::cout << "BUFFER\n" << std::endl;
+	std::cout.write(buffer, 2048);
 	std::string request;
 	request.append(buffer);
+	memset(buffer, 0, 2048);
 	while (n > 0)
 	{
-		n = read(conn_sock, buffer, 1024);
+		n = read(conn_sock, buffer, 2048);
 		if (n > 0)
 		{
-			buffer[n] = '\0';
+			// buffer[n] = '\0';
+			std::cout << "BUFFER\n" << std::endl;
+			std::cout.write(buffer, 2048);
 			request.append(buffer);
+			memset(buffer, 0, 2048);
 		}
 	}
 	// std::cout << "\n\nRequest :\n\n" << request << std::endl;
