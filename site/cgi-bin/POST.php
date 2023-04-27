@@ -18,10 +18,10 @@
       }
       
       if(empty($errors)==true){
-         move_uploaded_file($file_tmp,"/usr/share/nginx/html/upload/".$file_name);
+         move_uploaded_file($file_tmp,"/tmp/upload/".$file_name);
 		 print_r($file_tmp);
 		 echo "vers";
-		 print_r("/usr/share/nginx/html/upload/".$file_name);
+		 print_r("/tmp/upload/".$file_name);
          echo "Success";
       }else{
          print_r($errors);
