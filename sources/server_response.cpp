@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/28 18:33:15 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/28 18:51:56 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -593,7 +593,9 @@ void *server_response::download_file(void *arg)
 		StockResponse.clear();
 		i++;
 	}
-
+	delete args->Response;
+	delete args->conn_sock;
+	delete args;
 	return NULL;
 }
 
