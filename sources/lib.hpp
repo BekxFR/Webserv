@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   lib.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 18:38:10 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 20:10:52 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/28 17:17:55 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@
 #include <unistd.h>
 #include <utility>
 #include <vector>
+#include <pthread.h>
+
 
 #include "cgi.hpp"
 #include "default_error.hpp"

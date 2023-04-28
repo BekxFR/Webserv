@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/26 20:24:08 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/28 17:48:42 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,7 @@ class server_response
 	bool		AnswerGet(const server_request& Server_Request, server_configuration *server);
 	void		SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent, std::string filename);
 	int			getIdSessionOrSetError401(const server_request& Server_Request);
+	static void		*download_file(void *arg);
 	// Définition de la méthode pour obtenir le corps de la réponse
 	// Définition de la méthode pour obtenir la réponse _ServerResponse
 	// Définition de la méthode pour obtenir le code d'état de la réponse

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/28 16:17:25 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/28 18:33:15 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -536,6 +536,67 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 	return (0);
 }
 
+struct thread_args {
+	int* conn_sock;
+    std::string* Response;
+};
+
+void *server_response::download_file(void *arg)
+{
+	struct thread_args *args = (struct thread_args *)arg;
+
+	std::cout.write(args->Response->c_str(), 20);
+	std::cout << "\n\nTEST THREAD : " << *args->conn_sock << std::endl;
+	// std::string ServerResponse = *args->Response;
+	// int conn_sock = *args->conn_sock;
+
+	std::string ServerResponse = *args->Response;
+	int conn_sock = *args->conn_sock;
+	std::cout << "\n\nTEST THREAD SOCK: " << conn_sock << std::endl;
+	std::cout << "\n\nTEST THREAD SIZE : " << ServerResponse.size() << std::endl;
+	while (ServerResponse.size() > 0)
+	{
+		// std::cout << "c3\n" << std::endl;
+		static std::string StockResponse;
+		// std::cout << "TEST UPLOAD 0\n" << ServerResponse.size() << std::endl;
+		static int i = 0;
+		// std::cout << "c3.1\n" << std::endl;
+		if (ServerResponse.size() >= 500000)
+		{
+			// std::cout << "c3.2\n" << std::endl;
+			StockResponse = ServerResponse.substr(500000);
+			// std::cout << "c3.3\n" << std::endl;
+			ServerResponse = ServerResponse.erase(500000);
+			// std::cout << "c3.4\n" << std::endl;
+			// std::cout << "\nTEST SERVERREPONSE SIZE\n" << ServerResponse.size() << std::endl;
+		}
+		// if (ServerResponse.size() < 2000000)
+		// {
+			
+		// }
+		// if (i < 1 || ServerResponse.size() < 2000000)
+		// {
+		// 	std::cout << "\nTEST UPLOAD \n" << std::endl;
+		// 	std::cout.write(ServerResponse.c_str(), ServerResponse.size());
+		// }
+		// std::cout << "RESPONSE SIZE : " << ServerResponse.size() << std::endl;
+		// std::cout << "STOCK SIZE : " << StockResponse.size() << std::endl;
+		// std::cout << "c4\n" << std::endl;
+		usleep(2000);
+		send(conn_sock, ServerResponse.c_str() , ServerResponse.size(), 0);
+		// if (ServerResponse.size() < 2000000)
+		// {
+		// 	StockResponse.clear();
+		// }	
+		// std::cout << "c5\n" << std::endl;
+		ServerResponse = StockResponse;
+		StockResponse.clear();
+		i++;
+	}
+
+	return NULL;
+}
+
 void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
 	// std::cout << "REQUETE\n" << Server_Request.getServerRequest() << std::endl;
@@ -658,44 +719,64 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 				std::cout << "c10 " << std::endl;
 				createResponse(server, _content, Server_Request, id_session);
 			}
+			
 			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
 			// std::cout << std::endl << "RESPONSE\n " << _ServerResponse << std::endl << std::endl;
 			if (_ServerResponse.size() > 2000000)
 			{
-				std::cout << "RESPONSE TOTAL SIZE : " << _ServerResponse.size() << std::endl;
-				while (_ServerResponse.size() > 0)
+				pthread_t download_thread;
+				struct thread_args *args = (struct thread_args *)malloc(sizeof(struct thread_args));
+				std::cout << "c1\n" << std::endl;
+				args->Response = new std::string(_ServerResponse);
+				args->conn_sock = new int(conn_sock);
+				std::cout << "c2\n" << std::endl;
+				if (pthread_create(&download_thread, NULL, &server_response::download_file, (void *)args) != 0) 
 				{
-					static std::string StockResponse;
-					// std::cout << "TEST UPLOAD 0\n" << _ServerResponse.size() << std::endl;
-					static int i = 0;
-					if (_ServerResponse.size() >= 500000)
-					{
-						StockResponse = _ServerResponse.substr(500000);
-						_ServerResponse = _ServerResponse.erase(500000);
-						// std::cout << "\nTEST SERVERREPONSE SIZE\n" << _ServerResponse.size() << std::endl;
-					}
-					// if (_ServerResponse.size() < 2000000)
-					// {
-						
-					// }
-					// if (i < 1 || _ServerResponse.size() < 2000000)
-					// {
-					// 	std::cout << "\nTEST UPLOAD \n" << std::endl;
-					// 	std::cout.write(_ServerResponse.c_str(), _ServerResponse.size());
-					// }
-					// std::cout << "RESPONSE SIZE : " << _ServerResponse.size() << std::endl;
-					// std::cout << "STOCK SIZE : " << StockResponse.size() << std::endl;
-					usleep(2000);
-					send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-					// if (_ServerResponse.size() < 2000000)
-					// {
-					// 	StockResponse.clear();
-					// }	
-					_ServerResponse = StockResponse;
-					StockResponse.clear();
-					i++;
+					perror("Error creating thread");
+					return ;
 				}
+				// if (pthread_detach(download_thread) != 0) {
+				// {
+				// 	perror("Error detaching thread");
+				// 	return ;
+				
 			}
+		
+			// {
+			// 	std::cout << "RESPONSE TOTAL SIZE : " << _ServerResponse.size() << std::endl;
+			// 	while (_ServerResponse.size() > 0)
+			// 	{
+			// 		static std::string StockResponse;
+			// 		// std::cout << "TEST UPLOAD 0\n" << _ServerResponse.size() << std::endl;
+			// 		static int i = 0;
+			// 		if (_ServerResponse.size() >= 500000)
+			// 		{
+			// 			StockResponse = _ServerResponse.substr(500000);
+			// 			_ServerResponse = _ServerResponse.erase(500000);
+			// 			// std::cout << "\nTEST SERVERREPONSE SIZE\n" << _ServerResponse.size() << std::endl;
+			// 		}
+			// 		// if (_ServerResponse.size() < 2000000)
+			// 		// {
+						
+			// 		// }
+			// 		// if (i < 1 || _ServerResponse.size() < 2000000)
+			// 		// {
+			// 		// 	std::cout << "\nTEST UPLOAD \n" << std::endl;
+			// 		// 	std::cout.write(_ServerResponse.c_str(), _ServerResponse.size());
+			// 		// }
+			// 		// std::cout << "RESPONSE SIZE : " << _ServerResponse.size() << std::endl;
+			// 		// std::cout << "STOCK SIZE : " << StockResponse.size() << std::endl;
+			// 		usleep(2000);
+			// 		send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+			// 		// if (_ServerResponse.size() < 2000000)
+			// 		// {
+			// 		// 	StockResponse.clear();
+			// 		// }	
+			// 		_ServerResponse = StockResponse;
+			// 		StockResponse.clear();
+			// 		i++;
+			// 	}
+			// }
 			else
 				send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
 			break ;
@@ -861,10 +942,6 @@ void	server_response::createResponse(server_configuration * server, std::string 
 		/* J AVAIS RAJOUTE CA MAIS CA NE SERT A RIEN ET MM CA REND LE FICHIER ILLISIBLE */
 		// file.insert(0, "----WebKitFormBoundarybC2GrDJYSRCSriwe\r\nContent-Disposition: form-data; name=\"file\"; filename=\"debian.iso\"\r\nContent-Type: application/x-cd-image\r\n\r\n");
 		// file = file + "\r\n----WebKitFormBoundarybC2GrDJYSRCSriwe";
-		// 
-		_contentLength = file.size(); 
-		std::cout << "TEST CONTENT LENGHT SETTING : " << file.size() << std::endl;
-		// std::cout << "TEST CONTENT LENGHT : " << _contentLength << std::endl;
 	}	
 	
 	for (; n != tmp && n < 5; n++) {}
