@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/28 13:13:18 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/28 19:34:19 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,12 +83,12 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		}
 	}
 	
-	// static int k = 0;
-	// if (k < 3)
-	// {
-	// 	std::cout << "\nREQUEST SUR LAQUELLE JE BOSSE\n\n" << std::endl;
-	// 	std::cout.write(request.c_str(), request.size());
-	// }
+	static int k = 0;
+	if (k < 5)
+	{
+		std::cout << "\nREQUEST ET SA SOCKET : " << conn_sock << "\n\n" << std::endl;
+		std::cout.write(request.c_str(), 100);
+	}
 	
 	// std::cout << "\n\nRequest :\n\n" << request << std::endl;
 	/*	Cette partie permet de parser la requete afin de pouvoir travailler
@@ -110,13 +110,24 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	static bool upload = false;
 	static std::string StrUpload;
 	static std::string UploadFileName;
-	if (ServerRequest->findMethod() == "POST" || upload)
+	static int socket_upload = 0;
+	std::cout << "SOCKET TEST : " << conn_sock << std::endl;
+	if (ServerRequest->findMethod() == "POST")
+	{
+		if (GoodServerConf->getClientMaxBodySize() < ServerRequest->getContentLength())
+		{
+			upload = true;
+			socket_upload = conn_sock;
+		}
+	}
+	if ((ServerRequest->findMethod() == "POST" || upload) && socket_upload == conn_sock)
 	{
 		if (ServerRequest->findMethod() == "POST")
 		{
 			if (GoodServerConf->getClientMaxBodySize() < ServerRequest->getContentLength())
 			{
 				upload = false;
+				socket_upload = conn_sock;
 				// _status_code = 413;
 			}
 		}
@@ -166,7 +177,6 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			return ;
 	}
 	/************************************************************************/
-	
 	server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
 	ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf);
 	delete ServerRequest;

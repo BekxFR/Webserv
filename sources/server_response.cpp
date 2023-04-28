@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/28 18:51:56 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/28 19:14:04 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -604,8 +604,8 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	// std::cout << "REQUETE\n" << Server_Request.getServerRequest() << std::endl;
 	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
 		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
-	// if (_status_code == 200 && Server_Request.getContentLength() > server->getClientMaxBodySize())
-	// 	_status_code = 413;
+	if (_status_code == 200 && Server_Request.getContentLength() > server->getClientMaxBodySize())
+		_status_code = 413;
 	/**********************************************************************/
 	
 	
@@ -697,8 +697,8 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		}
 	}
 	/* A VOIR DEMAIN MAIS FINAL PATH ETAIT MAL INITIALISE DS ANSWER GET*/
-	std::cout << "FinalPath : " << _finalPath << std::endl;
-	std::cout << "StatusCode : " << _status_code << std::endl;
+	// std::cout << "FinalPath : " << _finalPath << std::endl;
+	// std::cout << "StatusCode : " << _status_code << std::endl;
 	/************************************************/
 	
 	int n = 0;
@@ -721,9 +721,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 				std::cout << "c10 " << std::endl;
 				createResponse(server, _content, Server_Request, id_session);
 			}
-			
-			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
-			// std::cout << std::endl << "RESPONSE\n " << _ServerResponse << std::endl << std::endl;
 			if (_ServerResponse.size() > 2000000)
 			{
 				pthread_t download_thread;
@@ -740,45 +737,8 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 				// if (pthread_detach(download_thread) != 0) {
 				// {
 				// 	perror("Error detaching thread");
-				// 	return ;
-				
+				// 	return ;	
 			}
-		
-			// {
-			// 	std::cout << "RESPONSE TOTAL SIZE : " << _ServerResponse.size() << std::endl;
-			// 	while (_ServerResponse.size() > 0)
-			// 	{
-			// 		static std::string StockResponse;
-			// 		// std::cout << "TEST UPLOAD 0\n" << _ServerResponse.size() << std::endl;
-			// 		static int i = 0;
-			// 		if (_ServerResponse.size() >= 500000)
-			// 		{
-			// 			StockResponse = _ServerResponse.substr(500000);
-			// 			_ServerResponse = _ServerResponse.erase(500000);
-			// 			// std::cout << "\nTEST SERVERREPONSE SIZE\n" << _ServerResponse.size() << std::endl;
-			// 		}
-			// 		// if (_ServerResponse.size() < 2000000)
-			// 		// {
-						
-			// 		// }
-			// 		// if (i < 1 || _ServerResponse.size() < 2000000)
-			// 		// {
-			// 		// 	std::cout << "\nTEST UPLOAD \n" << std::endl;
-			// 		// 	std::cout.write(_ServerResponse.c_str(), _ServerResponse.size());
-			// 		// }
-			// 		// std::cout << "RESPONSE SIZE : " << _ServerResponse.size() << std::endl;
-			// 		// std::cout << "STOCK SIZE : " << StockResponse.size() << std::endl;
-			// 		usleep(2000);
-			// 		send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			// 		// if (_ServerResponse.size() < 2000000)
-			// 		// {
-			// 		// 	StockResponse.clear();
-			// 		// }	
-			// 		_ServerResponse = StockResponse;
-			// 		StockResponse.clear();
-			// 		i++;
-			// 	}
-			// }
 			else
 				send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
 			break ;
