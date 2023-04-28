@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/28 13:32:35 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/28 16:17:25 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -662,28 +662,37 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			// std::cout << std::endl << "RESPONSE\n " << _ServerResponse << std::endl << std::endl;
 			if (_ServerResponse.size() > 2000000)
 			{
+				std::cout << "RESPONSE TOTAL SIZE : " << _ServerResponse.size() << std::endl;
 				while (_ServerResponse.size() > 0)
 				{
 					static std::string StockResponse;
 					// std::cout << "TEST UPLOAD 0\n" << _ServerResponse.size() << std::endl;
-					int i = 0;
-					if (_ServerResponse.size() >= 2000000)
+					static int i = 0;
+					if (_ServerResponse.size() >= 500000)
 					{
-						StockResponse = _ServerResponse.substr(2000000);
-						_ServerResponse = _ServerResponse.erase(2000000);
+						StockResponse = _ServerResponse.substr(500000);
+						_ServerResponse = _ServerResponse.erase(500000);
+						// std::cout << "\nTEST SERVERREPONSE SIZE\n" << _ServerResponse.size() << std::endl;
 					}
-					if (i < 1 || _ServerResponse.size() < 2000000)
-					{
-						std::cout << "\nTEST UPLOAD \n" << std::endl;
-						std::cout.write(_ServerResponse.c_str(), _ServerResponse.size());
-					}
+					// if (_ServerResponse.size() < 2000000)
+					// {
+						
+					// }
+					// if (i < 1 || _ServerResponse.size() < 2000000)
+					// {
+					// 	std::cout << "\nTEST UPLOAD \n" << std::endl;
+					// 	std::cout.write(_ServerResponse.c_str(), _ServerResponse.size());
+					// }
+					// std::cout << "RESPONSE SIZE : " << _ServerResponse.size() << std::endl;
+					// std::cout << "STOCK SIZE : " << StockResponse.size() << std::endl;
+					usleep(2000);
 					send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-					if (_ServerResponse.size() < 2000000)
-					{
-						_ServerResponse.clear();
-						StockResponse.clear();
-					}	
+					// if (_ServerResponse.size() < 2000000)
+					// {
+					// 	StockResponse.clear();
+					// }	
 					_ServerResponse = StockResponse;
+					StockResponse.clear();
 					i++;
 				}
 			}
@@ -847,13 +856,14 @@ void	server_response::createResponse(server_configuration * server, std::string 
 
 	if (file.size() > 2000000)
 	{
-		// _contentType = "Content-Type: multipart/form-data; boundary=----WebKitFormBoundarybC2GrDJYSRCSriwe\r\n";
-		file.insert(0, "----WebKitFormBoundarybC2GrDJYSRCSriwe\r\nContent-Disposition: form-data; name=\"file\"; filename=\"Bebepleure.mp4\"\r\nContent-Type: video/mp4\r\n\r\n");
-		file = file + "\r\n----WebKitFormBoundarybC2GrDJYSRCSriwe";
-		// std::cout << "\nTEST ULTIME 1\n" << std::endl; 
-		// std::cout.write(file.c_str(), file.size());
-		// std::cout << "\nTEST ULTIME 1\n" << std::endl; 
-		// _contentLength = file.size(); 
+		std::cout << "TEST CONTENT LENGHT BEFORE : " << file.size() << std::endl;
+		
+		/* J AVAIS RAJOUTE CA MAIS CA NE SERT A RIEN ET MM CA REND LE FICHIER ILLISIBLE */
+		// file.insert(0, "----WebKitFormBoundarybC2GrDJYSRCSriwe\r\nContent-Disposition: form-data; name=\"file\"; filename=\"debian.iso\"\r\nContent-Type: application/x-cd-image\r\n\r\n");
+		// file = file + "\r\n----WebKitFormBoundarybC2GrDJYSRCSriwe";
+		// 
+		_contentLength = file.size(); 
+		std::cout << "TEST CONTENT LENGHT SETTING : " << file.size() << std::endl;
 		// std::cout << "TEST CONTENT LENGHT : " << _contentLength << std::endl;
 	}	
 	
