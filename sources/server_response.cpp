@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 18:25:51 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/28 13:32:35 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,13 +73,13 @@ void	server_response::addType()
 	_contentType.insert(std::make_pair<std::string, std::string>("mjs", "Content-Type: application/javascript\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("atom", "Content-Type: application/atom+xml\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("rss", "Content-Type: application/rss+xml\r\n"));
-
+	_contentType.insert(std::make_pair<std::string, std::string>("mp4", "Content-Type: video/mp4\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("iso", "Content-Type: multipart/form-data; boundary=----WebKitFormBoundarybC2GrDJYSRCSriwe\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("mml", "Content-Type: text/mathml\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("txt", "Content-Type: text/plain\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jad", "Content-Type: text/vnd.sun.j2me.app-descriptor\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("wml", "Content-Type: text/vnd.wap.wml\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("htc", "Content-Type: text/x-component\r\n"));
-
 	_contentType.insert(std::make_pair<std::string, std::string>("avif", "Content-Type: image/avif\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("png", "Content-Type: image/png\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("svg", "Content-Type: image/svg+xml\r\n"));
@@ -91,7 +91,6 @@ void	server_response::addType()
 	_contentType.insert(std::make_pair<std::string, std::string>("ico", "Content-Type: image/x-icon\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jng", "Content-Type: image/x-jng\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("bmp", "Content-Type: image/x-ms-bmp\r\n"));
-
 	_contentType.insert(std::make_pair<std::string, std::string>("font", "Content-Type: font/woff\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("font", "Content-Type: font/woff2\r\n"));
 }
@@ -660,8 +659,36 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 				createResponse(server, _content, Server_Request, id_session);
 			}
 			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
-			std::cout << std::endl << "Response\n " << _ServerResponse << std::endl << std::endl;
-			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+			// std::cout << std::endl << "RESPONSE\n " << _ServerResponse << std::endl << std::endl;
+			if (_ServerResponse.size() > 2000000)
+			{
+				while (_ServerResponse.size() > 0)
+				{
+					static std::string StockResponse;
+					// std::cout << "TEST UPLOAD 0\n" << _ServerResponse.size() << std::endl;
+					int i = 0;
+					if (_ServerResponse.size() >= 2000000)
+					{
+						StockResponse = _ServerResponse.substr(2000000);
+						_ServerResponse = _ServerResponse.erase(2000000);
+					}
+					if (i < 1 || _ServerResponse.size() < 2000000)
+					{
+						std::cout << "\nTEST UPLOAD \n" << std::endl;
+						std::cout.write(_ServerResponse.c_str(), _ServerResponse.size());
+					}
+					send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+					if (_ServerResponse.size() < 2000000)
+					{
+						_ServerResponse.clear();
+						StockResponse.clear();
+					}	
+					_ServerResponse = StockResponse;
+					i++;
+				}
+			}
+			else
+				send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
 			break ;
 		}
 		case POST :
@@ -817,6 +844,19 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
 	int	n = 0;
 	int	tmp = _status_code / 100 - 1;
+
+	if (file.size() > 2000000)
+	{
+		// _contentType = "Content-Type: multipart/form-data; boundary=----WebKitFormBoundarybC2GrDJYSRCSriwe\r\n";
+		file.insert(0, "----WebKitFormBoundarybC2GrDJYSRCSriwe\r\nContent-Disposition: form-data; name=\"file\"; filename=\"Bebepleure.mp4\"\r\nContent-Type: video/mp4\r\n\r\n");
+		file = file + "\r\n----WebKitFormBoundarybC2GrDJYSRCSriwe";
+		// std::cout << "\nTEST ULTIME 1\n" << std::endl; 
+		// std::cout.write(file.c_str(), file.size());
+		// std::cout << "\nTEST ULTIME 1\n" << std::endl; 
+		// _contentLength = file.size(); 
+		// std::cout << "TEST CONTENT LENGHT : " << _contentLength << std::endl;
+	}	
+	
 	for (; n != tmp && n < 5; n++) {}
 	switch (n)
 	{
