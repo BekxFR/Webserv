@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/28 19:34:19 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/01 13:47:15 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,75 +107,60 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	GoodServerConf = getGoodServer(servers, ServerRequest, Port);
 	/********************************************************************/
 	
-	static bool upload = false;
-	static std::string StrUpload;
-	static std::string UploadFileName;
-	static int socket_upload = 0;
-	std::cout << "SOCKET TEST : " << conn_sock << std::endl;
-	if (ServerRequest->findMethod() == "POST")
-	{
-		if (GoodServerConf->getClientMaxBodySize() < ServerRequest->getContentLength())
-		{
-			upload = true;
-			socket_upload = conn_sock;
-		}
-	}
-	if ((ServerRequest->findMethod() == "POST" || upload) && socket_upload == conn_sock)
-	{
-		if (ServerRequest->findMethod() == "POST")
-		{
-			if (GoodServerConf->getClientMaxBodySize() < ServerRequest->getContentLength())
-			{
-				upload = false;
-				socket_upload = conn_sock;
-				// _status_code = 413;
-			}
-		}
-		upload = true;
-		StrUpload = StrUpload + request;
-		/* Cette partie permet de uploader les requete POST */
-		int y = 0;
-		int pos = 0;
-		int posinit = 0;	
-		while (StrUpload.find("WebKitFormBoundary", pos) != std::string::npos)
-		{
-			y++;
-			// std::cout << "\nTAILLE Y\n" << y << std::endl; 
-			pos = StrUpload.find("WebKitFormBoundary", pos) + strlen("WebKitFormBoundary");
-			if (y == 2)
-			{
-				posinit = pos;
-				// std::cout << "STRUPLOAD\n" << std::endl;
-				// std::cout.write(StrUpload.c_str(), StrUpload.size());
-				int posfilename = StrUpload.find("filename=\"", pos) + strlen("filename=\"");
-				UploadFileName = StrUpload.substr(posfilename, StrUpload.find("\"", posfilename) - posfilename);
-			}
-		}
-		if (y == 3)
-		{
+	static std::map<int, std::string> SocketUploadFile;
 
-			std::cout << "\nOUTPUT\n" << std::endl;
-			std::cout << "UPLOADNAME : " << UploadFileName << " FIN" << std::endl;
-			std::ofstream file(UploadFileName.c_str(), std::ios::binary);
-			// size_t pos = request.find("------WebKitFormBoundary");
-			// std::cout << "\nBOUNDARY POS\n" << pos << std::endl;
-			pos = StrUpload.find("\r\n\r\n", posinit) + strlen("\r\n\r\n");
-			// std::cout << "\nSTART OF THE STRING\n" << pos << std::endl;
-			std::string start = StrUpload.substr(pos);
-			// std::cout << start << std::endl;
-			// std::cout.write(start.c_str(), start.size());
-			size_t end_pos = StrUpload.find("------WebKitFormBoundary", pos);
-			// std::cout << "\nEND_POS\n" << end_pos << std::endl;
-			// std::cout << "\nFIN\n" << (end_pos - pos) << std::endl; 
-			StrUpload = StrUpload.substr(pos, (end_pos - pos));
-			file.write(StrUpload.c_str(), StrUpload.size());
-			file.close();
-			upload = false;
-			StrUpload.clear();
-		}
-		else
-			return ;
+	if (ServerRequest->findMethod() == "POST")
+	{	
+		std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
+		if (GoodServerConf->getClientMaxBodySize() > ServerRequest->getContentLength())
+			SocketUploadFile.insert ( std::pair< int , std::string >(conn_sock, request));
 	}
+
+	for (std::map<int, std::string>::iterator it = SocketUploadFile.begin(); it != SocketUploadFile.end(); it++)
+	{
+		std::cout << "\nSOCKET TEST 1.1: " << it->first << " con_sock " << conn_sock <<  std::endl;
+		if (it->first == conn_sock)
+		{
+			std::cout << "\nSOCKET TEST 2: " << conn_sock << std::endl;
+			it->second = it->second + request;
+			size_t pos = 0;
+			size_t found = 0;
+			if (request.find("WebKitFormBoundary") != std::string::npos)
+			{
+				while (it->second.find("WebKitFormBoundary", pos) != std::string::npos)
+				{
+					std::cout << "\nSOCKET TEST 3" << std::endl;
+					pos = it->second.find("WebKitFormBoundary", pos) + strlen("WebKitFormBoundary");
+					found++;
+				}
+			}
+			if (found == 3)
+			{
+				std::cout << "\nSOCKET TEST 4" << std::endl;
+				int posfilename = it->second.find("filename=\"", pos) + strlen("filename=\"");
+				std::string UploadFileName = it->second.substr(posfilename, it->second.find("\"", posfilename) - posfilename);
+				std::cout << "UPLOADNAME : " << UploadFileName << " FIN" << std::endl;
+				std::ofstream file(UploadFileName.c_str(), std::ios::binary);
+				// size_t pos = request.find("------WebKitFormBoundary");
+				// std::cout << "\nBOUNDARY POS\n" << pos << std::endl;
+				std::cout << "\nTEST POUR POSIINIT " << it->second.substr(posfilename, 50) << std::endl;
+				pos = it->second.find("\r\n\r\n", posfilename) + strlen("\r\n\r\n");
+				// std::cout << "\nSTART OF THE STRING\n" << pos << std::endl;
+				std::string start = it->second.substr(pos);
+				// std::cout << start << std::endl;
+				// std::cout.write(start.c_str(), start.size());
+				size_t end_pos = it->second.find("------WebKitFormBoundary", pos);
+				// std::cout << "\nEND_POS\n" << end_pos << std::endl;
+				// std::cout << "\nFIN\n" << (end_pos - pos) << std::endl; 
+				it->second = it->second.substr(pos, (end_pos - pos));
+				file.write(it->second.c_str(), it->second.size());
+				file.close();
+				SocketUploadFile.erase(it);
+				break;
+			}
+		}
+	}
+
 	/************************************************************************/
 	server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
 	ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf);
