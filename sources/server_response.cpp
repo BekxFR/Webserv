@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/01 15:33:28 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/01 17:38:11 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,30 +158,6 @@ std::string	server_response::list_dir(std::string path)
 	return (response.str());
 }
 
-int server_response::isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
-	{
-		if (it->first == RequestURI.substr(0, it->first.size()))
-		{
-			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
-			{
-				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
-				{
-					// s'il passe ici c'est que la méthode est autorisée et qu'une loc a été trouvée
-					return (200);
-				}
-			}
-		}
-	}
-	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
-	dans une location */
-	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
-		return (200);
-	// s'il passe ici c'est qu'aucune loc n'a éte trouvée et que donc c'est possible, meme ds le principal
-	return (405);
-}
-
 std::string server_response::getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
@@ -261,32 +237,6 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 		return (server->getRoot() + "/" + RequestURI.substr(0));
 	
 }
-
-
-std::string server_response::getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
-	{
-		if (it->first == RequestURI.substr(0, it->first.size()))
-		{
-			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
-			{
-				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
-				{
-					/*	Ci-dessous, on renvoie directement le path au store, car ce path se suffit à lui-même. 
-						Si on ne le trouve pas, alors on renvoie le root car on enregistra à la racine du root. */
-					if (it->second->getUploadStore().size() > 0)
-						return (it->second->getUploadStore());
-					else
-						return (server->getRoot());
-				}
-			}
-		}
-	}
-	return (server->getRoot());
-}
-
-
 
 bool server_response::autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
@@ -409,78 +359,6 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 		}
 	}
 	return (0);
-}
-
-void	server_response::SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent, std::string filename)
-{
-	(void)Server_Request;
-	(void)conn_sock;
-	(void)server;
-	(void)PostContent;
-	(void)filename;
-	std::cout << "\n\nTU Y ES" << std::endl;
-	// il faudra faire en sorte que ca vienne la le nombre de fois necessaire
-
-	// std::ifstream file(filename.c_str(), std::ifstream::binary);
-	
-	// en dessous ca vient apres, il faut d'abord mettre les donnees ds un fichier
-	std::ofstream outputFile(".uploadtmp", std::ios::binary);
-	// std::ofstream outputFile(filename.c_str(), std::ios::binary); // OK 1
-
-
-			// std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
-			// // std::stringstream buffer;
-			// std::filebuf* pbuf = file.rdbuf();
-			// std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
-			// pbuf->pubseekpos (0,file.in);
-			// // std::cout << "\nC2\n" << std::endl;
-			// char *buffer= new char[size];
-			// pbuf->sgetn(buffer, size);
-			// file.close();
-			// std::string content(buffer, size);
-
-	outputFile << PostContent;
-	outputFile.close();
-
-	std::ifstream input_file(".uploadtmp", std::ios::binary);
-    std::ofstream output_file(filename.c_str(), std::ios::binary);
-
-   int count = 0;
-   std::string tmpline;
-	while (getline(input_file, tmpline))
-	{
-		count++;
-	}
-	input_file.close();
-	input_file.open(".uploadtmp");
-	std::cout << "COUNT : " << count <<  std::endl;
-
-    if (!input_file.is_open() || !output_file.is_open()) {
-        std::cerr << "Failed to open file." << std::endl;
-    }
-
-    int line_number = 0;
-    std::string line;
-
-    while (std::getline(input_file, line)) {
-        ++line_number;
-        if (line_number <= 4 || line_number == count) {
-            continue; // skip first 4 lines and last line
-        }
-        output_file << line << std::endl;
-    }
-
-    input_file.close();
-    output_file.close();
-
-	
-	
-	// std::string response = "HTTP/1.1 200 OK\r\n";
-	// send(conn_sock, response.c_str() , response.size(), 0);
-			// delete [] buffer;
-			// _ServerResponse = response.str();
-			// send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			// break ;
 }
 
 bool	server_response::AnswerGet(const server_request& Server_Request, server_configuration *server)
@@ -614,15 +492,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	// std::cout << "_status_code : " << _status_code << std::endl;
 	// std::cout << "id_session : " << id_session << std::endl;
 	/*********************************************************************/
-		
-		
-	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
-	car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
-	sur que le status code n'est pas modifié par la suite */
-	if (_status_code == 200)
-		_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
-	// std::cout << "STATUS isMethodAuthorised : " << _status_code << std::endl;
-	/********************************************/
 
 	
 	/*Si l'on se situe, ds une location et qu'il y a une HTTP redir alors
@@ -648,9 +517,9 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPathIndex.find("//") != std::string::npos)
 		RealPathIndex = RealPathIndex.erase(RealPathIndex.find("//"), 1);
-	PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
-	while (PathToStore.find("//") != std::string::npos)
-		PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
+	// PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+	// while (PathToStore.find("//") != std::string::npos)
+	// 	PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
 	if (1)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
@@ -667,7 +536,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		_status_code = 404;
 		// std::cout << " BOOL FALSE" << std::endl;
-    }
+	}
 	else
 	{
 		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 

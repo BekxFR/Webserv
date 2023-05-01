@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/01 15:37:08 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/01 18:01:59 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,14 +61,85 @@ server_configuration*	getGoodServer(std::vector<server_configuration*> servers, 
 	return (SamePort.at(0));
 }
 
+int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
+{	
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
+	{
+		if (it->first == RequestURI.substr(0, it->first.size()))
+		{
+			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
+			{
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
+				{
+					// s'il passe ici c'est que la méthode est autorisée et qu'une loc a été trouvée
+					return (200);
+				}
+			}
+		}
+	}
+	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
+	dans une location */
+	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
+		return (200);
+	// s'il passe ici c'est qu'aucune loc n'a éte trouvée et que donc c'est possible, meme ds le principal
+	return (405);
+}
+
+std::string getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI)
+{	
+	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
+	{
+		if (it->first == RequestURI.substr(0, it->first.size()))
+		{
+			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
+			{
+				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
+				{
+					/*	Ci-dessous, on renvoie directement le path au store, car ce path se suffit à lui-même. 
+						Si on ne le trouve pas, alors on renvoie le root car on enregistra à la racine du root. */
+					if (it->second->getUploadStore().size() > 0)
+						return (it->second->getUploadStore());
+					else
+						return (server->getRoot());
+				}
+			}
+		}
+	}
+	return (server->getRoot());
+}
+
+bool isNotBinaryData(std::map<int, std::string> SocketUploadFile, int conn_sock)
+{
+	for (std::map<int, std::string>::iterator it = SocketUploadFile.begin(); it != SocketUploadFile.end(); it++)
+	{
+		if (it->first == conn_sock)
+			return 0;
+	}
+	return 1;
+}
+
+bool	isNotinUnauthorizedSocket(std::vector<int> UnauthorizedSocket, int conn_sock)
+{
+	for (std::vector<int>::iterator it = UnauthorizedSocket.begin(); it != UnauthorizedSocket.end(); it++)
+	{
+		if (*it == conn_sock)
+			return 0;
+	}
+	return 1;
+}
+
 void handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus)
 {
-	(void)CodeStatus;
 	server_configuration *GoodServerConf;
 	char buffer[2048];
 	int n = read(conn_sock, buffer, 2048);
 	int Port = 0;
-	if (n <= 0) {
+	static std::map<int, std::string> SocketUploadFile;
+	static std::map<int, std::string> UploadFilePath;
+	static std::vector<int> UnauthorizedSocket;
+	
+	if (n <= 0) 
+	{
 		return;
 	}
 	std::string request;
@@ -90,35 +161,76 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		std::cout << "\nREQUEST ET SA SOCKET : " << conn_sock << "\n\n" << std::endl;
 		std::cout.write(request.c_str(), 100);
 	}
-	
-	// std::cout << "\n\nRequest :\n\n" << request << std::endl;
-	/*	Cette partie permet de parser la requete afin de pouvoir travailler
-		sur chaque élément indépendemment */
-	server_request* ServerRequest = new server_request(request);
-	ServerRequest->request_parser();
-	/********************************************************************/
 
-	/* Cette partie permet de connaitre le port utilisé afin de d'avoir les 
-	bonnes configurations de serveur */
-	for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
+	// std::cout << "\na1\n" << std::endl;
+	if (isNotBinaryData(SocketUploadFile, conn_sock))
 	{
-		if (it->second == conn_sock)
-			Port = it->first;
-	}
-	GoodServerConf = getGoodServer(servers, ServerRequest, Port);
-	/********************************************************************/
+		std::cout << "\na1.1\n" << std::endl;
+		// std::cout << "\n\nRequest :\n\n" << request << std::endl;
+		/*	Cette partie permet de parser la requete afin de pouvoir travailler
+			sur chaque élément indépendemment */
+		server_request* ServerRequest = new server_request(request);
+		ServerRequest->request_parser();
+		/* Cette partie permet de connaitre le port utilisé afin de d'avoir les 
+		bonnes configurations de serveur */
+		for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
+		{
+			// std::cout << "\na1.2\n" << std::endl;
+			if (it->second == conn_sock)
+				Port = it->first;
+		}
+		GoodServerConf = getGoodServer(servers, ServerRequest, Port);
+		/********************************************************************/
 	
-	static std::map<int, std::string> SocketUploadFile;
+	
+		/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
+		car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
+		sur que le status code n'est pas modifié par la suite */
+		if (CodeStatus == 200)
+		{
+			std::cout << "\na1.3\n" << std::endl;
+			CodeStatus = isMethodAuthorised(ServerRequest->getMethod(), GoodServerConf, ServerRequest->getRequestURI()); // on sait s'ils ont le droit
+			if (CodeStatus != 200)
+				UnauthorizedSocket.push_back(conn_sock);
+		}
+		/********************************************/
 
-	if (ServerRequest->findMethod() == "POST")
-	{	
-		std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
-		if (GoodServerConf->getClientMaxBodySize() > ServerRequest->getContentLength())
-			SocketUploadFile.insert ( std::pair< int , std::string >(conn_sock, ""));
-		else
+		std::cout << "\nMETHOD REQUETE " << ServerRequest->getMethod() << std::endl;
+		std::cout << "\nROOT " << GoodServerConf->getRoot() << std::endl;
+		if ((ServerRequest->getMethod() == "GET" || ServerRequest->getMethod() == "DELETE") && CodeStatus == 200)
+		{
+			std::cout << "\na1.4\n" << std::endl;
+			server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
+			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200);
+			delete ServerRequest;
+			return ;
+		}
+		else if (ServerRequest->getMethod() == "POST" && CodeStatus == 200)
+		{
+			std::cout << "\na1.5\n" << std::endl;
+			std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
+			if (GoodServerConf->getClientMaxBodySize() > ServerRequest->getContentLength())
+			{	
+				std::cout << "\na1.5.1\n" << std::endl;
+				SocketUploadFile.insert (std::pair< int , std::string >(conn_sock, ""));
+				std::string PathToStore = getPathToStore(ServerRequest->getMethod(), GoodServerConf, ServerRequest->getRequestURI());
+				while (PathToStore.find("//") != std::string::npos)
+					PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
+				UploadFilePath.insert ( std::pair< int , std::string >(conn_sock, PathToStore));
+			}
+			else
+			{
+				std::cout << "\na1.6\n" << std::endl;
+				server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
+				ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 413);
+				delete ServerRequest;
+				return ;
+			}
+		}
+		else if (isNotinUnauthorizedSocket(UnauthorizedSocket, conn_sock))
 		{
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
-			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 413);
+			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200);
 			delete ServerRequest;
 			return ;
 		}
@@ -126,7 +238,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 
 	for (std::map<int, std::string>::iterator it = SocketUploadFile.begin(); it != SocketUploadFile.end(); it++)
 	{
-		std::cout << "\nSOCKET TEST 1.1: " << it->first << " con_sock " << conn_sock <<  std::endl;
+		// std::cout << "\na1.6\n" << std::endl;
 		if (it->first == conn_sock)
 		{
 			std::cout << "\nSOCKET TEST 2: " << conn_sock << std::endl;
@@ -140,12 +252,6 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 					pos = it->second.find("WebKitFormBoundary", pos) + strlen("WebKitFormBoundary");
 					found++;
 					std::cout << "\nSOCKET TEST 3 found for " <<  conn_sock << " : " << found << std::endl;
-					if (found == 2)
-					{
-						// std::cout << "\ncontenu du fichier\n" << std::endl;
-						// std::cout.write(it->second.c_str(), it->second.size());
-					}
-						
 				}
 			}
 			if (found >= 3)
@@ -157,36 +263,28 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 				// std::cout << "\nPOST FILE NAME \n" << posfilename <<
 				std::string UploadFileName = it->second.substr(posfilename, it->second.find("\"", posfilename) - posfilename);
 				std::cout << "\nUPLOADNAME : " << UploadFileName << " FIN" << std::endl;
+				for (std::map<int, std::string>::iterator it = UploadFilePath.begin(); it != UploadFilePath.end(); it++)
+				{
+					if (it->first == conn_sock)
+						UploadFileName = it->second + "/" + UploadFileName;
+					std::cout << " TEST UPLOADFILE PATH : " << UploadFileName << std::cout;
+				}
 				std::ofstream file(UploadFileName.c_str(), std::ios::binary);
-				// size_t pos = request.find("------WebKitFormBoundary");
-				// std::cout << "\nBOUNDARY POS\n" << pos << std::endl;
 				std::cout << "\nTEST POUR POSIINIT " << it->second.substr(posfilename, 50) << std::endl;
 				pos = it->second.find("\r\n\r\n", posfilename) + strlen("\r\n\r\n");
-				// std::cout << "\nSTART OF THE STRING\n" << pos << std::endl;
-				// std::string start = it->second.substr(pos);
-				// std::cout << start << std::endl;
-				// std::cout.write(start.c_str(), start.size());
 				size_t end_pos = it->second.find("------WebKitFormBoundary", pos);
-				// std::cout << "\nEND_POS\n" << end_pos << std::endl;
-				// std::cout << "\nFIN\n" << (end_pos - pos) << std::endl; 
 				it->second = it->second.substr(pos, (end_pos - pos));
-				
 				file.write(it->second.c_str(), it->second.size());
 				file.close();
 				SocketUploadFile.erase(it);
 				// server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
 				// ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 201);
-				delete ServerRequest;
 				std::cout << "\ne9\n" << std::cout;
 				return ;
 			}
 		}
 	}
-
-	/************************************************************************/
-	server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
-	ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200);
-	delete ServerRequest;
+	// std::cout << "\na1.7\n" << std::endl;
 }
 
 void	ChangePort(std::map<int, int>& StorePort, int conn_sock, int listen_sock)

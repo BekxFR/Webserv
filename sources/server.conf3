@@ -4,7 +4,7 @@ server {
 		listen [::]:8080;
 
 		root ./site;
-		index indexr.html;
+		index index.html;
 		client_max_body_size 500000000000;
 		error_page 404 site/42.jpg 405 error.html 406 e;
 		cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
@@ -44,7 +44,6 @@ server {
 			index indexr.html;
 			root ./site/;
 			autoindex off;
-
 		}
 		allow_methods GET POST;
 }
