@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/01 15:07:50 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/01 15:33:28 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -887,15 +887,6 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	int	n = 0;
 	int	tmp = _status_code / 100 - 1;
 
-	if (file.size() > 2000000)
-	{
-		std::cout << "TEST CONTENT LENGHT BEFORE : " << file.size() << std::endl;
-		
-		/* J AVAIS RAJOUTE CA MAIS CA NE SERT A RIEN ET MM CA REND LE FICHIER ILLISIBLE */
-		// file.insert(0, "----WebKitFormBoundarybC2GrDJYSRCSriwe\r\nContent-Disposition: form-data; name=\"file\"; filename=\"debian.iso\"\r\nContent-Type: application/x-cd-image\r\n\r\n");
-		// file = file + "\r\n----WebKitFormBoundarybC2GrDJYSRCSriwe";
-	}	
-	
 	for (; n != tmp && n < 5; n++) {}
 	switch (n)
 	{

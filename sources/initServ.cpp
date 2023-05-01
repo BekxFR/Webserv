@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/01 15:28:53 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/01 15:37:08 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 				{
 					pos = it->second.find("WebKitFormBoundary", pos) + strlen("WebKitFormBoundary");
 					found++;
-					std::cout << "\nSOCKET TEST 3 found " << found << std::endl;
+					std::cout << "\nSOCKET TEST 3 found for " <<  conn_sock << " : " << found << std::endl;
 					if (found == 2)
 					{
 						// std::cout << "\ncontenu du fichier\n" << std::endl;
