@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/01 18:01:59 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/01 20:49:28 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int	setnonblocking(int sockfd)
 	if (flags == -1) {
 		return -1;
 	}
-	flags |= SOCK_NONBLOCK;
+	flags |= O_NONBLOCK;
 	if (fcntl(sockfd, F_SETFL, flags) == -1) {
 		return -1;
 	}
