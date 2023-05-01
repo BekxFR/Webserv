@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/28 19:14:04 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/01 15:07:50 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -599,16 +599,11 @@ void *server_response::download_file(void *arg)
 	return NULL;
 }
 
-void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server)
+void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp)
 {
-	// std::cout << "REQUETE\n" << Server_Request.getServerRequest() << std::endl;
-	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
-		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
-	if (_status_code == 200 && Server_Request.getContentLength() > server->getClientMaxBodySize())
-		_status_code = 413;
-	/**********************************************************************/
-	
-	
+	if (StatusCodeTmp != 200)
+		_status_code = StatusCodeTmp;
+
 	/*	Ci-dessous, on genere un ID de session pour chaque nouvel utilisateur
 		et on verifie que si un ID est recu, c'est bien nous qui l'avons emis
 		pour renvoyer sinon une erreur 401 et un id_session a zero (a savoir 
@@ -656,7 +651,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (PathToStore.find("//") != std::string::npos)
 		PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
-	if (0)
+	if (1)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
@@ -700,116 +695,111 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	// std::cout << "FinalPath : " << _finalPath << std::endl;
 	// std::cout << "StatusCode : " << _status_code << std::endl;
 	/************************************************/
-	
-	int n = 0;
-	const std::string ftab[3] = {"GET", "POST", "DELETE"};
-	enum imethod {GET, POST, DELETE};
+
 	std::stringstream response;
-	for (; n < 4; n++)
+	if (Server_Request.getMethod() == "GET")
 	{
-		if (n != 3 && ftab[n] == Server_Request.getMethod()) // OK 
+		if (!AnswerGet(Server_Request, server))
 		{
-			break ;
+			std::cout << "c10 " << std::endl;
+			createResponse(server, _content, Server_Request, id_session);
 		}
+		if (_ServerResponse.size() > 2000000)
+		{
+			pthread_t download_thread;
+			struct thread_args *args = (struct thread_args *)malloc(sizeof(struct thread_args));
+			std::cout << "c1\n" << std::endl;
+			args->Response = new std::string(_ServerResponse);
+			args->conn_sock = new int(conn_sock);
+			std::cout << "c2\n" << std::endl;
+			if (pthread_create(&download_thread, NULL, &server_response::download_file, (void *)args) != 0) 
+			{
+				perror("Error creating thread");
+				return ;
+			}
+			// if (pthread_detach(download_thread) != 0) {
+			// {
+			// 	perror("Error detaching thread");
+			// 	return ;	
+		}
+		else
+			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+		return ;
 	}
-	switch (n)
+	else if (Server_Request.getMethod() == "POST" || _status_code == 201)
 	{
-		case GET :
-		{
-			if (!AnswerGet(Server_Request, server))
-			{
-				std::cout << "c10 " << std::endl;
-				createResponse(server, _content, Server_Request, id_session);
-			}
-			if (_ServerResponse.size() > 2000000)
-			{
-				pthread_t download_thread;
-				struct thread_args *args = (struct thread_args *)malloc(sizeof(struct thread_args));
-				std::cout << "c1\n" << std::endl;
-				args->Response = new std::string(_ServerResponse);
-				args->conn_sock = new int(conn_sock);
-				std::cout << "c2\n" << std::endl;
-				if (pthread_create(&download_thread, NULL, &server_response::download_file, (void *)args) != 0) 
-				{
-					perror("Error creating thread");
-					return ;
-				}
-				// if (pthread_detach(download_thread) != 0) {
-				// {
-				// 	perror("Error detaching thread");
-				// 	return ;	
-			}
-			else
-				send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			break ;
-		}
-		case POST :
-		{
+		std::cout << "POST POST POST" << std::endl;
 			// std::cout << "BODY\n" << Server_Request.getBody() << std::endl;
 
-			std::string FileName = "./" + findFileName(_finalPath);
-			// std::cout << "FILENAME : " << FileName << std::endl;
-			std::string outfilename = FileName.c_str(); // PATH DU FICHIER DE SORTIE
+			// std::string FileName = "./" + findFileName(_finalPath);
+			// // std::cout << "FILENAME : " << FileName << std::endl;
+			// std::string outfilename = FileName.c_str(); // PATH DU FICHIER DE SORTIE
 			
-			std::ofstream outputFile(outfilename.c_str(), std::ios::binary); // OK 1
+			// std::ofstream outputFile(outfilename.c_str(), std::ios::binary); // OK 1
 
-			std::ifstream file(_finalPath.c_str(), std::ifstream::binary);
+			// std::ifstream file(_finalPath.c_str(), std::ifstream::binary);
 			// std::stringstream buffer;
-			std::filebuf* pbuf = file.rdbuf();
-			std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
-			pbuf->pubseekpos (0,file.in);
-			// std::cout << "\nC2\n" << std::endl;
-			char *buffer= new char[size];
-			pbuf->sgetn(buffer, size);
-			file.close();
-			std::string content(buffer, size);
+			// std::filebuf* pbuf = file.rdbuf();
+			// std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
+			// pbuf->pubseekpos (0,file.in);
+			// // std::cout << "\nC2\n" << std::endl;
+			// char *buffer= new char[size];
+			// pbuf->sgetn(buffer, size);
+			// file.close();
+			// std::string content(buffer, size);
 
 			response << "HTTP/1.1 200 OK\r\n";
 			
 			// response << _contentType.find(Server_Request.getType())->second;
 			response << "Content-Type: text/plain; charset=UTF-8\r\n";
 			// response << "content-Length: " << size << "\r\n";
-			response << "content-Length: " << 14 << "\r\n";
-			response << "\r\n";
-			response << "Upload succeed" << '\0' << "\r\n";
+			if (_status_code == 201)
+			{
+				response << "content-Length: " << 16 << "\r\n";
+				response << "\r\nUpload succeed\r\n";
+			}
+			else
+			{
+				response << "content-Length: " << 11 << "\r\n";
+				response << "\r\nUploading\r\n";
+			}
 			// response << content << '\0' << "\r\n";
-			outputFile << content;
-			outputFile.close();
+			// outputFile << content;
+			// outputFile.close();
 			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
 			// std::cout << buffer << std::endl;
-			delete [] buffer;
+			// delete [] buffer;
 			_ServerResponse = response.str();
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-
-			break ;
-			/**
-			 If one or more resources has been created on the origin server as a result of successfully 
-			 processing a POST request, the origin server SHOULD send a 201 (Created) response containing 
-			 a Location header field that provides an identifier for the primary resource created 
-			 (Section 10.2.2) and a representation that describes the status of the request while referring to 
-			 the new resource(s).
-			 https://httpwg.org/specs/rfc9110.html#POST => A LIRE
-			 * 
-			*/
-			break ;
-		}
-		case DELETE :
-		{
-			this->delete_dir(_finalPath.c_str());
-			if (_status_code == 200)
-				_content = server->getErrorPage()[STATUS200].second;
-			createResponse(server, _content, Server_Request, id_session);
-			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			break ;
-		}
-		default :
-		{
-			response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, id_session);
-			response << addBody(server->getErrorPage()[STATUS500].second);
-			_ServerResponse = response.str();
-			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			break ;
-		}
+			std::cout << "\ne10\n" << std::endl;
+			// return ;
+			// /**
+			//  If one or more resources has been created on the origin server as a result of successfully 
+			//  processing a POST request, the origin server SHOULD send a 201 (Created) response containing 
+			//  a Location header field that provides an identifier for the primary resource created 
+			//  (Section 10.2.2) and a representation that describes the status of the request while referring to 
+			//  the new resource(s).
+			//  https://httpwg.org/specs/rfc9110.html#POST => A LIRE
+			//  * 
+			// */
+			return ;
+	}
+	else if (Server_Request.getMethod() == "DELETE")
+	{
+		this->delete_dir(_finalPath.c_str());
+		if (_status_code == 200)
+			_content = server->getErrorPage()[STATUS200].second;
+		createResponse(server, _content, Server_Request, id_session);
+		send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+		return ;
+	}
+	else
+	{
+		response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, id_session);
+		response << addBody(server->getErrorPage()[STATUS500].second);
+		_ServerResponse = response.str();
+		send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+		return ;
 	}
 	return ;
 }

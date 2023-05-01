@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/28 17:48:42 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/01 14:05:26 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ class server_response
 	std::map<std::string, std::string>	getContentType() const { return (_contentType); }
 
 	// OTHER
-	void		SendingResponse(const server_request& Server_Request, int socket, server_configuration* Root);
+	void		SendingResponse(const server_request& Server_Request, int socket, server_configuration* Root, int StatusCodeTmp);
 	void		addLength();
 	void		setStatusCode(int st) { _status_code = (st); }
 	void		addType();

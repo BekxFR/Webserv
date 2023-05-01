@@ -6,11 +6,12 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/01 13:47:15 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/01 15:28:53 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "initServ.hpp"
+#include "server_response.hpp"
 
 extern std::vector<int> open_ports;
 
@@ -113,7 +114,14 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	{	
 		std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
 		if (GoodServerConf->getClientMaxBodySize() > ServerRequest->getContentLength())
-			SocketUploadFile.insert ( std::pair< int , std::string >(conn_sock, request));
+			SocketUploadFile.insert ( std::pair< int , std::string >(conn_sock, ""));
+		else
+		{
+			server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
+			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 413);
+			delete ServerRequest;
+			return ;
+		}
 	}
 
 	for (std::map<int, std::string>::iterator it = SocketUploadFile.begin(); it != SocketUploadFile.end(); it++)
@@ -129,41 +137,55 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			{
 				while (it->second.find("WebKitFormBoundary", pos) != std::string::npos)
 				{
-					std::cout << "\nSOCKET TEST 3" << std::endl;
 					pos = it->second.find("WebKitFormBoundary", pos) + strlen("WebKitFormBoundary");
 					found++;
+					std::cout << "\nSOCKET TEST 3 found " << found << std::endl;
+					if (found == 2)
+					{
+						// std::cout << "\ncontenu du fichier\n" << std::endl;
+						// std::cout.write(it->second.c_str(), it->second.size());
+					}
+						
 				}
 			}
-			if (found == 3)
+			if (found >= 3)
 			{
 				std::cout << "\nSOCKET TEST 4" << std::endl;
-				int posfilename = it->second.find("filename=\"", pos) + strlen("filename=\"");
+				// std::cout << "\ncontenu du fichier\n" << std::endl;
+				// std::cout.write(it->second.c_str(), it->second.size());
+				int posfilename = it->second.find("filename=\"") + strlen("filename=\"");
+				// std::cout << "\nPOST FILE NAME \n" << posfilename <<
 				std::string UploadFileName = it->second.substr(posfilename, it->second.find("\"", posfilename) - posfilename);
-				std::cout << "UPLOADNAME : " << UploadFileName << " FIN" << std::endl;
+				std::cout << "\nUPLOADNAME : " << UploadFileName << " FIN" << std::endl;
 				std::ofstream file(UploadFileName.c_str(), std::ios::binary);
 				// size_t pos = request.find("------WebKitFormBoundary");
 				// std::cout << "\nBOUNDARY POS\n" << pos << std::endl;
 				std::cout << "\nTEST POUR POSIINIT " << it->second.substr(posfilename, 50) << std::endl;
 				pos = it->second.find("\r\n\r\n", posfilename) + strlen("\r\n\r\n");
 				// std::cout << "\nSTART OF THE STRING\n" << pos << std::endl;
-				std::string start = it->second.substr(pos);
+				// std::string start = it->second.substr(pos);
 				// std::cout << start << std::endl;
 				// std::cout.write(start.c_str(), start.size());
 				size_t end_pos = it->second.find("------WebKitFormBoundary", pos);
 				// std::cout << "\nEND_POS\n" << end_pos << std::endl;
 				// std::cout << "\nFIN\n" << (end_pos - pos) << std::endl; 
 				it->second = it->second.substr(pos, (end_pos - pos));
+				
 				file.write(it->second.c_str(), it->second.size());
 				file.close();
 				SocketUploadFile.erase(it);
-				break;
+				// server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
+				// ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 201);
+				delete ServerRequest;
+				std::cout << "\ne9\n" << std::cout;
+				return ;
 			}
 		}
 	}
 
 	/************************************************************************/
 	server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
-	ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf);
+	ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200);
 	delete ServerRequest;
 }
 
