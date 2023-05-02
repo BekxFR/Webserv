@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 19:16:24 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/02 13:09:46 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -516,7 +516,8 @@ bool	server_response::manageCgi(const server_request& Server_Request, server_con
 			cgiContent.close();
 			std::ofstream	cgiChange(_fileName.data(), std::ios::out | std::ios::trunc);
 			cgiChange << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
-			addLength(); // ajout content-length en fonction du retour des cgi
+			if (_content.find("Content-Length:") == std::string::npos)
+				addLength(); // ajout content-length en fonction du retour des cgi
 			if (cgiChange)
 				cgiChange << _content << "\0";
 			else
@@ -1177,12 +1178,12 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	std::string	cwd = getcwd(buff, 256);
 	_env.push_back("DOCUMENT_ROOT=" + cwd);
 	_env.push_back("REQUEST_METHOD=" + _req->getMethod());
-	_env.push_back("SCRIPT_FILENAME=" + toexec);
+	_env.push_back("SCRIPT_FILENAME=" + cwd + toexec.substr(1));
 	cgiPath = server->getCgi().find("." + _req->getType())->second;
-	_env.push_back("SCRIPT_NAME=" + toexec);
-	//	_env.push_back("QUERY_STRING" + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
+	_env.push_back("SCRIPT_NAME=" + toexec.substr(1));
+	_env.push_back("QUERY_STRING=dir=OUAIS");// + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
 	_env.push_back("PATH_INFO=" + cgiPath);
-	_env.push_back("REQUEST_URI=" + _req->getRequestURI());
+	_env.push_back("REQUEST_URI=/");// + _req->getRequestURI());
 	_env.push_back("REDIRECT_STATUS=1");
 	if (_body.find(std::string("content-length")) != std::string::npos)
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
