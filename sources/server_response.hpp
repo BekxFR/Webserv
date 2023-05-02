@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 18:46:41 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/02 19:22:57 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ class server_response
 	int									_status_code;
 	int									_cgiFd;
 	std::string							_header;
-	std::string							_body;
 	std::string							_bodyName;
+	std::string							_body;
 	std::string							_content;
 	size_t								_contentLength;
 	std::string							_ServerResponse;

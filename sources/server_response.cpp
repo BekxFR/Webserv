@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 18:54:16 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/02 20:01:47 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1139,7 +1139,12 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	std::cerr << "_body = '" << _body << "'" << std::endl;
 	if (_req->getIsBody())
 	{
-		//ecrire ce qu'il y a dans _body, dans _bodyName
+		std::ofstream file(getBodyName().c_str());
+		if (file) {
+			file << _req->getBody();
+			file.close();
+		}
+		//ecrire ce qu'il y a dans _body, dans _bodyName ?
 		//_cgiFd = open de _bodyName;
 		//--> check dans cgi si on ferme bien le fd
 		//supprimer _bodyName;
@@ -1150,7 +1155,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 			_status_code = 500;
 			return (1);
 		}
-		std::cerr << "cgi fd = '" << _cgiFd << "'" << std::endl;
+		std::cerr << "cgi fd = '" << _cgiFd << "'" << "_req->getBody().size() = " << _req->getBody().size() << std::endl;
 	}
 	try
 	{
@@ -1160,6 +1165,8 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 		if (WIFEXITED(status))
 			if (WEXITSTATUS(status) != 0)
 				_status_code = 500;
+		// remove(_bodyName.c_str()); // TMP POUR LOG
+		// PAS DE LEAK SI PAS DE CLOSE
 		//penser a close _cgifd (si open) (!= -1) et supprimer le fichier avec std::remove s'il existe
 		if (g_code == 1)
 		{
