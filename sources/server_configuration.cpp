@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_configuration.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/26 20:02:50 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/02 14:59:22 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,8 +234,7 @@ int	server_configuration::fillCgi(size_t pos)
 		throw CgiException();
 	for (tmp = pos; _ConfigFile[pos] != ' ' && _ConfigFile[pos] != ';'; pos++) {}
 	cgi_pair.second = _ConfigFile.substr(tmp, pos - tmp);
-	if (!access(cgi_pair.second.c_str(), X_OK))
-		_cgi.insert(cgi_pair);
+	_cgi.insert(cgi_pair);
 	return (pos + 1);
 }
 

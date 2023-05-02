@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/01 17:37:43 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/02 14:57:20 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ class server_response
 	std::string							_fileName;
 	std::vector<std::string>			_env;
 	server_request*						_req;
+	bool								_isCgi;
 	std::map<std::string, std::string>	_contentType;
 
 	server_response();
@@ -44,6 +45,7 @@ class server_response
 	// GETTERS
 	int									getCgiFd() const { return (_cgiFd); }
 	int									getStatusCode() const { return _status_code; }
+	bool								getIsCgi() const { return (_isCgi); }
 	size_t								getContentLength() const { return _contentLength; }
 	std::string							getFileName() { return (_fileName); }
 	std::string							getHeader() const { return _header; }
@@ -57,6 +59,7 @@ class server_response
 	std::vector<std::string>&			getEnv() { return (_env); }
 	std::map<std::string, std::string>	getContentType() const { return (_contentType); }
 
+	void								setIsCgi(bool i) { _isCgi = i; }
 	// OTHER
 	void		SendingResponse(const server_request& Server_Request, int socket, server_configuration* Root, int StatusCodeTmp);
 	void		addLength();
@@ -73,6 +76,7 @@ class server_response
 	int			doCgi(std::string toexec, server_configuration * server); // envoyer fichier a cgiser + return fd du cgi
 	bool		isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool		autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI);
+	bool		manageCgi(const server_request& Server_Request, server_configuration *server);	
 	bool		AnswerGet(const server_request& Server_Request, server_configuration *server);
 	void		SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent, std::string filename);
 	int			getIdSessionOrSetError401(const server_request& Server_Request);
