@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 14:57:20 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/02 18:46:41 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ class server_response
 	int									_cgiFd;
 	std::string							_header;
 	std::string							_body;
+	std::string							_bodyName;
 	std::string							_content;
 	size_t								_contentLength;
 	std::string							_ServerResponse;
@@ -49,6 +50,7 @@ class server_response
 	size_t								getContentLength() const { return _contentLength; }
 	std::string							getFileName() { return (_fileName); }
 	std::string							getHeader() const { return _header; }
+	std::string							getBodyName() const { return _bodyName; }
 	std::string							getBody() const { return _body; }
 	std::string							getContent() const { return (_content); }
 	std::string							getServerResponse() const { return (_ServerResponse); }

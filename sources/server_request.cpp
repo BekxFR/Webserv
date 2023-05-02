@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 15:54:49 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/02 18:37:18 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ server_request &server_request::operator=(server_request const &obj)
 server_request::server_request(std::string ServerRequest) :
 	_ServerRequest(ServerRequest) //, _Method(findMethod()), _RequestURI(findRequestURI())
 {
+	_isBody = 0;
 }
 
 std::string server_request::findMethod()
@@ -228,6 +229,8 @@ void server_request::request_parser()
 		}
 	}
 
+	if (_body.size() && _method == "POST")
+		_isBody = 1;
 	// Afficher les résultats
 	if (1)
 	{	

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 16:01:59 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/02 18:54:16 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,14 @@
 
 extern volatile std::sig_atomic_t	g_code;
 
-server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(), _req(NULL), _isCgi(0)
+server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _bodyName(".tmp-post.txt"), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(), _req(NULL), _isCgi(0)
 {
 	this->addType();
 	if (0)
 		std::cout << "server_response Default Constructor called" << std::endl;
 }
 
-server_response::server_response(int stat, server_request* req) : _status_code(stat), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(), _req(req), _isCgi(0)
+server_response::server_response(int stat, server_request* req) : _status_code(stat), _cgiFd(-1), _header(""), _bodyName(".tmp-post.txt"), _body(req->getBody()), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(), _req(req), _isCgi(0)
 {
 	this->addType();
 	if (0)
@@ -46,6 +46,7 @@ server_response	&server_response::operator=(server_response const &obj)
 	_status_code = obj.getStatusCode();
 	_cgiFd = obj.getCgiFd();
 	_header = obj.getHeader();
+	_bodyName = obj.getBodyName();
 	_body = obj.getBody();
 	_content = obj.getContent();
 	_contentLength = obj.getContentLength();
@@ -603,7 +604,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	
 	
 	std::stringstream response;
-	if (Server_Request.getMethod() == "GET")
+	if (Server_Request.getMethod() == "GET" && _status_code != 500)
 	{
 		if (_status_code == 200)
 			AnswerGet(Server_Request, server);
@@ -632,7 +633,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
 		return ;
 	}
-	else if (Server_Request.getMethod() == "POST" || _status_code == 201)
+	else if ((Server_Request.getMethod() == "POST" || _status_code == 201) && _status_code != 500)
 	{
 		std::cout << "POST POST POST" << std::endl;
 			// std::cout << "BODY\n" << Server_Request.getBody() << std::endl;
@@ -690,7 +691,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			// */
 			return ;
 	}
-	else if (Server_Request.getMethod() == "DELETE")
+	else if (Server_Request.getMethod() == "DELETE" && _status_code != 500)
 	{
 		if (_status_code == 200)
 			this->delete_dir(_finalPath.c_str());
@@ -1128,7 +1129,6 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	cgiPath = server->getCgi().find("." + _req->getType())->second;
 	_env.push_back("SCRIPT_NAME=" + toexec.substr(1));
 	_env.push_back("QUERY_STRING=" + _req->getQuery());
-	// _env.push_back("QUERY_STRING=dir=OUAIS");// + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
 	_env.push_back("PATH_INFO=/");
 	_env.push_back("REQUEST_URI=" + _req->getRequestURI());
 	_env.push_back("REDIRECT_STATUS=1");
@@ -1136,19 +1136,21 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
 	if (this->getType(_req->getType()) != "")
 		_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
-	std::cerr << "Print env:" << std::endl;
-	for (std::vector<std::string>::iterator it = _env.begin(); it != _env.end(); it++)
+	std::cerr << "_body = '" << _body << "'" << std::endl;
+	if (_req->getIsBody())
 	{
-		std::cerr << *it << std::endl;
-	}
-	if (_body.size() > 0)
-	{
-		this->_cgiFd = open(this->_req->getBody().data(), O_RDONLY);
-		if (this->_cgiFd < 0)
+		//ecrire ce qu'il y a dans _body, dans _bodyName
+		//_cgiFd = open de _bodyName;
+		//--> check dans cgi si on ferme bien le fd
+		//supprimer _bodyName;
+		_cgiFd = open(getBodyName().data(), O_RDONLY);
+		if (_cgiFd < 0)
 		{
+			std::cerr << "FAIL TO OPEN CGIFD" << std::endl;
 			_status_code = 500;
-			return (-1);
+			return (1);
 		}
+		std::cerr << "cgi fd = '" << _cgiFd << "'" << std::endl;
 	}
 	try
 	{
@@ -1158,6 +1160,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 		if (WIFEXITED(status))
 			if (WEXITSTATUS(status) != 0)
 				_status_code = 500;
+		//penser a close _cgifd (si open) (!= -1) et supprimer le fichier avec std::remove s'il existe
 		if (g_code == 1)
 		{
 			_status_code = 500;
