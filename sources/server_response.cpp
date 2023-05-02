@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 12:55:43 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/28 17:27:37 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,7 @@ std::string	server_response::list_dir(std::string path)
 	std::stringstream	response;
 	//std::string	content;
 
-	std::cout << "PATH : '" << path << "'" << std::endl;
+	// std::cout << "PATH : '" << path << "'" << std::endl;
 	while (path.find("//") != std::string::npos)
 		path = path.erase(path.find("//"), 1);
 	errno = 0;
@@ -454,7 +454,7 @@ void	server_response::SendingPostResponse(const server_request& Server_Request, 
 	}
 	input_file.close();
 	input_file.open(".uploadtmp");
-	std::cout << "COUNT : " << count <<  std::endl;
+	// std::cout << "COUNT : " << count <<  std::endl;
 
     if (!input_file.is_open() || !output_file.is_open()) {
         std::cerr << "Failed to open file." << std::endl;
@@ -498,7 +498,7 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 		// std::cerr << "HELLO JE SUIS la1" << std::endl;
 		if (is_dir(_finalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
 		{
-			std::cout << "AUTOLISTING ON" << std::endl;
+			// std::cout << "AUTOLISTING ON" << std::endl;
 			buffer << list_dir(_finalPath);
 		}
 		else if (is_dir(_finalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
@@ -518,10 +518,10 @@ std::cerr << "TT" << std::endl;
 std::cerr << "TT" << std::endl;
 			if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end())
 			{
-				// std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
+				std::cerr << "\n2HELLO JE SUIS DANS LE CGI" << std::endl;
 				if (_fileName == "")
 					_fileName = ".cgi-tmp.txt";
-				if (!doCgi(_finalPath,server))
+				if (!doCgi(_finalPath,server,Server_Request.getArgs()))
 				{
 					buffer << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
 					std::ifstream	cgiContent(_fileName.c_str());
@@ -551,7 +551,7 @@ std::cerr << "TT" << std::endl;
 
 void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server)
 {
-	std::cout << "REQUETE\n" << Server_Request.getServerRequest() << std::endl;
+	// std::cout << "REQUETE\n" << Server_Request.getServerRequest() << std::endl;
 	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
 		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
 	if (_status_code == 200 && Server_Request.getContentLength() > server->getClientMaxBodySize())
@@ -597,7 +597,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	std::string RealPathIndex;
 	std::string PathToStore;
 	
-	RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+	RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getPath());
 	while (RealPath.find("//") != std::string::npos)
 		RealPath = RealPath.erase(RealPath.find("//"), 1);
 	RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
@@ -647,10 +647,11 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		}
 	}
 	/* A VOIR DEMAIN MAIS FINAL PATH ETAIT MAL INITIALISE DS ANSWER GET*/
-	std::cout << "FinalPath : " << _finalPath << std::endl;
-	std::cout << "StatusCode : " << _status_code << std::endl;
+	// std::cout << "FinalPath : " << _finalPath << std::endl;
+	// std::cout << "StatusCode : " << _status_code << std::endl;
 	/************************************************/
-	
+	std::cout << "\nC2" << _finalPath << "\n" << std::endl;
+	std::cout << "\nC2" << Server_Request.getPath() << "\n" << std::endl;
 	int n = 0;
 	const std::string ftab[3] = {"GET", "POST", "DELETE"};
 	enum imethod {GET, POST, DELETE};
@@ -668,11 +669,11 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		{
 			if (!AnswerGet(Server_Request, server))
 			{
-				std::cout << "c10 " << std::endl;
+				// std::cout << "c10 " << std::endl;
 				createResponse(server, _content, Server_Request, id_session);
 			}
 			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
-			std::cout << std::endl << "Response\n " << _ServerResponse << std::endl << std::endl;
+			// std::cout << std::endl << "Response\n " << _ServerResponse << std::endl << std::endl;
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
 			break ;
 		}
@@ -691,7 +692,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			std::filebuf* pbuf = file.rdbuf();
 			std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
 			pbuf->pubseekpos (0,file.in);
-			// std::cout << "\nC2\n" << std::endl;
+			// std::cout << "\nC2" << _finalPath << "\n" << std::endl;
 			char *buffer= new char[size];
 			pbuf->sgetn(buffer, size);
 			file.close();
@@ -1131,11 +1132,12 @@ void	server_response::createResponse(server_configuration * server, std::string 
 // SERVER_SOFWARE=(name and version of the software the server is running)
 
 //https://docstore.mik.ua/orelly/linux/cgi/ch03_02.htm
-int server_response::doCgi(std::string toexec, server_configuration * server) // envoyer path du cgi
+int server_response::doCgi(std::string toexec, server_configuration * server, std::string args) // envoyer path du cgi
 {
 	char	buff[256];
 	std::string	cgiPath;
 
+	(void)args;
 	_env.push_back("SERVER_SOFTWARE=Webserv/1.0");
 	std::string		servNameEnv = "SERVER_NAME=";
 	if (_req->getHost().find("host") != std::string::npos)
@@ -1154,9 +1156,12 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	std::string	cwd = getcwd(buff, 256);
 	_env.push_back("DOCUMENT_ROOT=" + cwd);
 	_env.push_back("REQUEST_METHOD=" + _req->getMethod());
+	std::cerr << "\n\ntoexec " << toexec << " et args = " << args << std::endl;
 	_env.push_back("SCRIPT_FILENAME=" + toexec);
+	// _env.push_back("SCRIPT_INTERPRETER=/usr/bin/php-cgi");
 	cgiPath = server->getCgi().find("." + _req->getType())->second;
 	_env.push_back("SCRIPT_NAME=" + cgiPath);
+	_env.push_back("QUERY_STRING=" + args);
 //	_env.push_back("QUERY_STRING" + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
 	_env.push_back("PATH_INFO=" + cgiPath);
 	_env.push_back("REQUEST_URI=" + _req->getRequestURI());

@@ -162,30 +162,28 @@
 		if (count($files) == 0) {
 			echo "<p>Le répertoire upload est vide.</p>";
 		} else {
-			echo "<table style='margin-left: 10px; border-collapse: collapse;'>";
 			foreach ($files as $file) {
-				echo "<tr>";
-				echo "<td style='padding: 5px; text-align: center; border: 1px solid black; font-weight: bold;'>" . basename($file) . "</td>";
-				echo "<td style='padding: 5px; text-align: center; border: 1px solid black;'>";
-				echo "<a href='upload/" . urlencode(basename($file)) . "' download><button style='color: green;'>Télécharger</button></a>";
-				echo "</td>";
-				echo "</tr>";
+				echo "<div style='display: flex; align-items: center;'>";
+				echo "<p style='flex: 1; margin-left: 10px; font-weight: bold;'>" . basename($file) . "</p>";
+				echo "<p style='flex: 11; margin-left: 5px;'> - </p>";
+				echo "<form style='display: inline-block;' action='del.php' method='POST'>";
+				echo "<input type='hidden' name='file' value='" . urlencode(basename($file)) . "'>";
+				echo "<button type='submit' name='delete' value='delete' style='flex: 1; color: red;'>Supprimer</button>";
+				echo "</form>";
+				echo "<a href='upload/" . urlencode(basename($file)) . "' download><button style='flex: 11; margin-left: 10px; color: green;'>Télécharger</button></a>";
+				echo "</div>";
 			}
-			echo "</table>";
 		}
 	?>
 	</div>
 	<hr>
-	<h2 style="margin-left: 10px;">Envoyer un fichier</h2>
-	<form action="up.php" method="POST" enctype="multipart/form-data" style="margin-left: 10px;">
+	<h2>Envoyer un fichier</h2>
+	<form action="up.php" method="POST" enctype="multipart/form-data">
 		<input type="file" name="file">
 		<input type="submit" value="Envoyer">
 	</form>
 	<?php } ?>
-    <main>
-    </main>
-	<img id="sheep" src="happysheep.gif" alt="Sheep Happy">
-    <footer>🐑 Site web créé par Nicolas, Mathieu et Cyril 🐑</footer>
+    <footer>Site web créé par Nicolas, Mathieu et Cyril</footer>
 	<script>
 		let sheep = document.querySelector('#sheep')
 		document.querySelector('#sheep').addEventListener("click", ()=>{

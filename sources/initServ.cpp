@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   initServ.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/27 11:45:09 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/04/27 18:44:21 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,8 +73,8 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		return;
 	}
 	// buffer[n] = '\0';
-	std::cout << "BUFFER\n" << std::endl;
-	std::cout.write(buffer, 2048);
+	// std::cout << "BUFFER\n" << std::endl;
+	// std::cout.write(buffer, 2048);
 	std::string request;
 	request.append(buffer);
 	memset(buffer, 0, 2048);
@@ -84,8 +84,8 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		if (n > 0)
 		{
 			// buffer[n] = '\0';
-			std::cout << "BUFFER\n" << std::endl;
-			std::cout.write(buffer, 2048);
+			// std::cout << "BUFFER\n" << std::endl;
+			// std::cout.write(buffer, 2048);
 			request.append(buffer);
 			memset(buffer, 0, 2048);
 		}
@@ -135,7 +135,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	else if (PostContent.size() < ContentSize && posting)
 	{
 		k++;
-		std::cout << "c2\n" << "ContentSize : " << ContentSize << std::endl;
+		// std::cout << "c2\n" << "ContentSize : " << ContentSize << std::endl;
 		if (j == 1)
 		{
 			int pos = 0;

@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/26 20:24:08 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/28 15:28:42 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ class server_response
 	std::string	getRealPathIndex(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string	getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	int			isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI);
-	int			doCgi(std::string toexec, server_configuration * server); // envoyer fichier a cgiser + return fd du cgi
+	int			doCgi(std::string toexec, server_configuration * server, std::string args); // envoyer fichier a cgiser + return fd du cgi
 	bool		isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool		autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool		AnswerGet(const server_request& Server_Request, server_configuration *server);

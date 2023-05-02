@@ -1,7 +1,6 @@
 <?php 
 if (!isset($_COOKIE["testcookie"]))
 {
-    echo "setting";
     setcookie( "testcookie", "coucou", time() + (86400 * 30));
 }
 else

@@ -6,19 +6,22 @@ if (!empty($_FILES['file'])) {
 
     // Vérifier s'il y a une erreur lors de l'upload
     if ($file['error'] !== UPLOAD_ERR_OK) {
-        die('Erreur lors du téléchargement : ' . $file['error']);
+        echo '<script>alert("Erreur lors du téléchargement : ' . $file['error'] . '");window.location.replace("pg1.php");</script>';
+        exit;
     }
 
     // Vérifier le type de fichier
     $allowedTypes = ['image/jpeg', 'image/png', 'application/pdf', 'application/zip', 'text/plain', 'application/octet-stream'];
     if (!in_array($file['type'], $allowedTypes)) {
-        die('Type de fichier non autorisé');
+        echo '<script>alert("Type de fichier non autorisé");window.location.replace("pg1.php");</script>';
+        exit;
     }
 
     // Vérifier la taille du fichier
     $maxFileSize = 1048576; // 1 Mo
     if ($file['size'] > $maxFileSize) {
-        die('Fichier trop volumineux');
+        echo '<script>alert("Fichier trop volumineux");window.location.replace("pg1.php");</script>';
+        exit;
     }
 
     // Renommer le fichier pour éviter les conflits de noms
@@ -27,10 +30,12 @@ if (!empty($_FILES['file'])) {
 
     // Déplacer le fichier dans le répertoire d'upload
     if (!move_uploaded_file($file['tmp_name'], $filePath)) {
-        die('Erreur lors de la sauvegarde du fichier');
+        echo '<script>alert("Erreur lors de la sauvegarde du fichier");window.location.replace("pg1.php");</script>';
+        exit;
     }
 
-    echo 'Le fichier a été téléchargé avec succès : <a href="' . $filePath . '">Télécharger</a>';
+    echo '<script>alert("Le fichier a été téléchargé avec succès");window.location.replace("pg1.php");</script>';
+    echo '<meta http-equiv="refresh" content="0; URL=pg1.php">';
+	exit;
 }
-
 ?>
