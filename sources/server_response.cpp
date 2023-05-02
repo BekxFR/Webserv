@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 15:07:29 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/02 16:01:59 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -540,7 +540,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	std::string RealPathIndex;
 	std::string PathToStore;
 	
-	RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+	RealPath = getRealPath(Server_Request.getMethod(), server, Server_Request.getPath());
 	while (RealPath.find("//") != std::string::npos)
 		RealPath = RealPath.erase(RealPath.find("//"), 1);
 	RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
@@ -605,11 +605,10 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	std::stringstream response;
 	if (Server_Request.getMethod() == "GET")
 	{
-		if (!AnswerGet(Server_Request, server))
-		{
-			std::cout << "c10 " << std::endl;
-			createResponse(server, _content, Server_Request, id_session);
-		}
+		if (_status_code == 200)
+			AnswerGet(Server_Request, server);
+		std::cout << "c10 " << std::endl;
+		createResponse(server, _content, Server_Request, id_session);
 		if (_ServerResponse.size() > 2000000)
 		{
 			pthread_t download_thread;
@@ -1128,7 +1127,8 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	_env.push_back("SCRIPT_FILENAME=" + cwd + toexec.substr(1));
 	cgiPath = server->getCgi().find("." + _req->getType())->second;
 	_env.push_back("SCRIPT_NAME=" + toexec.substr(1));
-	_env.push_back("QUERY_STRING=dir=OUAIS");// + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
+	_env.push_back("QUERY_STRING=" + _req->getQuery()); // TODO
+	// _env.push_back("QUERY_STRING=dir=OUAIS");// + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
 	_env.push_back("PATH_INFO=" + cgiPath);
 	_env.push_back("REQUEST_URI=/");// + _req->getRequestURI());
 	_env.push_back("REDIRECT_STATUS=1");

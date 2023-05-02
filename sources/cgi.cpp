@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/25 19:29:51 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/02 15:45:38 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,7 +164,6 @@ void	Cgi::dupping()
 	//	_pdes[1] = -1;
 	//	close (_pdes[0]);
 	//	_pdes[0] = -1;
-
 	if (execve(_cmd[0], _cmd, _envp) == -1) // si execve rate, on laisse passer pour appeler les destructeurs mais en changeant le code global pour sortir une 500
 		g_code = 1;
 }
