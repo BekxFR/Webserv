@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/28 15:43:02 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/02 18:03:02 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,12 +157,12 @@ void server_request::request_parser()
 		{
 			std::string::size_type args_start = tmp.find('?', 0);
 			this->_type = tmp.substr(0, args_start);
+			this->_argsBrutes = tmp.substr(args_start + 1);
 			for (size_t i = 0; i < tmp.size(); i++)
 				if (tmp[i] == '&')
 					tmp[i] = ' ';
 			this->_path = _path.substr(0, _path.find('?', 0));
 			this->_args = tmp.substr(args_start + 1);
-			this->_argsBrutes = tmp.substr(args_start + 1);
 			this->_args = url_decode(this->_args);
 		}
 		else if (tmp.size() > 1)

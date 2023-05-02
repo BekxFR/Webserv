@@ -33,6 +33,7 @@
         
         // Affiche les paramètres de la requête
         echo "<p>Paramètres de la requête : " . $_SERVER['QUERY_STRING'] . "</p>";
+		echo "<p>" . var_dump($_POST) . "</p>";
 		echo "<p>" . var_dump($_POST['nom']) . "</p>";
 		echo "<p>" . var_dump($_POST['prenom']) . "</p>";
     ?>

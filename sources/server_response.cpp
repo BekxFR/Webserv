@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/28 17:27:37 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/02 18:06:13 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1156,12 +1156,12 @@ int server_response::doCgi(std::string toexec, server_configuration * server, st
 	std::string	cwd = getcwd(buff, 256);
 	_env.push_back("DOCUMENT_ROOT=" + cwd);
 	_env.push_back("REQUEST_METHOD=" + _req->getMethod());
-	std::cerr << "\n\ntoexec " << toexec << " et args = " << args << std::endl;
+	std::cerr << "\n\ntoexec " << toexec << " et args = " << _req->getArgs() << std::endl;
 	_env.push_back("SCRIPT_FILENAME=" + toexec);
 	// _env.push_back("SCRIPT_INTERPRETER=/usr/bin/php-cgi");
 	cgiPath = server->getCgi().find("." + _req->getType())->second;
 	_env.push_back("SCRIPT_NAME=" + cgiPath);
-	_env.push_back("QUERY_STRING=" + args);
+	_env.push_back("QUERY_STRING=" + _req->getArgs());
 //	_env.push_back("QUERY_STRING" + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
 	_env.push_back("PATH_INFO=" + cgiPath);
 	_env.push_back("REQUEST_URI=" + _req->getRequestURI());
