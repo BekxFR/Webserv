@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 16:01:59 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/02 20:12:26 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -388,6 +388,7 @@ bool	server_response::manageCgi(const server_request& Server_Request, server_con
 			_fileName = ".cgi-tmp.txt";
 		if (!doCgi(_finalPath,server))
 		{
+			std::cerr << "\nSORTIE DE L'ENFANT" << std::endl;
 			std::ifstream	cgiContent(_fileName.data());
 			std::getline(cgiContent, _content, '\0'); // on recupere le retour du cgi
 			cgiContent.close();
@@ -439,71 +440,7 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 	return (1);
 }
 
-struct thread_args {
-	int* conn_sock;
-    std::string* Response;
-};
-
-void *server_response::download_file(void *arg)
-{
-	struct thread_args *args = (struct thread_args *)arg;
-
-	std::cout.write(args->Response->c_str(), 20);
-	std::cout << "\n\nTEST THREAD : " << *args->conn_sock << std::endl;
-	// std::string ServerResponse = *args->Response;
-	// int conn_sock = *args->conn_sock;
-
-	std::string ServerResponse = *args->Response;
-	int conn_sock = *args->conn_sock;
-	std::cout << "\n\nTEST THREAD SOCK: " << conn_sock << std::endl;
-	std::cout << "\n\nTEST THREAD SIZE : " << ServerResponse.size() << std::endl;
-	while (ServerResponse.size() > 0)
-	{
-		// std::cout << "c3\n" << std::endl;
-		static std::string StockResponse;
-		// std::cout << "TEST UPLOAD 0\n" << ServerResponse.size() << std::endl;
-		static int i = 0;
-		// std::cout << "c3.1\n" << std::endl;
-		if (ServerResponse.size() >= 500000)
-		{
-			// std::cout << "c3.2\n" << std::endl;
-			StockResponse = ServerResponse.substr(500000);
-			// std::cout << "c3.3\n" << std::endl;
-			ServerResponse = ServerResponse.erase(500000);
-			// std::cout << "c3.4\n" << std::endl;
-		}
-		std::cout << "\nTEST SERVERREPONSE SIZE for " << conn_sock << " : " << ServerResponse.size() << std::endl;
-		// if (ServerResponse.size() < 2000000)
-		// {
-			
-		// }
-		// if (i < 1 || ServerResponse.size() < 2000000)
-		// {
-		// 	std::cout << "\nTEST UPLOAD \n" << std::endl;
-		// 	std::cout.write(ServerResponse.c_str(), ServerResponse.size());
-		// }
-		// std::cout << "RESPONSE SIZE : " << ServerResponse.size() << std::endl;
-		// std::cout << "STOCK SIZE : " << StockResponse.size() << std::endl;
-		// std::cout << "c4\n" << std::endl;
-		usleep(2000);
-		send(conn_sock, ServerResponse.c_str() , ServerResponse.size(), 0);
-		
-		// if (ServerResponse.size() < 2000000)
-		// {
-		// 	StockResponse.clear();
-		// }	
-		// std::cout << "c5\n" << std::endl;
-		ServerResponse = StockResponse;
-		StockResponse.clear();
-		i++;
-	}
-	delete args->Response;
-	delete args->conn_sock;
-	delete args;
-	return NULL;
-}
-
-void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp)
+void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp, std::vector<std::pair<int, std::string> >* MsgToSent)
 {
 	if (StatusCodeTmp != 200)
 		_status_code = StatusCodeTmp;
@@ -601,35 +538,24 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		manageCgi(Server_Request, server);
 	}
 	
-	
+	std::cout << "\n TEST : " << Server_Request.getMethod() << std::endl;
 	std::stringstream response;
-	if (Server_Request.getMethod() == "GET")
+	if (Server_Request.getMethod() == "GET" || Server_Request.getMethod() == "POST")
 	{
+		std::cout << "\nGETMETHOD SERVER_RESPONSE\n" << std::endl;
 		if (_status_code == 200)
 			AnswerGet(Server_Request, server);
 		std::cout << "c10 " << std::endl;
 		createResponse(server, _content, Server_Request, id_session);
 		if (_ServerResponse.size() > 2000000)
 		{
-			pthread_t download_thread;
-			struct thread_args *args = (struct thread_args *)malloc(sizeof(struct thread_args));
-			std::cout << "c1\n" << std::endl;
-			args->Response = new std::string(_ServerResponse);
-			args->conn_sock = new int(conn_sock);
-			std::cout << "\nTHREAD\n" << std::endl;
-			if (pthread_create(&download_thread, NULL, &server_response::download_file, (void *)args) != 0) 
-			{
-				perror("Error creating thread");
-				return ;
-			}
-			if (pthread_detach(download_thread) != 0)
-			{
-				perror("Error detaching thread");
-				return ;
-			}
+			MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse));
 		}
 		else
-			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+		{
+			MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse));
+			// send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+		}
 		return ;
 	}
 	else if (Server_Request.getMethod() == "POST" || _status_code == 201)

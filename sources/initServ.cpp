@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/02 14:36:55 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/02 21:12:52 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,7 @@ bool	isNotinUnauthorizedSocket(std::vector<int> UnauthorizedSocket, int conn_soc
 	return 1;
 }
 
-void handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus)
+void handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus, std::vector<std::pair<int, std::string> >* MsgToSent)
 {
 	server_configuration *GoodServerConf;
 	char buffer[2048];
@@ -201,11 +201,11 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		{
 			std::cout << "\na1.4\n" << std::endl;
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
-			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200);
+			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
 			delete ServerRequest;
 			return ;
 		}
-		else if (ServerRequest->getMethod() == "POST" && CodeStatus == 200)
+		else if (ServerRequest->getMethod() == "POST")
 		{
 			std::cout << "\na1.5\n" << std::endl;
 			std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
@@ -222,7 +222,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			{
 				std::cout << "\na1.6\n" << std::endl;
 				server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
-				ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 413);
+				ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 413, MsgToSent);
 				delete ServerRequest;
 				return ;
 			}
@@ -230,7 +230,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		else if (isNotinUnauthorizedSocket(UnauthorizedSocket, conn_sock))
 		{
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
-			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200);
+			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
 			delete ServerRequest;
 			return ;
 		}
@@ -360,7 +360,9 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	int listen_sock[Ports.size()];
 	std::multimap<int, int> StorePort;
 	int CodeStatus = 0;
-
+	std::vector<std::pair<int, std::string> > MsgToSent;
+	std::string PartialFileSent;
+	
 	for (size_t i = 0; i < Ports.size(); i++)
 	{
 		addrlen[i] = sizeof(addr[i]);
@@ -423,7 +425,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 
 	for (size_t i = 0; i < Ports.size(); i++)
 	{
-		ev.events = EPOLLIN;
+		ev.events = EPOLLIN | EPOLLOUT;
 		ev.data.fd = listen_sock[i];
 		if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock[i], &ev) == -1) 
 		{
@@ -442,6 +444,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 			{
 				if (events[n].data.fd == listen_sock[i])
 				{
+					std::cout << "\nACCEPT SOCKET : " << events[n].events << std::endl;
 					CodeStatus = 200; // a voir comment on gère le code status après envoi ds le handle connection
 					// std::fprintf(stderr, "\nEVENTS I = %d ET N = %d\n", i, n);
 					conn_sock = accept(listen_sock[i], (struct sockaddr *) &addr[i], &addrlen[i]);
@@ -460,17 +463,65 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 						std::fprintf(stderr, "Error: setnonblocking: %s\n", strerror(errno));
 						return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
 					}
-					ev.events = EPOLLIN | EPOLLET;
+					ev.events = EPOLLIN | EPOLLOUT;
 					ev.data.fd = conn_sock;
 					if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock, &ev) == -1) {
 						std::fprintf(stderr, "Error: epoll_ctl: conn_sock, %s\n", strerror(errno));
 						return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
 					}
 				}
-				handle_connection(servers, events[n].data.fd, StorePort, CodeStatus);
-				// std::cout << "events[n].data.fd : " << events[n].data.fd << std::endl;
+				if (events[n].events & EPOLLIN)
+				{
+					std::cout << "\nEPOLLIN : " << events[n].events << std::endl;
+					std::cout << "\nSENT : " << events[n].data.fd << std::endl;
+					handle_connection(servers, events[n].data.fd, StorePort, CodeStatus, &MsgToSent);
+				}
+				if (events[n].events & EPOLLOUT)
+				{
+					std::cout << "\nEPOLLOUT : " << events[n].events << std::endl;
+					for (std::vector<std::pair<int, std::string> >::iterator it = MsgToSent.begin(); it != MsgToSent.end(); it++)
+					{
+						if (events[n].data.fd == it->first)
+						{
+							std::cout << "\nAS-TU ENVOYE? " << it->second.c_str() << std::endl;
+							if (it->second.size() < 500000)
+							{
+								std::cout << "\n< 500000 " << std::endl;
+								std::cout << it->first << std::endl; 
+								if (send(it->first, it->second.c_str() , it->second.size(), 0) == -1)
+									std::cerr << "\nSend pb 1: " << errno << std::endl;
+								MsgToSent.erase(it);
+								// it->first = 0;
+								// it->second = "";
+								break;
+							}
+							else
+							{
+								std::cout << "\n> 500000 " << std::endl;
+								std::cout << it->first << std::endl; 
+								std::cout << "\na0.1\n" << std::endl;
+								errno = 0;
+								std::cout << "\na0.2\n" << std::endl;
+								if (send(it->first, it->second.substr(0, 500000).c_str(), 500000, 0) == -1)
+								{
+									std::cout << "\nSend pb 2: " << errno << std::endl;
+								}
+								usleep(2000);
+								std::cout << "\na0.4\n" << std::endl;
+								it->second.erase(0,500000);
+								break;
+							}
+							std::cout << "\na1\n" << std::endl;
+						}
+						std::cout << "\na2\n" << std::endl;
+					}
+					std::cout << "\na3\n" << std::endl;
+				}
+				std::cout << "\na4\n" << std::endl;
 			}
+			std::cout << "\na5\n" << std::endl;
 		}
+		std::cout << "\na6\n" << std::endl;
 	}
 	return 0;
 }

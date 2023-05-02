@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 15:54:49 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/02 17:46:43 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,7 +229,7 @@ void server_request::request_parser()
 	}
 
 	// Afficher les résultats
-	if (1)
+	if (0)
 	{	
 		std::cout << "\n\nMéthode : " << this->_method << std::endl;
 		std::cout << "Chemin : " << this->_path << std::endl;
