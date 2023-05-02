@@ -13,6 +13,7 @@ RUN chown -R www-data:www-data /usr/share/nginx/html/upload/
 RUN chmod -R 777 /usr/share/nginx/html
 RUN chmod +x /usr/share/nginx/html/cgi-bin/*
 
+
 CMD ["/bin/bash", "-c", "service fcgiwrap start && php-fpm7.4 && chmod 777 /run/php/php7.4-fpm.sock && nginx -g 'daemon off;'"]
 
 # TEST

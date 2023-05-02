@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_configuration.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 12:26:39 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/02 14:59:22 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ server_configuration::server_configuration()
 		std::cout << "server_configuration Default Constructor called" << std::endl;
 }
 
-server_configuration::server_configuration(std::string ConfigFile, const char **env) : 
+server_configuration::server_configuration(std::string ConfigFile): 
 _ConfigFile(ConfigFile),
 _ServerName(findElement("server_name")),
 _Root(findElement("root")),
@@ -50,8 +50,6 @@ _Loc(findLoc())
 			_ErrorPage.erase(tmp);
 		}
 	}
-	for (size_t i = 0; env[i]; i++)
-		_env.push_back(env[i]);
 	if (DEBUG)
 	{
 		std::cout << "server_configuration Overload Constructor called" << std::endl;
@@ -81,7 +79,6 @@ server_configuration	&server_configuration::operator=(server_configuration const
 	_Index = obj.getIndex();
 	_StatusCode = obj.getStatusCode();
 	_ClientMaxBodySize = obj.getClientMaxBodySize();
-	_env = obj.getEnv();
 	_HttpMethodAccepted = obj.getHttpMethodAccepted();
 	_Port = obj.getPort();
 	_Host = obj.getHost();
@@ -94,6 +91,8 @@ server_configuration	&server_configuration::operator=(server_configuration const
 		std::cout << "server_configuration Copy assignment operator called" << std::endl;
 	return *this;
 }
+
+void	server_configuration::setStatusCode(int nb) { _StatusCode = nb; }
 
 bool server_configuration::is_in_location(size_t conf_pos, std::string str)
 {
@@ -158,7 +157,9 @@ std::string	server_configuration::findElement(std::string elem)
 {
 	size_t pos = 0;
 	while (is_in_location(_ConfigFile.find(elem, pos + 1), _ConfigFile))
+	{
 		pos = _ConfigFile.find(elem, pos + 1);
+	}
 	pos = _ConfigFile.find(elem, pos + 1);
 	if (pos != std::string::npos) { // check if "server_name" was found
 		pos += elem.size(); // move the position to the end of "server_name"
@@ -174,6 +175,50 @@ std::string	server_configuration::findElement(std::string elem)
 		return ("localhost");
 	return ("");
 }
+
+/*std::string	server_configuration::findServerName()
+{
+	size_t pos = _ConfigFile.find("server_name"); // find the position of "server_name" in the string
+	if (pos != std::string::npos) { // check if "server_name" was found
+		pos += strlen("server_name"); // move the position to the end of "server_name"
+		std::string server_name = _ConfigFile.substr(pos + 1); // extract the substring starting from the next character
+		size_t space_pos = server_name.find_first_of(" \n;"); // find the position of the first space or newline character
+		if (space_pos != std::string::npos) { // check if a space character was found
+			if (DEBUG)
+				std::cout << "std::string server_configuration::findServerName() " << server_name.substr(0, space_pos) << std::endl;
+			return(server_name.substr(0, space_pos)); // extract the substring before the space character
+		}
+	}
+	return ("localhost");
+}
+
+std::string	server_configuration::findRoot()
+{
+	size_t pos = _ConfigFile.find("root");
+	if (pos != std::string::npos) {
+		pos += strlen("root");
+		std::string root = _ConfigFile.substr(pos + 1);
+		size_t space_pos = root.find_first_of(" \n;");
+		if (space_pos != std::string::npos) {
+			return (root.substr(0, space_pos));
+		}
+	}
+	return ("");
+}
+
+std::string	server_configuration::findIndex()
+{
+	size_t pos = _ConfigFile.find("index");
+	if (pos != std::string::npos) {
+		pos += strlen("index");
+		std::string index = _ConfigFile.substr(pos + 1);
+		size_t space_pos = index.find_first_of(" \n;");
+		if (space_pos != std::string::npos) {
+			return (index.substr(0, space_pos));
+		}
+	}
+	return ("");
+}*/
 
 int	server_configuration::fillCgi(size_t pos)
 {

@@ -35,7 +35,7 @@ void sigint_handler(int signum)
 	// close(1); // nfds
 }
 
-int main(int argc, char const **argv, const char **envp)
+int main(int argc, char const **argv)
 {
 	try 
 	{
@@ -51,7 +51,7 @@ int main(int argc, char const **argv, const char **envp)
 			config = std::string(argv[1]);
 		else
 			config = std::string("server {\nlisten 8080;\nroot ./;\n}\n");
-		std::vector<server_configuration*> servers = SetupNewServers(config, argc, envp);
+		std::vector<server_configuration*> servers = SetupNewServers(config, argc);
 		if (servers.size() == 0)
 			return (1);
 //		PrintServer(servers);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/27 17:51:11 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/02 14:57:20 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ class server_response
 	server_response();
 	
 	public:
-	server_response(int, std::vector<std::string>, server_request*);
+	server_response(int, server_request*);
 	server_response(server_response const &obj);
 	~server_response();
 	server_response &operator=(server_response const &obj);
@@ -61,7 +61,7 @@ class server_response
 
 	void								setIsCgi(bool i) { _isCgi = i; }
 	// OTHER
-	void		SendingResponse(const server_request& Server_Request, int socket, server_configuration* Root);
+	void		SendingResponse(const server_request& Server_Request, int socket, server_configuration* Root, int StatusCodeTmp);
 	void		addLength();
 	void		setStatusCode(int st) { _status_code = (st); }
 	void		addType();
@@ -73,15 +73,14 @@ class server_response
 	std::string	addBody(std::string body);
 	std::string	getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string	getRealPathIndex(std::string MethodUsed, server_configuration *server, std::string RequestURI);
-	std::string	getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI);
-	int			isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	int			doCgi(std::string toexec, server_configuration * server); // envoyer fichier a cgiser + return fd du cgi
 	bool		isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool		autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI);
-	bool		manageCgi(const server_request& Server_Request, server_configuration *server);
+	bool		manageCgi(const server_request& Server_Request, server_configuration *server);	
 	bool		AnswerGet(const server_request& Server_Request, server_configuration *server);
 	void		SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent, std::string filename);
 	int			getIdSessionOrSetError401(const server_request& Server_Request);
+	static void		*download_file(void *arg);
 	// Définition de la méthode pour obtenir le corps de la réponse
 	// Définition de la méthode pour obtenir la réponse _ServerResponse
 	// Définition de la méthode pour obtenir le code d'état de la réponse

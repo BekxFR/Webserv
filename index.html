@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebServ</title>
+    <style>
+        body {
+            background-color: #FFC0CB; /* fond rose */
+        }
+        
+        h1 {
+            text-align: center; /* titre centré */
+            font-size: 5em; /* taille du texte */
+            color: white; /* couleur du texte */
+        }
+        
+        img {
+            display: block;
+            margin: 0 auto; /* centrage de l'image */
+            animation: rotate 2s linear infinite; /* animation rotation */
+        }
+        
+        img:hover {
+            animation-play-state: paused; /* pause de l'animation au survol */
+            transform: scale(1.1); /* agrandissement de l'image au survol */
+        }
+        
+        @keyframes rotate { /* définition de l'animation rotation */
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>WebServ</h1>
+</body>
+</html>

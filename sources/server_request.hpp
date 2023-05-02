@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:29:37 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 19:15:04 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/02 15:52:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ class server_request
 		std::string							_RequestURI; //old
 		std::string							_path;
 		std::string							_type;
+		std::string							_query;
+		std::string							_argsBrutes;
 		std::string							_version;
 		std::string							_host;
 		std::string							_connectionType;
@@ -56,6 +58,7 @@ class server_request
 		std::string	getMimeType() const { return (_mimeType); }
 		std::string	getContentType() const { return (_contentType); }
 		std::string	getBody() const { return (_body); }
+		std::string	getQuery() const { return (_query); }
 
 		//OTHER
 		std::string			findRequestURI();
