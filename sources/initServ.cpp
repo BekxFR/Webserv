@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 16:52:33 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 17:06:38 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -259,11 +259,11 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		}
 		/********************************************/
 
-		// std::cout << "\nMETHOD REQUETE " << ServerRequest.getMethod() << std::endl;
+		std::cout << "\nMETHOD REQUETE " << ServerRequest.getMethod() << std::endl;
 		// std::cout << "\nROOT " << GoodServerConf->getRoot() << std::endl;
 		if (((ServerRequest.getMethod() == "GET" || ServerRequest.getMethod() == "DELETE") || (ServerRequest.getMethod() == "POST" && request.find("WebKitFormBoundary") == std::string::npos)) && CodeStatus == 200)
 		{
-			// std::cout << "\na1.4\n" << std::endl;
+			std::cout << "\na1.4\n" << std::endl;
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 			ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
 			return ;

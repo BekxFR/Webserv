@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 16:54:37 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 17:02:56 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -479,8 +479,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			<< getRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) << "\r\n";
 			std::string response_str = response.str();
 			errno = 0;
-			if (send(conn_sock, response_str.c_str() , response_str.size(), 0) == -1)
-				std::cout << "\nError for " << conn_sock << " : " << errno << std::endl;
+			MsgToSent->push_back(std::pair<int, std::string>(conn_sock, response_str)); // remplace sent
 			errno = 0;
 	}
 	/*********************************************************************/
@@ -569,7 +568,8 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		if (_status_code == 200)
 			_content = server->getErrorPage()[STATUS200].second;
 		createResponse(server, _content, Server_Request, id_session);
-		send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
+
 		return ;
 	}
 	else
@@ -577,7 +577,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, id_session);
 		response << addBody(server->getErrorPage()[STATUS500].second);
 		_ServerResponse = response.str();
-		send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
 		return ;
 	}
 	if (_isCgi)
