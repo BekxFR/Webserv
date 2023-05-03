@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 12:29:06 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/03 15:01:58 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -228,11 +228,10 @@ void server_request::request_parser()
 			this->_query = url_decode(this->_query);
 		}
 	}
-
 	if (_body.size() && _method == "POST")
 		_isBody = 1;
 	// Afficher les résultats
-	if (1)
+	if (0)
 	{	
 		std::cout << "\n\nMéthode : " << this->_method << std::endl;
 		std::cout << "Chemin : " << this->_path << std::endl;

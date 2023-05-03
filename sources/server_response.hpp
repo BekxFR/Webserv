@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 19:22:57 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/03 15:09:37 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ class server_response
 
 	void								setIsCgi(bool i) { _isCgi = i; }
 	// OTHER
-	void		SendingResponse(const server_request& Server_Request, int socket, server_configuration* Root, int StatusCodeTmp);
+	void		SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp, std::vector<std::pair<int, std::string> >* MsgToSent);
 	void		addLength();
 	void		setStatusCode(int st) { _status_code = (st); }
 	void		addType();

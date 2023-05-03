@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:29:37 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 12:37:30 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/03 15:02:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ class server_request
 		std::string							_contentLength;
 		std::string							_body;
 		bool								_isBody;
-
 		server_request();
 
 	public:
