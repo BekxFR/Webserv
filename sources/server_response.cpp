@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 20:12:26 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 11:58:34 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -411,7 +411,7 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 {
 	if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
 	{
-		std::cout << "d0 " << std::endl;
+		// std::cout << "d0 " << std::endl;
 		std::cerr << _finalPath << std::endl;
 		_status_code = 404;
 	}
@@ -420,7 +420,7 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 		std::stringstream buffer;
 		if (is_dir(_finalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
 		{
-			std::cout << "AUTOLISTING ON" << std::endl;
+			// std::cout << "AUTOLISTING ON" << std::endl;
 			buffer << list_dir(_finalPath);
 		}
 		else if (is_dir(_finalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
@@ -433,7 +433,22 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 			if (!file.is_open())
 				_status_code = 403;
 			else
-				buffer << file.rdbuf();
+			{
+				std::size_t chunk_size = 4096;
+				char chunk[chunk_size];
+				while(true)
+				{
+					file.read(chunk, chunk_size);
+					std::streamsize bytes_read = file.gcount();
+        			if (bytes_read == 0) {
+        			    break; // end of file
+        			}
+        			buffer.write(chunk, bytes_read);
+					if (g_code == 42)
+						return (1);
+				}
+				// buffer << file.rdbuf();
+			}
 		}
 		_content = buffer.str();
 	}
@@ -486,7 +501,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	// PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	// while (PathToStore.find("//") != std::string::npos)
 	// 	PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
-	if (1)
+	if (0)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
@@ -538,24 +553,15 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		manageCgi(Server_Request, server);
 	}
 	
-	std::cout << "\n TEST : " << Server_Request.getMethod() << std::endl;
+	// std::cout << "\n TEST : " << Server_Request.getMethod() << std::endl;
 	std::stringstream response;
 	if (Server_Request.getMethod() == "GET" || Server_Request.getMethod() == "POST")
 	{
-		std::cout << "\nGETMETHOD SERVER_RESPONSE\n" << std::endl;
+		// std::cout << "\nGETMETHOD SERVER_RESPONSE\n" << std::endl;
 		if (_status_code == 200)
 			AnswerGet(Server_Request, server);
-		std::cout << "c10 " << std::endl;
 		createResponse(server, _content, Server_Request, id_session);
-		if (_ServerResponse.size() > 2000000)
-		{
-			MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse));
-		}
-		else
-		{
-			MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse));
-			// send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-		}
+		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
 		return ;
 	}
 	else if (Server_Request.getMethod() == "POST" || _status_code == 201)
@@ -754,7 +760,9 @@ void	server_response::createResponse(server_configuration * server, std::string 
 				{
 					if (_isCgi == 0)
 						response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request, server, IdSession);
+					// std::cout <<"\nTEST PR WARNING" << std::endl;
 					response << addBody(file);
+					// std::cout <<"\nTEST FIN" << std::endl;
 					break;
 				}
 				case 201:
