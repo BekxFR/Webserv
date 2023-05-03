@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 18:37:18 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/03 15:41:27 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,12 +154,12 @@ void server_request::request_parser()
 		{
 			std::string::size_type args_start = tmp.find('?', 0);
 			this->_type = tmp.substr(0, args_start);
+			this->_argsBrutes = tmp.substr(args_start + 1);
 			for (size_t i = 0; i < tmp.size(); i++)
 				if (tmp[i] == '&')
 					tmp[i] = ' ';
 			this->_path = _path.substr(0, _path.find('?', 0));
 			this->_query = tmp.substr(args_start + 1);
-			this->_argsBrutes = tmp.substr(args_start + 1);
 			this->_query = url_decode(this->_query);
 		}
 		else if (tmp.size() > 1)
@@ -217,6 +217,7 @@ void server_request::request_parser()
 	// IF POST and content type : application/x-www-form-urlencoded, recupere les arguments du PHP in body
 	if (this->_contentType == "application/x-www-form-urlencoded")
 	{
+		_isBody = 1;
 		if (this->_query.size() < 1)
 		{
 			std::string tmp = this->_body;
@@ -228,11 +229,8 @@ void server_request::request_parser()
 			this->_query = url_decode(this->_query);
 		}
 	}
-
-	if (_body.size() && _method == "POST")
-		_isBody = 1;
 	// Afficher les résultats
-	if (1)
+	if (0)
 	{	
 		std::cout << "\n\nMéthode : " << this->_method << std::endl;
 		std::cout << "Chemin : " << this->_path << std::endl;

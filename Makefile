@@ -6,7 +6,7 @@
 #    By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/01 12:07:22 by chillion          #+#    #+#              #
-#    Updated: 2023/04/26 15:41:36 by nflan            ###   ########.fr        #
+#    Updated: 2023/05/03 14:50:39 by mgruson          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -91,6 +91,12 @@ t3 : all
 	
 tc : tmp
 	$(VAL) ./${SOFT_NAME2} ./site/arbo-OLD2.php
+
+nup :
+	$(MAKE) all -C ./docker-nginx
+
+nstop : 
+	$(MAKE) stop -C ./docker-nginx
 
 clean : 
 	@echo "${RED}###${NC}Nettoyage des fichiers .o${RED}###"

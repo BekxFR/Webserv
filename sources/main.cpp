@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/26 19:34:44 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/03 14:59:37 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ void sigint_handler(int signum)
 	{
 		close(open_ports[i]);
 	}
+	g_code = 42;
 	// close(8083); // Port 1
 	// close(8086); // Port 2
 	// close(3); // listen_socket 1
@@ -63,5 +64,6 @@ int main(int argc, char const **argv)
 		std::cerr << "Webserv error : " << e.what() << '\n';
 		return (1);
 	}
+	std::cout << "\nFIN DU PROGRAMME" << std::endl;
 	return 0;
 }
