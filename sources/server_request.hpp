@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:29:37 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 18:03:56 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/03 12:37:30 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class server_request
 		std::string							_RequestURI; //old
 		std::string							_path;
 		std::string							_type;
-		std::string							_args;
+		std::string							_query;
 		std::string							_argsBrutes;
 		std::string							_version;
 		std::string							_host;
@@ -37,6 +37,7 @@ class server_request
 		std::string							_contentType;
 		std::string							_contentLength;
 		std::string							_body;
+		bool								_isBody;
 
 		server_request();
 
@@ -52,13 +53,14 @@ class server_request
 		std::string	getRequestURI() const { return (_RequestURI); }
 		std::string	getPath() const { return (_path); }
 		std::string	getType() const { return (_type); }
-		std::string	getArgs() const { return (_argsBrutes); }
 		std::string	getVersion() const { return (_version); }
 		std::string	getHost() const { return (_host); }
 		std::string	getConnectionType() const { return (_connectionType); }
 		std::string	getMimeType() const { return (_mimeType); }
 		std::string	getContentType() const { return (_contentType); }
 		std::string	getBody() const { return (_body); }
+		bool		getIsBody() const { return (_isBody); }
+		std::string	getQuery() const { return (_argsBrutes); }
 
 		//OTHER
 		std::string			findRequestURI();

@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/28 15:28:42 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/02 19:22:57 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ class server_response
 	int									_status_code;
 	int									_cgiFd;
 	std::string							_header;
+	std::string							_bodyName;
 	std::string							_body;
 	std::string							_content;
 	size_t								_contentLength;
@@ -31,12 +32,13 @@ class server_response
 	std::string							_fileName;
 	std::vector<std::string>			_env;
 	server_request*						_req;
+	bool								_isCgi;
 	std::map<std::string, std::string>	_contentType;
 
 	server_response();
 	
 	public:
-	server_response(int, std::vector<std::string>, server_request*);
+	server_response(int, server_request*);
 	server_response(server_response const &obj);
 	~server_response();
 	server_response &operator=(server_response const &obj);
@@ -44,9 +46,11 @@ class server_response
 	// GETTERS
 	int									getCgiFd() const { return (_cgiFd); }
 	int									getStatusCode() const { return _status_code; }
+	bool								getIsCgi() const { return (_isCgi); }
 	size_t								getContentLength() const { return _contentLength; }
 	std::string							getFileName() { return (_fileName); }
 	std::string							getHeader() const { return _header; }
+	std::string							getBodyName() const { return _bodyName; }
 	std::string							getBody() const { return _body; }
 	std::string							getContent() const { return (_content); }
 	std::string							getServerResponse() const { return (_ServerResponse); }
@@ -57,8 +61,9 @@ class server_response
 	std::vector<std::string>&			getEnv() { return (_env); }
 	std::map<std::string, std::string>	getContentType() const { return (_contentType); }
 
+	void								setIsCgi(bool i) { _isCgi = i; }
 	// OTHER
-	void		SendingResponse(const server_request& Server_Request, int socket, server_configuration* Root);
+	void		SendingResponse(const server_request& Server_Request, int socket, server_configuration* Root, int StatusCodeTmp);
 	void		addLength();
 	void		setStatusCode(int st) { _status_code = (st); }
 	void		addType();
@@ -70,14 +75,14 @@ class server_response
 	std::string	addBody(std::string body);
 	std::string	getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string	getRealPathIndex(std::string MethodUsed, server_configuration *server, std::string RequestURI);
-	std::string	getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI);
-	int			isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI);
-	int			doCgi(std::string toexec, server_configuration * server, std::string args); // envoyer fichier a cgiser + return fd du cgi
+	int			doCgi(std::string toexec, server_configuration * server); // envoyer fichier a cgiser + return fd du cgi
 	bool		isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool		autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI);
+	bool		manageCgi(const server_request& Server_Request, server_configuration *server);	
 	bool		AnswerGet(const server_request& Server_Request, server_configuration *server);
 	void		SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent, std::string filename);
 	int			getIdSessionOrSetError401(const server_request& Server_Request);
+	static void		*download_file(void *arg);
 	// Définition de la méthode pour obtenir le corps de la réponse
 	// Définition de la méthode pour obtenir la réponse _ServerResponse
 	// Définition de la méthode pour obtenir le code d'état de la réponse

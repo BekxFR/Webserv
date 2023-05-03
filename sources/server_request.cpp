@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 18:03:02 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/03 12:29:06 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ server_request &server_request::operator=(server_request const &obj)
 server_request::server_request(std::string ServerRequest) :
 	_ServerRequest(ServerRequest) //, _Method(findMethod()), _RequestURI(findRequestURI())
 {
+	_isBody = 0;
 }
 
 std::string server_request::findMethod()
@@ -89,10 +90,6 @@ std::ostream& operator <<(std::ostream &out, server_request &ServRequest)
 		<< "\nServerRequest : " << ServRequest.getServerRequest() << "\n";
 	return (out);
 }
-
-#include <string>
-#include <sstream>
-#include <iomanip>
 
 std::string url_decode(const std::string& encoded_string)
 {
@@ -148,7 +145,7 @@ void server_request::request_parser()
 
 	// Extraire le type de la ressource (html et les arguments test.php?dir=t1&div=t2&sheep=t3)
 	this->_type = "html";
-	this->_args = "";
+	this->_query = "";
 	if (this->_path.find('.', 0) != std::string::npos)
 	{
 		std::string tmp = "";
@@ -162,8 +159,8 @@ void server_request::request_parser()
 				if (tmp[i] == '&')
 					tmp[i] = ' ';
 			this->_path = _path.substr(0, _path.find('?', 0));
-			this->_args = tmp.substr(args_start + 1);
-			this->_args = url_decode(this->_args);
+			this->_query = tmp.substr(args_start + 1);
+			this->_query = url_decode(this->_query);
 		}
 		else if (tmp.size() > 1)
 			this->_type = tmp;
@@ -220,25 +217,27 @@ void server_request::request_parser()
 	// IF POST and content type : application/x-www-form-urlencoded, recupere les arguments du PHP in body
 	if (this->_contentType == "application/x-www-form-urlencoded")
 	{
-		if (this->_args.size() < 1)
+		if (this->_query.size() < 1)
 		{
 			std::string tmp = this->_body;
 			this->_argsBrutes = tmp;
 			for (size_t i = 0; i < tmp.size(); i++)
 				if (tmp[i] == '&')
 					tmp[i] = ' ';
-			this->_args = tmp;
-			this->_args = url_decode(this->_args);
+			this->_query = tmp;
+			this->_query = url_decode(this->_query);
 		}
 	}
 
+	if (_body.size() && _method == "POST")
+		_isBody = 1;
 	// Afficher les résultats
 	if (1)
 	{	
 		std::cout << "\n\nMéthode : " << this->_method << std::endl;
 		std::cout << "Chemin : " << this->_path << std::endl;
 		std::cout << "Type : " << this->_type << std::endl;
-		std::cout << "Arguments : " << this->_args << std::endl;
+		std::cout << "Arguments : " << this->_query << std::endl;
 		std::cout << "Arguments Brutes : " << this->_argsBrutes << std::endl;
 		std::cout << "Version : " << this->_version << std::endl;
 		std::cout << "Host : " << this->_host << std::endl;

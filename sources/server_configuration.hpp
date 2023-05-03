@@ -24,7 +24,6 @@ class server_configuration
 		std::string													_ServerName;
 		std::string													_Root;
 		std::string													_Index;
-		std::vector<std::string>									_env;
 		std::vector<std::string>									_HttpMethodAccepted;
 		std::map<std::string, std::string>							_cgi;
 		std::vector<int>											_Port;
@@ -41,7 +40,7 @@ class server_configuration
 		server_configuration();
 
 	public:
-		server_configuration(std::string ConfigFile, const char **);
+		server_configuration(std::string ConfigFile);
 		server_configuration(server_configuration const &obj);
 		~server_configuration();
 		server_configuration &operator=(server_configuration const &obj);
@@ -52,7 +51,6 @@ class server_configuration
 		std::string														getRoot() const { return _Root;}
 		std::string														getIndex() const { return _Index;}
 		std::vector<int>												getPort() const { return _Port;}
-		std::vector<std::string>										getEnv() const { return _env;}
 		std::vector<std::string>										getHttpMethodAccepted() const { return (_HttpMethodAccepted); }
 		std::vector<std::string>&										getHttpMethodAccepted() { return (_HttpMethodAccepted); }
 		std::vector<std::string>										getHost() const { return _Host;}

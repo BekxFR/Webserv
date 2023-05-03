@@ -6,6 +6,9 @@
 </head>
 <body>
     <?php
+		$data = file_get_contents('php://input');
+		parse_str($data, $post_vars);
+		$_POST = $post_vars;
         // Vérifie si le formulaire a été soumis
         if (isset($_POST['nom']) && isset($_POST['prenom'])) {
             // Affiche les valeurs dans les champs du formulaire
@@ -34,8 +37,17 @@
         // Affiche les paramètres de la requête
         echo "<p>Paramètres de la requête : " . $_SERVER['QUERY_STRING'] . "</p>";
 		echo "<p>" . var_dump($_POST) . "</p>";
+		echo "<p>" . var_dump($data) . "</p>";
+		$nom = $_POST['nom'];
+		echo "5555";
+		echo $data;
+		echo "6666";
+		echo "<p>" . var_dump($nom) . "</p>";
 		echo "<p>" . var_dump($_POST['nom']) . "</p>";
 		echo "<p>" . var_dump($_POST['prenom']) . "</p>";
+		echo "<p>" . var_dump($_GET['nom']) . "</p>";
+		echo "<p>" . var_dump($_GET['prenom']) . "</p>";
+		echo "<p>" . var_dump($_SERVER['CONTENT_TYPE']) . "</p>";
     ?>
 </body>
 </html>

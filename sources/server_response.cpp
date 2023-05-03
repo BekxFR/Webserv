@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 18:06:13 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/03 13:19:50 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,14 @@
 
 extern volatile std::sig_atomic_t	g_code;
 
-server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _req(NULL)
+server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _bodyName(".tmp-post.txt"), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(), _req(NULL), _isCgi(0)
 {
 	this->addType();
 	if (0)
 		std::cout << "server_response Default Constructor called" << std::endl;
 }
 
-server_response::server_response(int stat, std::vector<std::string> env, server_request* req) : _status_code(stat), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(env), _req(req)
+server_response::server_response(int stat, server_request* req) : _status_code(stat), _cgiFd(-1), _header(""), _bodyName(".tmp-post.txt"), _body(req->getBody()), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(), _req(req), _isCgi(0)
 {
 	this->addType();
 	if (0)
@@ -46,6 +46,7 @@ server_response	&server_response::operator=(server_response const &obj)
 	_status_code = obj.getStatusCode();
 	_cgiFd = obj.getCgiFd();
 	_header = obj.getHeader();
+	_bodyName = obj.getBodyName();
 	_body = obj.getBody();
 	_content = obj.getContent();
 	_contentLength = obj.getContentLength();
@@ -53,6 +54,7 @@ server_response	&server_response::operator=(server_response const &obj)
 	_finalPath = obj.getPath();
 	_req = obj.getReq();
 	_env = obj.getEnv();
+	_isCgi = obj.getIsCgi();
 	_contentType = obj.getContentType();
 	if (0)
 		std::cout << "server_response Copy assignment operator called" << std::endl;
@@ -73,13 +75,13 @@ void	server_response::addType()
 	_contentType.insert(std::make_pair<std::string, std::string>("mjs", "Content-Type: application/javascript\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("atom", "Content-Type: application/atom+xml\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("rss", "Content-Type: application/rss+xml\r\n"));
-
+	_contentType.insert(std::make_pair<std::string, std::string>("mp4", "Content-Type: video/mp4\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("iso", "Content-Type: multipart/form-data; boundary=----WebKitFormBoundarybC2GrDJYSRCSriwe\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("mml", "Content-Type: text/mathml\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("txt", "Content-Type: text/plain\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jad", "Content-Type: text/vnd.sun.j2me.app-descriptor\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("wml", "Content-Type: text/vnd.wap.wml\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("htc", "Content-Type: text/x-component\r\n"));
-
 	_contentType.insert(std::make_pair<std::string, std::string>("avif", "Content-Type: image/avif\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("png", "Content-Type: image/png\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("svg", "Content-Type: image/svg+xml\r\n"));
@@ -91,7 +93,6 @@ void	server_response::addType()
 	_contentType.insert(std::make_pair<std::string, std::string>("ico", "Content-Type: image/x-icon\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jng", "Content-Type: image/x-jng\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("bmp", "Content-Type: image/x-ms-bmp\r\n"));
-
 	_contentType.insert(std::make_pair<std::string, std::string>("font", "Content-Type: font/woff\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("font", "Content-Type: font/woff2\r\n"));
 }
@@ -119,25 +120,30 @@ std::string findFileName(std::string FinalPath)
 std::string	server_response::list_dir(std::string path)
 {
 	DIR	*dir = NULL;
-	struct dirent *send = NULL;
+	struct dirent*	send = NULL;
+	struct stat	sb;
 	std::stringstream	response;
-	//std::string	content;
+	std::string	testDir;
+	std::string	route;
 
-	// std::cout << "PATH : '" << path << "'" << std::endl;
+	std::cout << "PATH : '" << path << "'" << std::endl;
 	while (path.find("//") != std::string::npos)
 		path = path.erase(path.find("//"), 1);
 	errno = 0;
 	dir = opendir(path.c_str());
 	if (dir == NULL)
-	if (errno == EACCES || errno == EMFILE || errno == ENFILE || errno == ENOENT || errno == ENOMEM || errno == ENOTDIR)
 	{
-		if (errno == ENOENT || errno == ENOTDIR)
-			_status_code = 404;
-		else if (errno == EACCES)
-			_status_code = 403;
-		else if (errno == EMFILE || errno == ENFILE || errno == ENOMEM)
-			_status_code = 500;
-		return ("");
+		if (errno == EACCES || errno == EMFILE || errno == ENFILE || errno == ENOENT || errno == ENOMEM || errno == ENOTDIR)
+		{
+			if (errno == ENOENT || errno == ENOTDIR)
+				_status_code = 404;
+			else if (errno == EACCES)
+				_status_code = 403;
+			else if (errno == EMFILE || errno == ENFILE || errno == ENOMEM)
+				_status_code = 500;
+			errno = 0;
+			return ("");
+		}
 	}
 	send = readdir(dir);
 	if (!send)
@@ -146,41 +152,25 @@ std::string	server_response::list_dir(std::string path)
 		closedir(dir);
 		return ("");
 	}
-	response << "<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>" << path << "</title></head><body style=\"height: 100%;\"><h1 style=\"padding-top:0.5em;font-size:3em;\">Index of " << path << "/</h1></br><ul style=\"margin-top:10px;margin-bottom:10px;padding-top:10px;padding-bottom:10px;border-size:0.5em;border-top-style:solid;border-bottom-style:solid;\">";
+	response << "<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>" << path << "</title></head><body style=\"height: 100%;\"><h1 style=\"padding-top:0.5em;font-size:3em;\">Index of " << path << "</h1></br><ul style=\"margin-top:10px;margin-bottom:10px;padding-top:10px;padding-bottom:10px;border-size:0.5em;border-top-style:solid;border-bottom-style:solid;\">";
 	while (send)
 	{
-		response << "<li><a href=\"" << path << send->d_name << "\">" << send->d_name << "</a></li>";
+		testDir = path + send->d_name;
+		route = send->d_name;
+		if ((strcmp(route.data(), ".") || strcmp(route.data(), "..")) && stat(testDir.data(), &sb) == -1)
+		{
+			_status_code = 500;
+			closedir(dir);
+			return ("");
+		}
+		if (S_ISDIR(sb.st_mode) == 1)
+			route += "/";
+		response << "<li><a href=\"" << route << "\">" << send->d_name << "</a></li>";
 		send = readdir(dir);
 	}
 	closedir(dir);
-	response << "</ul><p style=\"text-align: center;\">webserv</p></body></html>";
-	//content = response.str();
-	//return (response.str());
+	response << "</ul><footer style=\"position:fixed;bottom:0;left:0;right:0;background-color:#111;color:white;text-align:center;padding:10px 0;font-size:0.8em;\">Site web créé par Nicolas, Mathieu et Cyril</footer></body></html>";
 	return (response.str());
-}
-
-int server_response::isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
-	{
-		if (it->first == RequestURI.substr(0, it->first.size()))
-		{
-			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
-			{
-				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
-				{
-					// s'il passe ici c'est que la méthode est autorisée et qu'une loc a été trouvée
-					return (200);
-				}
-			}
-		}
-	}
-	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
-	dans une location */
-	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
-		return (200);
-	// s'il passe ici c'est qu'aucune loc n'a éte trouvée et que donc c'est possible, meme ds le principal
-	return (405);
 }
 
 std::string server_response::getRealPath(std::string MethodUsed, server_configuration *server, std::string RequestURI)
@@ -214,6 +204,7 @@ std::string server_response::getRealPath(std::string MethodUsed, server_configur
 	dans une location */
 	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
 		return (server->getRoot() + "/" + RequestURI);
+	_status_code = 501;
 	return ("");
 }
 
@@ -262,32 +253,6 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 		return (server->getRoot() + "/" + RequestURI.substr(0));
 	
 }
-
-
-std::string server_response::getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
-	{
-		if (it->first == RequestURI.substr(0, it->first.size()))
-		{
-			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
-			{
-				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
-				{
-					/*	Ci-dessous, on renvoie directement le path au store, car ce path se suffit à lui-même. 
-						Si on ne le trouve pas, alors on renvoie le root car on enregistra à la racine du root. */
-					if (it->second->getUploadStore().size() > 0)
-						return (it->second->getUploadStore());
-					else
-						return (server->getRoot());
-				}
-			}
-		}
-	}
-	return (server->getRoot());
-}
-
-
 
 bool server_response::autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {	
@@ -375,7 +340,7 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 		std::ofstream outfile(".session_management.txt", std::ios::out | std::ios::app);
 		srand(time(NULL));
 		id_session = rand() % INT_MAX;
-		// std::cout << "SESSION ID GENERATED : " << id_session << std::endl;
+		std::cout << "SESSION ID GENERATED : " << id_session << std::endl;
 		SessionIdGiven.push_back(id_session);
 		outfile << id_session << std::endl;
 		outfile.close();
@@ -403,7 +368,7 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 			}
 			else if (i == SessionIdGiven.size())
 			{
-				// std::cout << "ID SESSION UNKNOWN" << std::endl;
+				std::cout << "ID SESSION UNKNOWN" << std::endl;
 				_status_code = 401;
 			}
 			infile.close();
@@ -412,76 +377,34 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 	return (0);
 }
 
-void	server_response::SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent, std::string filename)
+bool	server_response::manageCgi(const server_request& Server_Request, server_configuration *server)
 {
-	(void)Server_Request;
-	(void)conn_sock;
-	(void)server;
-	(void)PostContent;
-	(void)filename;
-	std::cout << "\n\nTU Y ES" << std::endl;
-	// il faudra faire en sorte que ca vienne la le nombre de fois necessaire
-
-	// std::ifstream file(filename.c_str(), std::ifstream::binary);
-	
-	// en dessous ca vient apres, il faut d'abord mettre les donnees ds un fichier
-	std::ofstream outputFile(".uploadtmp", std::ios::binary);
-	// std::ofstream outputFile(filename.c_str(), std::ios::binary); // OK 1
-
-
-			// std::ifstream file(FinalPath.c_str(), std::ifstream::binary);
-			// // std::stringstream buffer;
-			// std::filebuf* pbuf = file.rdbuf();
-			// std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
-			// pbuf->pubseekpos (0,file.in);
-			// // std::cout << "\nC2\n" << std::endl;
-			// char *buffer= new char[size];
-			// pbuf->sgetn(buffer, size);
-			// file.close();
-			// std::string content(buffer, size);
-
-	outputFile << PostContent;
-	outputFile.close();
-
-	std::ifstream input_file(".uploadtmp", std::ios::binary);
-    std::ofstream output_file(filename.c_str(), std::ios::binary);
-
-   int count = 0;
-   std::string tmpline;
-	while (getline(input_file, tmpline))
+	std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
+	if (access(server->getCgi().find("." + Server_Request.getType())->second.data(), X_OK))
+		_status_code = 502;
+	else
 	{
-		count++;
+		std::stringstream buffer;
+		if (_fileName == "")
+			_fileName = ".cgi-tmp.txt";
+		if (!doCgi(_finalPath,server))
+		{
+			std::ifstream	cgiContent(_fileName.data());
+			std::getline(cgiContent, _content, '\0'); // on recupere le retour du cgi
+			cgiContent.close();
+			std::ofstream	cgiChange(_fileName.data(), std::ios::out | std::ios::trunc);
+			cgiChange << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
+			if (_content.find("Content-Length:") == std::string::npos)
+				addLength(); // ajout content-length en fonction du retour des cgi
+			if (cgiChange)
+				cgiChange << _content << "\0";
+			else
+				_status_code = 500;
+			_isCgi = 1;
+			return (1);
+		}
 	}
-	input_file.close();
-	input_file.open(".uploadtmp");
-	// std::cout << "COUNT : " << count <<  std::endl;
-
-    if (!input_file.is_open() || !output_file.is_open()) {
-        std::cerr << "Failed to open file." << std::endl;
-    }
-
-    int line_number = 0;
-    std::string line;
-
-    while (std::getline(input_file, line)) {
-        ++line_number;
-        if (line_number <= 4 || line_number == count) {
-            continue; // skip first 4 lines and last line
-        }
-        output_file << line << std::endl;
-    }
-
-    input_file.close();
-    output_file.close();
-
-	
-	
-	// std::string response = "HTTP/1.1 200 OK\r\n";
-	// send(conn_sock, response.c_str() , response.size(), 0);
-			// delete [] buffer;
-			// _ServerResponse = response.str();
-			// send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			// break ;
+	return (0);
 }
 
 bool	server_response::AnswerGet(const server_request& Server_Request, server_configuration *server)
@@ -495,70 +418,97 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 	else
 	{
 		std::stringstream buffer;
-		// std::cerr << "HELLO JE SUIS la1" << std::endl;
 		if (is_dir(_finalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
 		{
-			// std::cout << "AUTOLISTING ON" << std::endl;
+			std::cout << "AUTOLISTING ON" << std::endl;
 			buffer << list_dir(_finalPath);
 		}
 		else if (is_dir(_finalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
-		{
-			// std::cerr << "HELLO JE SUIS la2" << std::endl;
 			_status_code = 403;
-		}
 		else if (_status_code == 200)
 		{
-			std::cerr << "HELLO LE CGI " << Server_Request.getType() << std::endl;
-			// std::cerr << "2HELLO LE CGI " << server->getCgi() << std::endl;
-std::cerr << "TT" << std::endl;
-		for (std::map<std::string, std::string>::iterator it = server->getCgi().begin(); it != server->getCgi().end(); ++it)
-		{
-			std::cerr << "TT" << it->first << " : " << it->second << std::endl;
-		}
-std::cerr << "TT" << std::endl;
-			if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end())
-			{
-				std::cerr << "\n2HELLO JE SUIS DANS LE CGI" << std::endl;
-				if (_fileName == "")
-					_fileName = ".cgi-tmp.txt";
-				if (!doCgi(_finalPath,server,Server_Request.getArgs()))
-				{
-					buffer << Server_Request.getVersion() << " " << _status_code << " " << STATUS200 << "\r\n";
-					std::ifstream	cgiContent(_fileName.c_str());
-					std::getline(cgiContent, _content, '\0'); // on recupere le retour du cgi
-					cgiContent.close();
-					addLength(); // ajout content-length en fonction du retour des cgi
-					buffer << _content << "\0";
-					_ServerResponse = buffer.str(); // on a mis header et body dans la reponse
-					std::remove(_fileName.c_str()); // suppression du fichier tmp contenant le retour du cgi
-					return (1);
-				}
-			}
+			if (_isCgi == 1)
+				_finalPath = _fileName;
+			std::ifstream file(_finalPath.c_str());
+			if (!file.is_open())
+				_status_code = 403;
 			else
-			{
-				// std::cout << "Affichage classique" << std::endl;
-				std::ifstream file(_finalPath.c_str());
-				if (!file.is_open())
-					_status_code = 403;
-				else
-					buffer << file.rdbuf();
-			}
+				buffer << file.rdbuf();
 		}
 		_content = buffer.str();
 	}
-	return (0);
+	return (1);
 }
 
-void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server)
+struct thread_args {
+	int* conn_sock;
+    std::string* Response;
+};
+
+void *server_response::download_file(void *arg)
 {
-	// std::cout << "REQUETE\n" << Server_Request.getServerRequest() << std::endl;
-	/*	Ci-dessous, je verifie que le ClientMaxBodySize n'est pas dépassé.
-		Je le mets au-dessus, car si c'est le cas, retour d'erreur*/
-	if (_status_code == 200 && Server_Request.getContentLength() > server->getClientMaxBodySize())
-		_status_code = 413;
-	/**********************************************************************/
-	
-	
+	struct thread_args *args = (struct thread_args *)arg;
+
+	std::cout.write(args->Response->c_str(), 20);
+	std::cout << "\n\nTEST THREAD : " << *args->conn_sock << std::endl;
+	// std::string ServerResponse = *args->Response;
+	// int conn_sock = *args->conn_sock;
+
+	std::string ServerResponse = *args->Response;
+	int conn_sock = *args->conn_sock;
+	std::cout << "\n\nTEST THREAD SOCK: " << conn_sock << std::endl;
+	std::cout << "\n\nTEST THREAD SIZE : " << ServerResponse.size() << std::endl;
+	while (ServerResponse.size() > 0)
+	{
+		// std::cout << "c3\n" << std::endl;
+		static std::string StockResponse;
+		// std::cout << "TEST UPLOAD 0\n" << ServerResponse.size() << std::endl;
+		static int i = 0;
+		// std::cout << "c3.1\n" << std::endl;
+		if (ServerResponse.size() >= 500000)
+		{
+			// std::cout << "c3.2\n" << std::endl;
+			StockResponse = ServerResponse.substr(500000);
+			// std::cout << "c3.3\n" << std::endl;
+			ServerResponse = ServerResponse.erase(500000);
+			// std::cout << "c3.4\n" << std::endl;
+		}
+		std::cout << "\nTEST SERVERREPONSE SIZE for " << conn_sock << " : " << ServerResponse.size() << std::endl;
+		// if (ServerResponse.size() < 2000000)
+		// {
+			
+		// }
+		// if (i < 1 || ServerResponse.size() < 2000000)
+		// {
+		// 	std::cout << "\nTEST UPLOAD \n" << std::endl;
+		// 	std::cout.write(ServerResponse.c_str(), ServerResponse.size());
+		// }
+		// std::cout << "RESPONSE SIZE : " << ServerResponse.size() << std::endl;
+		// std::cout << "STOCK SIZE : " << StockResponse.size() << std::endl;
+		// std::cout << "c4\n" << std::endl;
+		usleep(2000);
+		send(conn_sock, ServerResponse.c_str() , ServerResponse.size(), 0);
+		
+		// if (ServerResponse.size() < 2000000)
+		// {
+		// 	StockResponse.clear();
+		// }	
+		// std::cout << "c5\n" << std::endl;
+		ServerResponse = StockResponse;
+		StockResponse.clear();
+		i++;
+	}
+	delete args->Response;
+	delete args->conn_sock;
+	delete args;
+	return NULL;
+}
+
+void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp)
+{
+	if (StatusCodeTmp != 200)
+		_status_code = StatusCodeTmp;
+
 	/*	Ci-dessous, on genere un ID de session pour chaque nouvel utilisateur
 		et on verifie que si un ID est recu, c'est bien nous qui l'avons emis
 		pour renvoyer sinon une erreur 401 et un id_session a zero (a savoir 
@@ -569,15 +519,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	// std::cout << "_status_code : " << _status_code << std::endl;
 	// std::cout << "id_session : " << id_session << std::endl;
 	/*********************************************************************/
-		
-		
-	/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
-	car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
-	sur que le status code n'est pas modifié par la suite */
-	if (_status_code == 200)
-		_status_code = isMethodAuthorised(Server_Request.getMethod(), server, Server_Request.getRequestURI()); // on sait s'ils ont le droit
-	// std::cout << "STATUS isMethodAuthorised : " << _status_code << std::endl;
-	/********************************************/
 
 	
 	/*Si l'on se situe, ds une location et qu'il y a une HTTP redir alors
@@ -588,7 +529,10 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			response << "HTTP/1.1 301 Moved Permanently\r\nLocation: " \
 			<< getRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) << "\r\n";
 			std::string response_str = response.str();
-			send(conn_sock, response_str.c_str() , response_str.size(), 0);
+			errno = 0;
+			if (send(conn_sock, response_str.c_str() , response_str.size(), 0) == -1)
+				std::cout << "\nError for " << conn_sock << " : " << errno << std::endl;
+			errno = 0;
 	}
 	/*********************************************************************/
 	
@@ -603,10 +547,10 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPathIndex.find("//") != std::string::npos)
 		RealPathIndex = RealPathIndex.erase(RealPathIndex.find("//"), 1);
-	PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
-	while (PathToStore.find("//") != std::string::npos)
-		PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
-	if (0)
+	// PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
+	// while (PathToStore.find("//") != std::string::npos)
+	// 	PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
+	if (1)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
@@ -622,8 +566,8 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		_status_code = 404;
 		// std::cout << " BOOL FALSE" << std::endl;
-    }
-	else
+	}
+	else if (_status_code == 200)
 	{
 		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
 		C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
@@ -650,101 +594,124 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	// std::cout << "FinalPath : " << _finalPath << std::endl;
 	// std::cout << "StatusCode : " << _status_code << std::endl;
 	/************************************************/
-	std::cout << "\nC2" << _finalPath << "\n" << std::endl;
-	std::cout << "\nC2" << Server_Request.getPath() << "\n" << std::endl;
-	int n = 0;
-	const std::string ftab[3] = {"GET", "POST", "DELETE"};
-	enum imethod {GET, POST, DELETE};
-	std::stringstream response;
-	for (; n < 4; n++)
+
+	/* Gestion des CGI pour ensuite repondre à la requete*/
+	if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end() && _status_code == 200)
 	{
-		if (n != 3 && ftab[n] == Server_Request.getMethod()) // OK 
-		{
-			break ;
-		}
+		std::cerr << "cgi" << std::endl;
+		manageCgi(Server_Request, server);
 	}
-	switch (n)
+	
+	
+	std::stringstream response;
+	if (Server_Request.getMethod() == "GET" && _status_code != 500)
 	{
-		case GET :
+		if (_status_code == 200)
+			AnswerGet(Server_Request, server);
+		std::cout << "c10 " << std::endl;
+		createResponse(server, _content, Server_Request, id_session);
+		if (_ServerResponse.size() > 2000000)
 		{
-			if (!AnswerGet(Server_Request, server))
+			pthread_t download_thread;
+			struct thread_args *args = (struct thread_args *)malloc(sizeof(struct thread_args));
+			std::cout << "c1\n" << std::endl;
+			args->Response = new std::string(_ServerResponse);
+			args->conn_sock = new int(conn_sock);
+			std::cout << "\nTHREAD\n" << std::endl;
+			if (pthread_create(&download_thread, NULL, &server_response::download_file, (void *)args) != 0) 
 			{
-				// std::cout << "c10 " << std::endl;
-				createResponse(server, _content, Server_Request, id_session);
+				perror("Error creating thread");
+				return ;
 			}
-			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
-			// std::cout << std::endl << "Response\n " << _ServerResponse << std::endl << std::endl;
-			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			break ;
+			if (pthread_detach(download_thread) != 0)
+			{
+				perror("Error detaching thread");
+				return ;
+			}
 		}
-		case POST :
-		{
+		else
+			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+		return ;
+	}
+	else if ((Server_Request.getMethod() == "POST" || _status_code == 201) && _status_code != 500)
+	{
+		std::cout << "POST POST POST" << std::endl;
 			// std::cout << "BODY\n" << Server_Request.getBody() << std::endl;
 
-			std::string FileName = "./" + findFileName(_finalPath);
-			// std::cout << "FILENAME : " << FileName << std::endl;
-			std::string outfilename = FileName.c_str(); // PATH DU FICHIER DE SORTIE
+			// std::string FileName = "./" + findFileName(_finalPath);
+			// // std::cout << "FILENAME : " << FileName << std::endl;
+			// std::string outfilename = FileName.c_str(); // PATH DU FICHIER DE SORTIE
 			
-			std::ofstream outputFile(outfilename.c_str(), std::ios::binary); // OK 1
+			// std::ofstream outputFile(outfilename.c_str(), std::ios::binary); // OK 1
 
-			std::ifstream file(_finalPath.c_str(), std::ifstream::binary);
+			// std::ifstream file(_finalPath.c_str(), std::ifstream::binary);
 			// std::stringstream buffer;
-			std::filebuf* pbuf = file.rdbuf();
-			std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
-			pbuf->pubseekpos (0,file.in);
-			// std::cout << "\nC2" << _finalPath << "\n" << std::endl;
-			char *buffer= new char[size];
-			pbuf->sgetn(buffer, size);
-			file.close();
-			std::string content(buffer, size);
+			// std::filebuf* pbuf = file.rdbuf();
+			// std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
+			// pbuf->pubseekpos (0,file.in);
+			// // std::cout << "\nC2\n" << std::endl;
+			// char *buffer= new char[size];
+			// pbuf->sgetn(buffer, size);
+			// file.close();
+			// std::string content(buffer, size);
 
 			response << "HTTP/1.1 200 OK\r\n";
 			
 			// response << _contentType.find(Server_Request.getType())->second;
 			response << "Content-Type: text/plain; charset=UTF-8\r\n";
 			// response << "content-Length: " << size << "\r\n";
-			response << "content-Length: " << 14 << "\r\n";
-			response << "\r\n";
-			response << "Upload succeed" << '\0' << "\r\n";
+			if (_status_code == 201)
+			{
+				response << "content-Length: " << 16 << "\r\n";
+				response << "\r\nUpload succeed\r\n";
+			}
+			else
+			{
+				response << "content-Length: " << 11 << "\r\n";
+				response << "\r\nUploading\r\n";
+			}
 			// response << content << '\0' << "\r\n";
-			outputFile << content;
-			outputFile.close();
+			// outputFile << content;
+			// outputFile.close();
 			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
 			// std::cout << buffer << std::endl;
-			delete [] buffer;
+			// delete [] buffer;
 			_ServerResponse = response.str();
 			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-
-			break ;
-			/**
-			 If one or more resources has been created on the origin server as a result of successfully 
-			 processing a POST request, the origin server SHOULD send a 201 (Created) response containing 
-			 a Location header field that provides an identifier for the primary resource created 
-			 (Section 10.2.2) and a representation that describes the status of the request while referring to 
-			 the new resource(s).
-			 https://httpwg.org/specs/rfc9110.html#POST => A LIRE
-			 * 
-			*/
-			break ;
-		}
-		case DELETE :
-		{
-			this->delete_dir(_finalPath.c_str());
-			if (_status_code == 200)
-				_content = server->getErrorPage()[STATUS200].second;
-			createResponse(server, _content, Server_Request, id_session);
-			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			break ;
-		}
-		default :
-		{
-			response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, id_session);
-			response << addBody(server->getErrorPage()[STATUS500].second);
-			_ServerResponse = response.str();
-			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			break ;
-		}
+			std::cout << "\ne10\n" << std::endl;
+			// return ;
+			// /**
+			//  If one or more resources has been created on the origin server as a result of successfully 
+			//  processing a POST request, the origin server SHOULD send a 201 (Created) response containing 
+			//  a Location header field that provides an identifier for the primary resource created 
+			//  (Section 10.2.2) and a representation that describes the status of the request while referring to 
+			//  the new resource(s).
+			//  https://httpwg.org/specs/rfc9110.html#POST => A LIRE
+			//  * 
+			// */
+			return ;
 	}
+	else if (Server_Request.getMethod() == "DELETE" && _status_code != 500)
+	{
+		if (_status_code == 200)
+			this->delete_dir(_finalPath.c_str());
+		if (_status_code == 200)
+			_content = server->getErrorPage()[STATUS200].second;
+		createResponse(server, _content, Server_Request, id_session);
+		send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+		return ;
+	}
+	else
+	{
+		response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, id_session);
+		response << addBody(server->getErrorPage()[STATUS500].second);
+		_ServerResponse = response.str();
+		send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
+		return ;
+	}
+	if (_isCgi)
+		std::remove(_fileName.data());
+	_isCgi = 0;	
 	return ;
 }
 
@@ -805,7 +772,8 @@ std::string	server_response::addBody(std::string msg)
 	std::stringstream	response;
 
 	_contentLength = msg.size();
-	response << "Content-Length: " << _contentLength << "\r\n\r\n";
+	if (_isCgi == 0)
+		response << "Content-Length: " << _contentLength << "\r\n\r\n";
 	response << msg << "\r\n";
 	_body = response.str();
 	return (_body);
@@ -816,7 +784,7 @@ void	server_response::addLength()
 	std::stringstream	l;
 	std::string	tmp = "Content-Length: ";
 
- 	if (_content.size() > 0)
+	if (_content.size() > 0 && _content.find_first_of("\n\n") + 4 < _content.size())
 		l << _content.size() - (_content.find_first_of("\n\n") + 4) << "\r\n"; // on retire les \n et les retours a la ligne generees par le cgi
 	else
 		l << 0 << "\r\n";
@@ -830,6 +798,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
 	int	n = 0;
 	int	tmp = _status_code / 100 - 1;
+
 	for (; n != tmp && n < 5; n++) {}
 	switch (n)
 	{
@@ -858,7 +827,8 @@ void	server_response::createResponse(server_configuration * server, std::string 
 			{
 				case 200:
 				{
-					response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request, server, IdSession);
+					if (_isCgi == 0)
+						response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request, server, IdSession);
 					response << addBody(file);
 					break;
 				}
@@ -1132,12 +1102,11 @@ void	server_response::createResponse(server_configuration * server, std::string 
 // SERVER_SOFWARE=(name and version of the software the server is running)
 
 //https://docstore.mik.ua/orelly/linux/cgi/ch03_02.htm
-int server_response::doCgi(std::string toexec, server_configuration * server, std::string args) // envoyer path du cgi
+int server_response::doCgi(std::string toexec, server_configuration * server) // envoyer path du cgi
 {
 	char	buff[256];
 	std::string	cgiPath;
 
-	(void)args;
 	_env.push_back("SERVER_SOFTWARE=Webserv/1.0");
 	std::string		servNameEnv = "SERVER_NAME=";
 	if (_req->getHost().find("host") != std::string::npos)
@@ -1156,28 +1125,39 @@ int server_response::doCgi(std::string toexec, server_configuration * server, st
 	std::string	cwd = getcwd(buff, 256);
 	_env.push_back("DOCUMENT_ROOT=" + cwd);
 	_env.push_back("REQUEST_METHOD=" + _req->getMethod());
-	std::cerr << "\n\ntoexec " << toexec << " et args = " << _req->getArgs() << std::endl;
-	_env.push_back("SCRIPT_FILENAME=" + toexec);
-	// _env.push_back("SCRIPT_INTERPRETER=/usr/bin/php-cgi");
+	_env.push_back("SCRIPT_FILENAME=" + cwd + toexec.substr(1));
 	cgiPath = server->getCgi().find("." + _req->getType())->second;
-	_env.push_back("SCRIPT_NAME=" + cgiPath);
-	_env.push_back("QUERY_STRING=" + _req->getArgs());
-//	_env.push_back("QUERY_STRING" + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
-	_env.push_back("PATH_INFO=" + cgiPath);
+	_env.push_back("SCRIPT_NAME=" + toexec.substr(1));
+	_env.push_back("QUERY_STRING=" + _req->getQuery());
+	_env.push_back("PATH_INFO=/");
 	_env.push_back("REQUEST_URI=" + _req->getRequestURI());
 	_env.push_back("REDIRECT_STATUS=1");
 	if (_body.find(std::string("content-length")) != std::string::npos)
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
-	if (this->getType(_req->getType()) != "")
-		_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
-	if (_body.size() > 0)
+	std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
+	// if (this->getType(_req->getType()) != "")
+	// 	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
+	_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+	std::cerr << "_body = '" << _body << "'" << std::endl;
+	if (_req->getIsBody())
 	{
-		this->_cgiFd = open(this->_req->getBody().data(), O_RDONLY);
-		if (this->_cgiFd < 0)
-		{
-			_status_code = 500;
-			return (-1);
+		std::ofstream file(getBodyName().c_str());
+		if (file) {
+			file << _req->getBody();
+			file.close();
 		}
+		//ecrire ce qu'il y a dans _body, dans _bodyName ?
+		//_cgiFd = open de _bodyName;
+		//--> check dans cgi si on ferme bien le fd
+		//supprimer _bodyName;
+		_cgiFd = open(getBodyName().data(), O_RDONLY);
+		if (_cgiFd < 0)
+		{
+			std::cerr << "FAIL TO OPEN CGIFD" << std::endl;
+			_status_code = 500;
+			return (1);
+		}
+		std::cerr << "cgi fd = '" << _cgiFd << "'" << "_req->getBody().size() = " << _req->getBody().size() << std::endl;
 	}
 	try
 	{
@@ -1185,12 +1165,11 @@ int server_response::doCgi(std::string toexec, server_configuration * server, st
 		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName);
 		waitpid(cgi.getPid(), &status, 0);
 		if (WIFEXITED(status))
-		{
-			if (WEXITSTATUS(status) == 1)
-				_status_code = 406;
-			else if (WEXITSTATUS(status) != 0)
+			if (WEXITSTATUS(status) != 0)
 				_status_code = 500;
-		}
+		// remove(_bodyName.c_str()); // TMP POUR LOG
+		// PAS DE LEAK SI PAS DE CLOSE
+		//penser a close _cgifd (si open) (!= -1) et supprimer le fichier avec std::remove s'il existe
 		if (g_code == 1)
 		{
 			_status_code = 500;
