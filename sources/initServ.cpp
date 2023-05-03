@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 11:42:46 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 12:46:16 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,6 +127,21 @@ bool	isNotinUnauthorizedSocket(std::vector<int> UnauthorizedSocket, int conn_soc
 	}
 	return 1;
 }
+
+std::string UpdateFileNameifAlreadyExist(std::string UploadFileName)
+{
+	int i = 1;
+	
+	std::ifstream infile(UploadFileName.c_str());
+	while (infile.good())
+	{
+		UploadFileName = "(" + itos(i) + ")" + UploadFileName; 
+		std::ifstream infile(UploadFileName.c_str());
+		i++;
+	}
+	return (UploadFileName);
+}
+
 
 void handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus, std::vector<std::pair<int, std::string> >* MsgToSent)
 {
@@ -295,6 +310,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 						UploadFileName = it->second + "/" + UploadFileName;
 					// std::cout << " TEST UPLOADFILE PATH : " << UploadFileName << std::cout;
 				}
+				UploadFileName = UpdateFileNameifAlreadyExist(UploadFileName);
 				std::ofstream file(UploadFileName.c_str(), std::ios::binary);
 				// std::cout << "\nTEST POUR POSIINIT " << it->second.substr(posfilename, 50) << std::endl;
 				pos = it->second.find("\r\n\r\n", posfilename) + strlen("\r\n\r\n");
