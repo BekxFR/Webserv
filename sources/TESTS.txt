@@ -1,0 +1,6 @@
+curl -X GET --connect-to webserv.com:80:127.0.0.0:8083 http://webserv.com/cgi-bin/t2.py
+
+curl -X GET --connect-to webserv2.com:80:127.0.0.0:8083 http://webserv2.com/cgi-bin/t2.py
+
+
+

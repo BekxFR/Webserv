@@ -64,6 +64,7 @@ server {
 	server_name webserv2.com;
 		listen localhost:8084;
 		listen 127.0.0.1:8099;
+		listen 0.0.0.0:8083;
 
 		root ./site/;
 		index index.html
