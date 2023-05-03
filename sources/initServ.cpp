@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 12:46:16 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 13:21:54 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,14 +131,35 @@ bool	isNotinUnauthorizedSocket(std::vector<int> UnauthorizedSocket, int conn_soc
 std::string UpdateFileNameifAlreadyExist(std::string UploadFileName)
 {
 	int i = 1;
-	
-	std::ifstream infile(UploadFileName.c_str());
-	while (infile.good())
+	std::string UploadFileNameTmp = UploadFileName;
+	std::cout << "ENTREE UpdateFileNameifAlreadyExist" << std::endl;
+	while (true)
 	{
-		UploadFileName = "(" + itos(i) + ")" + UploadFileName; 
 		std::ifstream infile(UploadFileName.c_str());
+		if (infile.good())
+		{
+			int pos = 0;
+			while (UploadFileNameTmp.find(".", pos) != std::string::npos)
+			{
+				std::cout << "POS " << pos << std::endl;
+				pos = UploadFileNameTmp.find(".", pos);
+				pos += 1;
+			}
+			if (pos < 2)
+				UploadFileName = UploadFileName + "(" + itos(i) + ")";
+			else if (i == 1)
+				UploadFileName = UploadFileName.substr(0, pos - 1) + "(" + itos(i) + ")" + UploadFileName.substr(pos - 1);
+			else if (i >= 2)
+			{
+				UploadFileName = UploadFileNameTmp.substr(0, pos - 1) + "(" + itos(i) + ")" + UploadFileNameTmp.substr(pos - 1);
+			}
+			std::cout << "UPLOADFILENAME : " << UploadFileName << std::endl;
+		}
+		else
+			break;
 		i++;
 	}
+	std::cout << "SORTIE UpdateFileNameifAlreadyExist" << std::endl;
 	return (UploadFileName);
 }
 
@@ -158,15 +179,15 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	if (n < 0) 
 	{
 		// std::cout << "\nread1 -1 : " << errno << std::endl;
-		for(std::vector<int>::iterator it = open_ports.begin(); it < open_ports.end(); it++)
-		{
-			if (*it == conn_sock)
-			{
-				close (*it);
-				open_ports.erase(it);
-				break;
-			}
-		}
+		// for(std::vector<int>::iterator it = open_ports.begin(); it < open_ports.end(); it++)
+		// {
+		// 	if (*it == conn_sock)
+		// 	{
+		// 		close (*it);
+		// 		open_ports.erase(it);
+		// 		break;
+		// 	}
+		// }
 		return;
 	}
 	std::string request;
@@ -180,20 +201,20 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			request.append(buffer, n);
 			memset(buffer, 0, n);
 		}
-		else if (n < 0) 
-		{
-			// std::cout << "\nread2 -1" << std::endl;
-			for(std::vector<int>::iterator it = open_ports.begin(); it < open_ports.end(); it++)
-			{
-				if (*it == conn_sock)
-				{
-					close (*it);
-					open_ports.erase(it);
-					break;
-				}
-			}
-			return;
-		}
+		// else if (n < 0) 
+		// {
+		// 	// std::cout << "\nread2 -1" << std::endl;
+		// 	for(std::vector<int>::iterator it = open_ports.begin(); it < open_ports.end(); it++)
+		// 	{
+		// 		if (*it == conn_sock)
+		// 		{
+		// 			close (*it);
+		// 			open_ports.erase(it);
+		// 			break;
+		// 		}
+		// 	}
+		// 	return;
+		// }
 	}
 	
 	// static int k = 0;
