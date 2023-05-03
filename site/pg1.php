@@ -177,7 +177,7 @@
 	</div>
 	<hr>
 	<h2 style="margin-left: 10px;">Envoyer un fichier</h2>
-	<form action="up.php" method="POST" enctype="multipart/form-data" style="margin-left: 10px;">
+	<form action="pg1.php" method="POST" enctype="multipart/form-data" style="margin-left: 10px;">
 		<input type="file" name="file">
 		<input type="submit" value="Envoyer">
 	</form>

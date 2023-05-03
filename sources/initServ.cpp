@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 16:06:52 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 16:52:33 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -261,7 +261,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 
 		// std::cout << "\nMETHOD REQUETE " << ServerRequest.getMethod() << std::endl;
 		// std::cout << "\nROOT " << GoodServerConf->getRoot() << std::endl;
-		if (((ServerRequest.getMethod() == "GET" || ServerRequest.getMethod() == "DELETE") || (ServerRequest.getMethod() == "POST" && ServerRequest.getContentType() == "application/x-www-form-urlencoded")) && CodeStatus == 200)
+		if (((ServerRequest.getMethod() == "GET" || ServerRequest.getMethod() == "DELETE") || (ServerRequest.getMethod() == "POST" && request.find("WebKitFormBoundary") == std::string::npos)) && CodeStatus == 200)
 		{
 			// std::cout << "\na1.4\n" << std::endl;
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
@@ -306,7 +306,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		// std::cout << "\na1.6\n" << std::endl;
 		if (it->first == conn_sock)
 		{
-			// std::cout << "\nSOCKET TEST 2: " << conn_sock << std::endl;
+			std::cout << "\nSOCKET TEST 2: " << conn_sock << std::endl;
 			if (g_code == 42)
 						break ;
 			it->second = it->second + request;
@@ -350,9 +350,9 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 				it->second = it->second.substr(pos, (end_pos - pos));
 				file.write(it->second.c_str(), it->second.size());
 				file.close();
-				SocketUploadFile.erase(it);
 				std::cout << "\nC0" << std::endl;
-				MsgToSent->push_back(std::pair<int, std::string>(conn_sock, "HTTP/1.1 200 OK\r\n\r\n")); // remplace sent
+				MsgToSent->push_back(std::pair<int, std::string>(conn_sock, "HTTP/1.1 200 OK\nContent-Length: 0\n\n")); // remplace sent
+				SocketUploadFile.erase(it);
 				// server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
 				// ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 201);
 				// std::cout << "\ne9\n" << std::cout;
@@ -567,8 +567,9 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 							// std::cout << "\nAS-TU ENVOYE? " << it->second.c_str() << std::endl;
 							if (it->second.size() < 500000)
 							{
-								// std::cout << "\n< 500000 " << std::endl;
-								// std::cout << it->first << std::endl; 
+								std::cout << "\n< 500000 " << std::endl;
+								std::cout << it->first << std::endl; 
+								std::cout << it->second << std::endl; 
 								if (send(it->first, it->second.c_str() , it->second.size(), 0) == -1)
 									std::cerr << "\nSend pb 1: " << errno << std::endl;
 								MsgToSent.erase(it);

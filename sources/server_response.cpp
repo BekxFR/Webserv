@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 15:47:39 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 16:54:37 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -561,64 +561,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		createResponse(server, _content, Server_Request, id_session);
 		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
 		return ;
-	}
-	else if ((Server_Request.getMethod() == "POST" || _status_code == 201) && _status_code != 500)
-	{
-		std::cout << "POST POST POST" << std::endl;
-			// std::cout << "BODY\n" << Server_Request.getBody() << std::endl;
-
-			// std::string FileName = "./" + findFileName(_finalPath);
-			// // std::cout << "FILENAME : " << FileName << std::endl;
-			// std::string outfilename = FileName.c_str(); // PATH DU FICHIER DE SORTIE
-			
-			// std::ofstream outputFile(outfilename.c_str(), std::ios::binary); // OK 1
-
-			// std::ifstream file(_finalPath.c_str(), std::ifstream::binary);
-			// std::stringstream buffer;
-			// std::filebuf* pbuf = file.rdbuf();
-			// std::size_t size = pbuf->pubseekoff(0, file.end, file.in);
-			// pbuf->pubseekpos (0,file.in);
-			// // std::cout << "\nC2\n" << std::endl;
-			// char *buffer= new char[size];
-			// pbuf->sgetn(buffer, size);
-			// file.close();
-			// std::string content(buffer, size);
-
-			response << "HTTP/1.1 200 OK\r\n";
-			
-			// response << _contentType.find(Server_Request.getType())->second;
-			response << "Content-Type: text/plain; charset=UTF-8\r\n";
-			// response << "content-Length: " << size << "\r\n";
-			if (_status_code == 201)
-			{
-				response << "content-Length: " << 16 << "\r\n";
-				response << "\r\nUpload succeed\r\n";
-			}
-			else
-			{
-				response << "content-Length: " << 11 << "\r\n";
-				response << "\r\nUploading\r\n";
-			}
-			// response << content << '\0' << "\r\n";
-			// outputFile << content;
-			// outputFile.close();
-			// std::cerr << "AFTER RESPONSE IFSTREAM\r\n" << std::endl;
-			// std::cout << buffer << std::endl;
-			// delete [] buffer;
-			_ServerResponse = response.str();
-			send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
-			std::cout << "\ne10\n" << std::endl;
-			// return ;
-			// /**
-			//  If one or more resources has been created on the origin server as a result of successfully 
-			//  processing a POST request, the origin server SHOULD send a 201 (Created) response containing 
-			//  a Location header field that provides an identifier for the primary resource created 
-			//  (Section 10.2.2) and a representation that describes the status of the request while referring to 
-			//  the new resource(s).
-			//  https://httpwg.org/specs/rfc9110.html#POST => A LIRE
-			//  * 
-			// */
-			return ;
 	}
 	else if (Server_Request.getMethod() == "DELETE" && _status_code != 500)
 	{
