@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:29:37 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 18:36:14 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/03 12:47:24 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ class server_request
 		std::string	getContentType() const { return (_contentType); }
 		std::string	getBody() const { return (_body); }
 		bool		getIsBody() const { return (_isBody); }
-		std::string	getQuery() const { return (_query); }
+		std::string	getQuery() const { return (_argsBrutes); }
 
 		//OTHER
 		std::string			findRequestURI();

@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 20:01:47 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/03 14:27:20 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -433,7 +433,14 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 			if (!file.is_open())
 				_status_code = 403;
 			else
-				buffer << file.rdbuf();
+			{
+				char * buf = new char[21];
+				buf[20] = '\0';
+				while (file.readsome(buf, 20) > 0)
+					if (buf && strlen(buf) > 0)
+						buffer << buf;
+				delete [] buf;
+			}
 		}
 		_content = buffer.str();
 	}
@@ -604,7 +611,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	
 	
 	std::stringstream response;
-	if (Server_Request.getMethod() == "GET" && _status_code != 500)
+	if ((Server_Request.getMethod() == "GET" || (Server_Request.getMethod() == "POST" && Server_Request.getBody().size())) && _status_code != 500)
 	{
 		if (_status_code == 200)
 			AnswerGet(Server_Request, server);
@@ -709,8 +716,8 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		send(conn_sock, _ServerResponse.c_str() , _ServerResponse.size(), 0);
 		return ;
 	}
-	if (_isCgi)
-		std::remove(_fileName.data());
+//	if (_isCgi)
+//		std::remove(_fileName.data());
 	_isCgi = 0;	
 	return ;
 }
