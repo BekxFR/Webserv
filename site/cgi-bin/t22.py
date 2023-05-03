@@ -8,6 +8,8 @@ from art import *
 # Récupérer les données POST
 form = cgi.FieldStorage()
 text = form.getvalue("text")
+# if not isinstance(text, str):
+#     text = str(text)
 
 # Si aucune donnée POST n'a été envoyée, afficher le formulaire
 if not text:
@@ -28,6 +30,7 @@ if not text:
     print("<input type='text' name='text'>")
     print("<input type='submit' value='Valider'>")
     print("</form>")
+    print(cgi)
     print("</body>")
     print("</html>")
 else:
@@ -47,6 +50,7 @@ else:
     print("<body>")
     print("<p>Voici votre texte en mode text2art :</p>")
     print("<pre>")
+    print(cgi)
     print(Art)
     print("</pre>")
     print("</body>")

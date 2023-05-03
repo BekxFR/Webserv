@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 17:02:56 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 20:14:02 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -999,8 +999,10 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	_env.push_back("DOCUMENT_ROOT=" + cwd);
 	_env.push_back("REQUEST_METHOD=" + _req->getMethod());
 	_env.push_back("SCRIPT_FILENAME=" + cwd + toexec.substr(1));
+	std::cerr << "SCRIPT_FILENAME = '" << cwd << toexec.substr(1) << "'" << std::endl;
 	cgiPath = server->getCgi().find("." + _req->getType())->second;
 	_env.push_back("SCRIPT_NAME=" + toexec.substr(1));
+	std::cerr << "SCRIPT_NAME = '" << toexec.substr(1) << "'" << std::endl;
 	_env.push_back("QUERY_STRING=" + _req->getQuery());
 	_env.push_back("PATH_INFO=/");
 	_env.push_back("REQUEST_URI=" + _req->getRequestURI());
@@ -1008,9 +1010,9 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	if (_body.find(std::string("content-length")) != std::string::npos)
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
 	std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
-	if (this->getType(_req->getType()) != "")
-	 	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
-	//_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+	// if (this->getType(_req->getType()) != "")
+	//  	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
+	_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
 	std::cerr << "_body = '" << _body << "'" << std::endl;
 	if (_req->getIsBody())
 	{

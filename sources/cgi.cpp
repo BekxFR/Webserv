@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/02 20:30:05 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/03 20:33:14 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,7 @@ void	Cgi::dupping()
 			g_code = 1;
 			return ;
 		}
-		close (_input_fd);
+		// close (_input_fd);
 	}
 	if (dup2(_output_fd, STDOUT_FILENO) == -1) // attribution de la sortie au fichier ouvert precedemment
 	{
