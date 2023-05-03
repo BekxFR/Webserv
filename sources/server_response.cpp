@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 15:16:54 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 15:47:39 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1066,9 +1066,9 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	if (_body.find(std::string("content-length")) != std::string::npos)
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
 	std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
-	// if (this->getType(_req->getType()) != "")
-	// 	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
-	_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+	if (this->getType(_req->getType()) != "")
+	 	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
+	//_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
 	std::cerr << "_body = '" << _body << "'" << std::endl;
 	if (_req->getIsBody())
 	{

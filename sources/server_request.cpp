@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 15:01:58 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 15:41:27 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,6 +217,7 @@ void server_request::request_parser()
 	// IF POST and content type : application/x-www-form-urlencoded, recupere les arguments du PHP in body
 	if (this->_contentType == "application/x-www-form-urlencoded")
 	{
+		_isBody = 1;
 		if (this->_query.size() < 1)
 		{
 			std::string tmp = this->_body;
@@ -228,8 +229,6 @@ void server_request::request_parser()
 			this->_query = url_decode(this->_query);
 		}
 	}
-	if (_body.size() && _method == "POST")
-		_isBody = 1;
 	// Afficher les résultats
 	if (0)
 	{	

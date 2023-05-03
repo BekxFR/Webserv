@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 15:12:18 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 16:06:52 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -233,9 +233,8 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		// std::cout << "\n\nRequest :\n\n" << request << std::endl;
 		/*	Cette partie permet de parser la requete afin de pouvoir travailler
 			sur chaque élément indépendemment */
-		server_request* ServerRequest = new server_request(request);
-		std::cout << "\nAdresse SERVER REQUEST MALLOC : " << ServerRequest << std::endl;
-		ServerRequest->request_parser();
+		server_request ServerRequest(request);
+		ServerRequest.request_parser();
 		/* Cette partie permet de connaitre le port utilisé afin de d'avoir les 
 		bonnes configurations de serveur */
 		for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
@@ -244,7 +243,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			if (it->second == conn_sock)
 				Port = it->first;
 		}
-		GoodServerConf = getGoodServer(servers, ServerRequest, Port);
+		GoodServerConf = getGoodServer(servers, &ServerRequest, Port);
 		/********************************************************************/
 	
 	
@@ -254,59 +253,48 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		if (CodeStatus == 200)
 		{
 			// std::cout << "\na1.3\n" << std::endl;
-			CodeStatus = isMethodAuthorised(ServerRequest->getMethod(), GoodServerConf, ServerRequest->getRequestURI()); // on sait s'ils ont le droit
+			CodeStatus = isMethodAuthorised(ServerRequest.getMethod(), GoodServerConf, ServerRequest.getRequestURI()); // on sait s'ils ont le droit
 			if (CodeStatus != 200)
 				UnauthorizedSocket.push_back(conn_sock);
 		}
 		/********************************************/
 
-		// std::cout << "\nMETHOD REQUETE " << ServerRequest->getMethod() << std::endl;
+		// std::cout << "\nMETHOD REQUETE " << ServerRequest.getMethod() << std::endl;
 		// std::cout << "\nROOT " << GoodServerConf->getRoot() << std::endl;
-		if ((ServerRequest->getMethod() == "GET" || ServerRequest->getMethod() == "DELETE") && CodeStatus == 200)
+		if (((ServerRequest.getMethod() == "GET" || ServerRequest.getMethod() == "DELETE") || (ServerRequest.getMethod() == "POST" && ServerRequest.getContentType() == "application/x-www-form-urlencoded")) && CodeStatus == 200)
 		{
 			// std::cout << "\na1.4\n" << std::endl;
-			server_response	ServerResponse(GoodServerConf->getStatusCode(), ServerRequest);
-			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
-			std::cout << "\nLEAK CHECK SERVER REQUEST" << std::endl;
-			std::cout << "\nAdresse SERVER REQUEST DELETE 1: " << ServerRequest << std::endl;
-
-			delete ServerRequest;
+			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
+			ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
 			return ;
 		}
-		else if (ServerRequest->getMethod() == "POST")
+		else if (ServerRequest.getMethod() == "POST")
 		{
 			// std::cout << "\na1.5\n" << std::endl;
 			// std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
-			if (GoodServerConf->getClientMaxBodySize() > ServerRequest->getContentLength())
+			if (GoodServerConf->getClientMaxBodySize() > ServerRequest.getContentLength())
 			{	
 				// std::cout << "\na1.5.1\n" << std::endl;
 				SocketUploadFile.insert (std::pair< int , std::string >(conn_sock, ""));
-				std::string PathToStore = getPathToStore(ServerRequest->getMethod(), GoodServerConf, ServerRequest->getRequestURI());
+				std::string PathToStore = getPathToStore(ServerRequest.getMethod(), GoodServerConf, ServerRequest.getRequestURI());
 				while (PathToStore.find("//") != std::string::npos)
 					PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
 				UploadFilePath.insert ( std::pair< int , std::string >(conn_sock, PathToStore));
-				std::cout << "\nAdresse SERVER REQUEST DELETE 2 : " << ServerRequest << std::endl;
-				delete ServerRequest;
-				return ;
+				// delete ServerRequest;
+				// return ;
 			}
 			else
 			{
 				// std::cout << "\na1.6\n" << std::endl;
-				server_response	ServerResponse(GoodServerConf->getStatusCode(), ServerRequest);
-				ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 413, MsgToSent);
-				std::cout << "\nAdresse SERVER REQUEST DELETE 3 : " << ServerRequest << std::endl;
-
-				delete ServerRequest;
+				server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
+				ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 413, MsgToSent);
 				return ;
 			}
 		}
 		else if (isNotinUnauthorizedSocket(UnauthorizedSocket, conn_sock))
 		{
-			server_response	ServerResponse(GoodServerConf->getStatusCode(), ServerRequest);
-			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
-			std::cout << "\nAdresse SERVER REQUEST DELETE 4 : " << ServerRequest << std::endl;
-
-			delete ServerRequest;
+			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
+			ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
 			return ;
 		}
 	}
@@ -363,6 +351,8 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 				file.write(it->second.c_str(), it->second.size());
 				file.close();
 				SocketUploadFile.erase(it);
+				std::cout << "\nC0" << std::endl;
+				MsgToSent->push_back(std::pair<int, std::string>(conn_sock, "HTTP/1.1 200 OK\r\n\r\n")); // remplace sent
 				// server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
 				// ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 201);
 				// std::cout << "\ne9\n" << std::cout;
