@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 13:21:54 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 14:42:37 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "server_response.hpp"
 
 extern std::vector<int> open_ports;
+extern volatile std::sig_atomic_t	g_code;
 
 int	setnonblocking(int sockfd)
 {
@@ -175,8 +176,9 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	static std::vector<int> UnauthorizedSocket;
 	errno = 0;
 	
+	std::cout << "PASSE LA " << conn_sock << std::endl;
 	n = read(conn_sock, buffer, 2048);
-	if (n < 0) 
+	if (n <= 0) 
 	{
 		// std::cout << "\nread1 -1 : " << errno << std::endl;
 		// for(std::vector<int>::iterator it = open_ports.begin(); it < open_ports.end(); it++)
@@ -232,6 +234,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		/*	Cette partie permet de parser la requete afin de pouvoir travailler
 			sur chaque élément indépendemment */
 		server_request* ServerRequest = new server_request(request);
+		std::cout << "\nAdresse SERVER REQUEST MALLOC : " << ServerRequest << std::endl;
 		ServerRequest->request_parser();
 		/* Cette partie permet de connaitre le port utilisé afin de d'avoir les 
 		bonnes configurations de serveur */
@@ -264,6 +267,9 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			// std::cout << "\na1.4\n" << std::endl;
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
 			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
+			std::cout << "\nLEAK CHECK SERVER REQUEST" << std::endl;
+			std::cout << "\nAdresse SERVER REQUEST DELETE 1: " << ServerRequest << std::endl;
+
 			delete ServerRequest;
 			return ;
 		}
@@ -279,12 +285,17 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 				while (PathToStore.find("//") != std::string::npos)
 					PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
 				UploadFilePath.insert ( std::pair< int , std::string >(conn_sock, PathToStore));
+				std::cout << "\nAdresse SERVER REQUEST DELETE 2 : " << ServerRequest << std::endl;
+				delete ServerRequest;
+				return ;
 			}
 			else
 			{
 				// std::cout << "\na1.6\n" << std::endl;
 				server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
 				ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 413, MsgToSent);
+				std::cout << "\nAdresse SERVER REQUEST DELETE 3 : " << ServerRequest << std::endl;
+
 				delete ServerRequest;
 				return ;
 			}
@@ -293,6 +304,8 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		{
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
 			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
+			std::cout << "\nAdresse SERVER REQUEST DELETE 4 : " << ServerRequest << std::endl;
+
 			delete ServerRequest;
 			return ;
 		}
@@ -300,17 +313,25 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 
 	for (std::map<int, std::string>::iterator it = SocketUploadFile.begin(); it != SocketUploadFile.end(); it++)
 	{
+		if (g_code == 42)
+			break ;
 		// std::cout << "\na1.6\n" << std::endl;
 		if (it->first == conn_sock)
 		{
 			// std::cout << "\nSOCKET TEST 2: " << conn_sock << std::endl;
+			if (g_code == 42)
+						break ;
 			it->second = it->second + request;
+			if (g_code == 42)
+						break ;
 			size_t pos = 0;
 			size_t found = 0;
 			if (request.find("WebKitFormBoundary") != std::string::npos)
 			{
 				while (it->second.find("WebKitFormBoundary", pos) != std::string::npos)
 				{
+					if (g_code == 42)
+						break ;
 					pos = it->second.find("WebKitFormBoundary", pos) + strlen("WebKitFormBoundary");
 					found++;
 					// std::cout << "\nSOCKET TEST 3 found for " <<  conn_sock << " : " << found << std::endl;
@@ -331,6 +352,8 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 						UploadFileName = it->second + "/" + UploadFileName;
 					// std::cout << " TEST UPLOADFILE PATH : " << UploadFileName << std::cout;
 				}
+				if (g_code == 42)
+						break ;
 				UploadFileName = UpdateFileNameifAlreadyExist(UploadFileName);
 				std::ofstream file(UploadFileName.c_str(), std::ios::binary);
 				// std::cout << "\nTEST POUR POSIINIT " << it->second.substr(posfilename, 50) << std::endl;
@@ -343,7 +366,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 				// server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
 				// ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 201);
 				// std::cout << "\ne9\n" << std::cout;
-				return ;
+				break ;
 			}
 		}
 	}
@@ -506,7 +529,8 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 			std::fprintf(stderr, "Error: epoll_wait: %s\n", strerror(errno));
 			return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
 		}
-		for (int n = 0; n < nfds; ++n) {
+		for (int n = 0; n < nfds; ++n)
+		{
 			for (size_t i = 0; i < Ports.size(); i++)
 			{
 				if (events[n].data.fd == listen_sock[i])

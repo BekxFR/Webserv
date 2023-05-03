@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 11:45:08 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 14:10:44 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,5 +64,6 @@ int main(int argc, char const **argv, const char **envp)
 		std::cerr << "Webserv error : " << e.what() << '\n';
 		return (1);
 	}
+	std::cout << "\nFIN DU PROGRAMME" << std::endl;
 	return 0;
 }
