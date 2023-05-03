@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 17:06:38 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 18:01:17 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,15 +181,15 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	if (n <= 0) 
 	{
 		// std::cout << "\nread1 -1 : " << errno << std::endl;
-		// for(std::vector<int>::iterator it = open_ports.begin(); it < open_ports.end(); it++)
-		// {
-		// 	if (*it == conn_sock)
-		// 	{
-		// 		close (*it);
-		// 		open_ports.erase(it);
-		// 		break;
-		// 	}
-		// }
+		for(std::vector<int>::iterator it = open_ports.begin(); it < open_ports.end(); it++)
+		{
+			if (*it == conn_sock)
+			{
+				close (*it);
+				open_ports.erase(it);
+				break;
+			}
+		}
 		return;
 	}
 	std::string request;
@@ -203,20 +203,20 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			request.append(buffer, n);
 			memset(buffer, 0, n);
 		}
-		// else if (n < 0) 
-		// {
-		// 	// std::cout << "\nread2 -1" << std::endl;
-		// 	for(std::vector<int>::iterator it = open_ports.begin(); it < open_ports.end(); it++)
-		// 	{
-		// 		if (*it == conn_sock)
-		// 		{
-		// 			close (*it);
-		// 			open_ports.erase(it);
-		// 			break;
-		// 		}
-		// 	}
-		// 	return;
-		// }
+		else if (n < 0) 
+		{
+			// std::cout << "\nread2 -1" << std::endl;
+			for(std::vector<int>::iterator it = open_ports.begin(); it < open_ports.end(); it++)
+			{
+				if (*it == conn_sock)
+				{
+					close (*it);
+					open_ports.erase(it);
+					break;
+				}
+			}
+			return;
+		}
 	}
 	
 	// static int k = 0;
@@ -259,11 +259,11 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		}
 		/********************************************/
 
-		std::cout << "\nMETHOD REQUETE " << ServerRequest.getMethod() << std::endl;
+		// std::cout << "\nMETHOD REQUETE " << ServerRequest.getMethod() << std::endl;
 		// std::cout << "\nROOT " << GoodServerConf->getRoot() << std::endl;
 		if (((ServerRequest.getMethod() == "GET" || ServerRequest.getMethod() == "DELETE") || (ServerRequest.getMethod() == "POST" && request.find("WebKitFormBoundary") == std::string::npos)) && CodeStatus == 200)
 		{
-			std::cout << "\na1.4\n" << std::endl;
+			// std::cout << "\na1.4\n" << std::endl;
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 			ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
 			return ;
@@ -306,7 +306,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		// std::cout << "\na1.6\n" << std::endl;
 		if (it->first == conn_sock)
 		{
-			std::cout << "\nSOCKET TEST 2: " << conn_sock << std::endl;
+			// std::cout << "\nSOCKET TEST 2: " << conn_sock << std::endl;
 			if (g_code == 42)
 						break ;
 			it->second = it->second + request;
@@ -350,7 +350,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 				it->second = it->second.substr(pos, (end_pos - pos));
 				file.write(it->second.c_str(), it->second.size());
 				file.close();
-				std::cout << "\nC0" << std::endl;
+				// std::cout << "\nC0" << std::endl;
 				MsgToSent->push_back(std::pair<int, std::string>(conn_sock, "HTTP/1.1 200 OK\nContent-Length: 0\n\n")); // remplace sent
 				SocketUploadFile.erase(it);
 				// server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
@@ -555,10 +555,14 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 				{
 					// std::cout << "\nEPOLLIN : " << events[n].events << std::endl;
 					// std::cout << "\nSENT : " << events[n].data.fd << std::endl;
+					// ev.events = EPOLLOUT;
+					// epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &ev);
 					handle_connection(servers, events[n].data.fd, StorePort, CodeStatus, &MsgToSent);
+					
 				}
 				if (events[n].events & EPOLLOUT)
 				{
+					// epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &ev);
 					// std::cout << "\nEPOLLOUT : " << events[n].events << std::endl;
 					for (std::vector<std::pair<int, std::string> >::iterator it = MsgToSent.begin(); it != MsgToSent.end(); it++)
 					{
@@ -567,11 +571,20 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 							// std::cout << "\nAS-TU ENVOYE? " << it->second.c_str() << std::endl;
 							if (it->second.size() < 500000)
 							{
-								std::cout << "\n< 500000 " << std::endl;
-								std::cout << it->first << std::endl; 
-								std::cout << it->second << std::endl; 
+								// std::cout << "\n< 500000 " << std::endl;
+								// std::cout << it->first << std::endl; 
+								// std::cout << it->second << std::endl; 
 								if (send(it->first, it->second.c_str() , it->second.size(), 0) == -1)
 									std::cerr << "\nSend pb 1: " << errno << std::endl;
+								for(std::vector<int>::iterator it2 = open_ports.begin(); it2 < open_ports.end(); it2++)
+								{
+									if (*it2 == it->first)
+									{
+										close (*it2);
+										open_ports.erase(it2);
+										break;
+									}
+								}
 								MsgToSent.erase(it);
 								// it->first = 0;
 								// it->second = "";

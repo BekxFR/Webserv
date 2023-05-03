@@ -1,4 +1,3 @@
-index.php
 /objets
 tags
 /to_del
@@ -6,5 +5,3 @@ dir.sh
 *.o
 *.d
 .cgi*
-Z_DOWNLOAD*
-Z_UPLOAD*
