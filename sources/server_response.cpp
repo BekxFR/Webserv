@@ -6,22 +6,20 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 11:58:34 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 15:16:54 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server_response.hpp"
 
 extern volatile std::sig_atomic_t	g_code;
-
-server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _req(NULL), _isCgi(0)
+server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _bodyName(".tmp-post.txt"), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(), _req(NULL), _isCgi(0)
 {
 	this->addType();
 	if (0)
 		std::cout << "server_response Default Constructor called" << std::endl;
 }
-
-server_response::server_response(int stat, std::vector<std::string> env, server_request* req) : _status_code(stat), _cgiFd(-1), _header(""), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(env), _req(req), _isCgi(0)
+server_response::server_response(int stat, server_request* req) : _status_code(stat), _cgiFd(-1), _header(""), _bodyName(".tmp-post.txt"), _body(req->getBody()), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(), _req(req), _isCgi(0)
 {
 	this->addType();
 	if (0)
@@ -46,6 +44,7 @@ server_response	&server_response::operator=(server_response const &obj)
 	_status_code = obj.getStatusCode();
 	_cgiFd = obj.getCgiFd();
 	_header = obj.getHeader();
+	_bodyName = obj.getBodyName();
 	_body = obj.getBody();
 	_content = obj.getContent();
 	_contentLength = obj.getContentLength();
@@ -388,7 +387,6 @@ bool	server_response::manageCgi(const server_request& Server_Request, server_con
 			_fileName = ".cgi-tmp.txt";
 		if (!doCgi(_finalPath,server))
 		{
-			std::cerr << "\nSORTIE DE L'ENFANT" << std::endl;
 			std::ifstream	cgiContent(_fileName.data());
 			std::getline(cgiContent, _content, '\0'); // on recupere le retour du cgi
 			cgiContent.close();
@@ -555,7 +553,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	
 	// std::cout << "\n TEST : " << Server_Request.getMethod() << std::endl;
 	std::stringstream response;
-	if (Server_Request.getMethod() == "GET" || Server_Request.getMethod() == "POST")
+	if ((Server_Request.getMethod() == "GET" || Server_Request.getMethod() == "POST") && _status_code != 500)
 	{
 		// std::cout << "\nGETMETHOD SERVER_RESPONSE\n" << std::endl;
 		if (_status_code == 200)
@@ -564,7 +562,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
 		return ;
 	}
-	else if (Server_Request.getMethod() == "POST" || _status_code == 201)
+	else if ((Server_Request.getMethod() == "POST" || _status_code == 201) && _status_code != 500)
 	{
 		std::cout << "POST POST POST" << std::endl;
 			// std::cout << "BODY\n" << Server_Request.getBody() << std::endl;
@@ -622,7 +620,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			// */
 			return ;
 	}
-	else if (Server_Request.getMethod() == "DELETE")
+	else if (Server_Request.getMethod() == "DELETE" && _status_code != 500)
 	{
 		if (_status_code == 200)
 			this->delete_dir(_finalPath.c_str());
@@ -1061,23 +1059,37 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	_env.push_back("SCRIPT_FILENAME=" + cwd + toexec.substr(1));
 	cgiPath = server->getCgi().find("." + _req->getType())->second;
 	_env.push_back("SCRIPT_NAME=" + toexec.substr(1));
-	_env.push_back("QUERY_STRING=" + _req->getQuery()); // TODO
-	// _env.push_back("QUERY_STRING=dir=OUAIS");// + _req->getQuery());// a pas l'info dans la requete ->The query information from requested URL (i.e., the data following "?").
-	_env.push_back("PATH_INFO=" + cgiPath);
-	_env.push_back("REQUEST_URI=/");// + _req->getRequestURI());
+	_env.push_back("QUERY_STRING=" + _req->getQuery());
+	_env.push_back("PATH_INFO=/");
+	_env.push_back("REQUEST_URI=" + _req->getRequestURI());
 	_env.push_back("REDIRECT_STATUS=1");
 	if (_body.find(std::string("content-length")) != std::string::npos)
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
-	if (this->getType(_req->getType()) != "")
-		_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
-	if (_body.size() > 0)
+	std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
+	// if (this->getType(_req->getType()) != "")
+	// 	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
+	_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+	std::cerr << "_body = '" << _body << "'" << std::endl;
+	if (_req->getIsBody())
 	{
-		this->_cgiFd = open(this->_req->getBody().data(), O_RDONLY);
-		if (this->_cgiFd < 0)
-		{
-			_status_code = 500;
-			return (-1);
+		std::cerr << "PPPPPP" << std::endl;
+		std::ofstream file(getBodyName().c_str());
+		if (file) {
+			file << _req->getBody();
+			file.close();
 		}
+		//ecrire ce qu'il y a dans _body, dans _bodyName ?
+		//_cgiFd = open de _bodyName;
+		//--> check dans cgi si on ferme bien le fd
+		//supprimer _bodyName;
+		_cgiFd = open(getBodyName().data(), O_RDONLY);
+		if (_cgiFd < 0)
+		{
+			std::cerr << "FAIL TO OPEN CGIFD" << std::endl;
+			_status_code = 500;
+			return (1);
+		}
+		std::cerr << "cgi fd = '" << _cgiFd << "'" << "_req->getBody().size() = " << _req->getBody().size() << std::endl;
 	}
 	try
 	{

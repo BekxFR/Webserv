@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   initServ.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:45 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 15:37:03 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/03 14:58:58 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void												handle_connection(std::vector<server_configuration*> servers, in
 void												ChangePort(std::map<int, int>&	StorePort, int conn_sock, int listen_sock);
 std::multimap<int, int>								ChangeOrKeepPort(std::multimap<int, int>* StorePort, int conn_sock, int Port);
 int	StartServer(std::vector<server_configuration*>	servers, std::vector<int> Ports, std::vector<std::string> Hosts);
-std::vector<server_configuration*>					SetupNewServers(std::string& filename, int ac, const char **env);
+std::vector<server_configuration*>					SetupNewServers(std::string& filename, int ac);
 std::vector<int>									getPorts(std::vector<server_configuration*> servers);
 std::vector<std::string>							getHosts(std::vector<server_configuration*> servers);
 

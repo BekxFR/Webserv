@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 14:42:37 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 15:12:18 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,7 +176,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	static std::vector<int> UnauthorizedSocket;
 	errno = 0;
 	
-	std::cout << "PASSE LA " << conn_sock << std::endl;
+	// std::cout << "PASSE LA " << conn_sock << std::endl;
 	n = read(conn_sock, buffer, 2048);
 	if (n <= 0) 
 	{
@@ -265,7 +265,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		if ((ServerRequest->getMethod() == "GET" || ServerRequest->getMethod() == "DELETE") && CodeStatus == 200)
 		{
 			// std::cout << "\na1.4\n" << std::endl;
-			server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
+			server_response	ServerResponse(GoodServerConf->getStatusCode(), ServerRequest);
 			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
 			std::cout << "\nLEAK CHECK SERVER REQUEST" << std::endl;
 			std::cout << "\nAdresse SERVER REQUEST DELETE 1: " << ServerRequest << std::endl;
@@ -292,7 +292,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			else
 			{
 				// std::cout << "\na1.6\n" << std::endl;
-				server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
+				server_response	ServerResponse(GoodServerConf->getStatusCode(), ServerRequest);
 				ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 413, MsgToSent);
 				std::cout << "\nAdresse SERVER REQUEST DELETE 3 : " << ServerRequest << std::endl;
 
@@ -302,7 +302,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		}
 		else if (isNotinUnauthorizedSocket(UnauthorizedSocket, conn_sock))
 		{
-			server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
+			server_response	ServerResponse(GoodServerConf->getStatusCode(), ServerRequest);
 			ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
 			std::cout << "\nAdresse SERVER REQUEST DELETE 4 : " << ServerRequest << std::endl;
 
@@ -615,7 +615,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	return 0;
 }
 
-std::vector<server_configuration*>	SetupNewServers(std::string& filename, int ac, const char **env)
+std::vector<server_configuration*>	SetupNewServers(std::string& filename, int ac)
 {
 	std::string ConfigFileStr;
 	std::vector<server_configuration*> servers;
@@ -647,7 +647,7 @@ std::vector<server_configuration*>	SetupNewServers(std::string& filename, int ac
 	{
 		size_t pos1 = ConfigFileStr.find("server {");
 		size_t pos2 = ConfigFileStr.find("server {", pos1 + 1);
-		server_configuration* myserver = new server_configuration(ConfigFileStr.substr(pos1, pos2), env);
+		server_configuration* myserver = new server_configuration(ConfigFileStr.substr(pos1, pos2));
 		if (DEBUG)
 			std::cout << "test\n" << ConfigFileStr.substr(pos1, pos2) << std::endl;
 		servers.push_back(myserver);

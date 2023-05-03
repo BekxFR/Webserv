@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 14:10:44 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 14:59:37 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void sigint_handler(int signum)
 	// close(1); // nfds
 }
 
-int main(int argc, char const **argv, const char **envp)
+int main(int argc, char const **argv)
 {
 	try 
 	{
@@ -52,7 +52,7 @@ int main(int argc, char const **argv, const char **envp)
 			config = std::string(argv[1]);
 		else
 			config = std::string("server {\nlisten 8080;\nroot ./;\n}\n");
-		std::vector<server_configuration*> servers = SetupNewServers(config, argc, envp);
+		std::vector<server_configuration*> servers = SetupNewServers(config, argc);
 		if (servers.size() == 0)
 			return (1);
 //		PrintServer(servers);

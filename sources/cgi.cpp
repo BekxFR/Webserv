@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/02 15:45:38 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/02 20:30:05 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,6 +145,7 @@ void	Cgi::dupping()
 		return ;
 	}
 	_output_fd = fileno(_fp); // get file descriptor from file pointer
+	std::cerr << "VIEW VIEW" << _input_fd << std::endl;
 	if (_input_fd != -1) // si un fichier d'entre est specifie sinon stdin
 	{
 		if (dup2(_input_fd, STDIN_FILENO) == -1)
@@ -153,6 +154,7 @@ void	Cgi::dupping()
 			g_code = 1;
 			return ;
 		}
+		close (_input_fd);
 	}
 	if (dup2(_output_fd, STDOUT_FILENO) == -1) // attribution de la sortie au fichier ouvert precedemment
 	{
@@ -160,6 +162,7 @@ void	Cgi::dupping()
 		g_code = 1;
 		return ;
 	}
+	std::cerr << "VIEW VIEW 24 42" << std::endl;
 	//	close (_pdes[1]);
 	//	_pdes[1] = -1;
 	//	close (_pdes[0]);

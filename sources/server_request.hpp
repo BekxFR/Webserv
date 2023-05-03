@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:29:37 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 15:52:21 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 15:02:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ class server_request
 		std::string							_contentType;
 		std::string							_contentLength;
 		std::string							_body;
-
+		bool								_isBody;
 		server_request();
 
 	public:
@@ -58,7 +58,8 @@ class server_request
 		std::string	getMimeType() const { return (_mimeType); }
 		std::string	getContentType() const { return (_contentType); }
 		std::string	getBody() const { return (_body); }
-		std::string	getQuery() const { return (_query); }
+		bool		getIsBody() const { return (_isBody); }
+		std::string	getQuery() const { return (_argsBrutes); }
 
 		//OTHER
 		std::string			findRequestURI();

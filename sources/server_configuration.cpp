@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 14:59:22 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 15:00:01 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ server_configuration::server_configuration()
 		std::cout << "server_configuration Default Constructor called" << std::endl;
 }
 
-server_configuration::server_configuration(std::string ConfigFile, const char **env) : 
+server_configuration::server_configuration(std::string ConfigFile) : 
 _ConfigFile(ConfigFile),
 _ServerName(findElement("server_name")),
 _Root(findElement("root")),
@@ -50,8 +50,6 @@ _Loc(findLoc())
 			_ErrorPage.erase(tmp);
 		}
 	}
-	for (size_t i = 0; env[i]; i++)
-		_env.push_back(env[i]);
 	if (DEBUG)
 	{
 		std::cout << "server_configuration Overload Constructor called" << std::endl;
@@ -81,7 +79,6 @@ server_configuration	&server_configuration::operator=(server_configuration const
 	_Index = obj.getIndex();
 	_StatusCode = obj.getStatusCode();
 	_ClientMaxBodySize = obj.getClientMaxBodySize();
-	_env = obj.getEnv();
 	_HttpMethodAccepted = obj.getHttpMethodAccepted();
 	_Port = obj.getPort();
 	_Host = obj.getHost();

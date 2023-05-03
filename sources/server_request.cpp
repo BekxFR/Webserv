@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/02 17:46:43 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 15:01:58 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ server_request &server_request::operator=(server_request const &obj)
 server_request::server_request(std::string ServerRequest) :
 	_ServerRequest(ServerRequest) //, _Method(findMethod()), _RequestURI(findRequestURI())
 {
+	_isBody = 0;
 }
 
 std::string server_request::findMethod()
@@ -153,12 +154,12 @@ void server_request::request_parser()
 		{
 			std::string::size_type args_start = tmp.find('?', 0);
 			this->_type = tmp.substr(0, args_start);
+			this->_argsBrutes = tmp.substr(args_start + 1);
 			for (size_t i = 0; i < tmp.size(); i++)
 				if (tmp[i] == '&')
 					tmp[i] = ' ';
 			this->_path = _path.substr(0, _path.find('?', 0));
 			this->_query = tmp.substr(args_start + 1);
-			this->_argsBrutes = tmp.substr(args_start + 1);
 			this->_query = url_decode(this->_query);
 		}
 		else if (tmp.size() > 1)
@@ -227,7 +228,8 @@ void server_request::request_parser()
 			this->_query = url_decode(this->_query);
 		}
 	}
-
+	if (_body.size() && _method == "POST")
+		_isBody = 1;
 	// Afficher les résultats
 	if (0)
 	{	
