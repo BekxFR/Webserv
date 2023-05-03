@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 18:01:17 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 19:00:28 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -558,7 +558,6 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					// ev.events = EPOLLOUT;
 					// epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &ev);
 					handle_connection(servers, events[n].data.fd, StorePort, CodeStatus, &MsgToSent);
-					
 				}
 				if (events[n].events & EPOLLOUT)
 				{

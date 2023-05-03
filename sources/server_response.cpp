@@ -106,12 +106,9 @@ std::string server_response::getType(std::string type)
 
 std::string findFileName(std::string FinalPath)
 {
-
 	size_t pos = 0;
 	while (FinalPath.find("/", pos + 1) != std::string::npos)
-	{
 		pos = FinalPath.find("/", pos + 1);
-	}
 	return (FinalPath.substr(pos + 1));
 }
 
@@ -150,7 +147,7 @@ std::string	server_response::list_dir(std::string path)
 		closedir(dir);
 		return ("");
 	}
-	response << "<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>" << path << "</title></head><body style=\"height: 100%;\"><h1 style=\"padding-top:0.5em;font-size:3em;\">Index of " << path << "</h1></br><ul style=\"margin-top:10px;margin-bottom:10px;padding-top:10px;padding-bottom:10px;border-size:0.5em;border-top-style:solid;border-bottom-style:solid;\">";
+	response << "<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>" << path << "</title></head><body style=\"padding:0;margin:0;\"><main style=\"margin-top:62px;padding-bottom:60px\"><h1 style=\"padding-top:0.5em;font-size:3em;\">Index of " << path << "</h1></br><ul style=\"margin-top:10px;margin-bottom:10px;padding-top:10px;padding-bottom:10px;border-size:0.5em;border-top-style:solid;border-bottom-style:solid;\">";
 	while (send)
 	{
 		testDir = path + send->d_name;
@@ -167,7 +164,7 @@ std::string	server_response::list_dir(std::string path)
 		send = readdir(dir);
 	}
 	closedir(dir);
-	response << "</ul><footer style=\"position:fixed;bottom:0;left:0;right:0;background-color:#111;color:white;text-align:center;padding:10px 0;font-size:0.8em;\">Site web créé par Nicolas, Mathieu et Cyril</footer></body></html>";
+	response << "</ul></main><footer style=\"position:fixed;bottom:0;left:0;right:0;background-color:#111;color:white;text-align:center;padding:10px 0;font-size:0.8em;\">🐑 Site web créé par Nicolas, Mathieu et Cyril 🐑</footer></body></html>";
 	return (response.str());
 }
 
@@ -354,7 +351,7 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 		int j = 0;
 		while (infile >> j)
 			SessionIdGiven.push_back(j);
-		for (size_t i = 0; i <= SessionIdGiven.size(); i++)
+		for (size_t i = 0; i < SessionIdGiven.size(); i++)
 		{
 			// std::cout << "i : " << i << std::endl;
 			// std::cout << "SessionIdGiven.size() : " << SessionIdGiven.size() << std::endl;
@@ -443,7 +440,10 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
         			}
         			buffer.write(chunk, bytes_read);
 					if (g_code == 42)
+					{
+						_status_code = 500;
 						return (1);
+					}
 				}
 				// buffer << file.rdbuf();
 			}
@@ -1031,6 +1031,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 			_status_code = 500;
 			return (1);
 		}
+		std::remove(getBodyName().data());
 		std::cerr << "cgi fd = '" << _cgiFd << "'" << "_req->getBody().size() = " << _req->getBody().size() << std::endl;
 	}
 	try
