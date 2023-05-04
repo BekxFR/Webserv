@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 15:00:01 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/04 11:35:37 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -555,7 +555,7 @@ size_t server_configuration::findClientMaxBodySize()
 				return (ClientBodySize);
 		}
 	}
-	return (1048576);
+	return (1000000000);
 }
 
 std::map<std::string, std::string> server_configuration::findLocation()

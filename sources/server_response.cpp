@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 17:02:56 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/03 20:16:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -374,7 +374,7 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 
 bool	server_response::manageCgi(const server_request& Server_Request, server_configuration *server)
 {
-	std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
+	// std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
 	if (access(server->getCgi().find("." + Server_Request.getType())->second.data(), X_OK))
 		_status_code = 502;
 	else
@@ -1007,14 +1007,14 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	_env.push_back("REDIRECT_STATUS=1");
 	if (_body.find(std::string("content-length")) != std::string::npos)
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
-	std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
+	// std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
 	if (this->getType(_req->getType()) != "")
 	 	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
 	//_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
-	std::cerr << "_body = '" << _body << "'" << std::endl;
+	// std::cerr << "_body = '" << _body << "'" << std::endl;
 	if (_req->getIsBody())
 	{
-		std::cerr << "PPPPPP" << std::endl;
+		// std::cerr << "PPPPPP" << std::endl;
 		std::ofstream file(getBodyName().c_str());
 		if (file) {
 			file << _req->getBody();
@@ -1032,7 +1032,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 			return (1);
 		}
 		std::remove(getBodyName().data());
-		std::cerr << "cgi fd = '" << _cgiFd << "'" << "_req->getBody().size() = " << _req->getBody().size() << std::endl;
+		// std::cerr << "cgi fd = '" << _cgiFd << "'" << "_req->getBody().size() = " << _req->getBody().size() << std::endl;
 	}
 	try
 	{
