@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 19:00:28 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/04 18:18:56 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,15 +18,16 @@ extern volatile std::sig_atomic_t	g_code;
 
 int	setnonblocking(int sockfd)
 {
-	int flags;
-	flags = fcntl(sockfd, F_GETFL, 0);
-	if (flags == -1) {
-		return -1;
-	}
-	flags |= O_NONBLOCK;
-	if (fcntl(sockfd, F_SETFL, flags) == -1) {
-		return -1;
-	}
+	(void)sockfd;
+	// int flags;
+	// flags = fcntl(sockfd, F_GETFL, 0);
+	// if (flags == -1) {
+	// 	return -1;
+	// }
+	// flags |= O_NONBLOCK;
+	// if (fcntl(sockfd, F_SETFL, flags) == -1) {
+	// 	return -1;
+	// }
 	return 0;
 }
 
@@ -165,7 +166,8 @@ std::string UpdateFileNameifAlreadyExist(std::string UploadFileName)
 }
 
 
-void handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus, std::vector<std::pair<int, std::string> >* MsgToSent)
+int	handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus, std::map<int, std::pair<std::string, std::string> >* MsgToSent)
+
 {
 	server_configuration *GoodServerConf;
 	char buffer[2048];
@@ -176,59 +178,40 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	static std::vector<int> UnauthorizedSocket;
 	errno = 0;
 	
-	// std::cout << "PASSE LA " << conn_sock << std::endl;
-	n = read(conn_sock, buffer, 2048);
-	if (n <= 0) 
+	// std::cout << "\nPASSE LA " << conn_sock << std::endl;
+	n = recv(conn_sock, buffer, 2048, MSG_DONTWAIT);
+	if (n <= 0)
 	{
-		// std::cout << "\nread1 -1 : " << errno << std::endl;
-		for(std::vector<int>::iterator it = open_ports.begin(); it < open_ports.end(); it++)
-		{
-			if (*it == conn_sock)
-			{
-				close (*it);
-				open_ports.erase(it);
-				break;
-			}
-		}
-		return;
+		// std::cout << "ERRNO : " << errno << std::endl;
+		return 1;
 	}
+	// std::cout << "\nPASSE LA FIN " << std::endl;
 	std::string request;
 	request.append(buffer, n);
 	memset(buffer, 0, n);
 	while (n >= 2048)
 	{
-		n = read(conn_sock, buffer, n);
+		// std::cout << "\nN VALUE : " << n << std::endl;
+		n = recv(conn_sock, buffer, n, MSG_DONTWAIT);
+		// std::cout << "\nN VALUE after read : " << n << std::endl;
 		if (n > 0)
 		{
 			request.append(buffer, n);
 			memset(buffer, 0, n);
 		}
-		else if (n < 0) 
-		{
-			// std::cout << "\nread2 -1" << std::endl;
-			for(std::vector<int>::iterator it = open_ports.begin(); it < open_ports.end(); it++)
-			{
-				if (*it == conn_sock)
-				{
-					close (*it);
-					open_ports.erase(it);
-					break;
-				}
-			}
-			return;
-		}
 	}
 	
-	// static int k = 0;
-	// if (k < 5)
-	// {
-	// 	std::cout << "\nREQUEST ET SA SOCKET : " << conn_sock << "\n\n" << std::endl;
-	// 	std::cout.write(request.c_str(), 100);
-	// }
+	static int k = 0;
+	if (k < 5)
+	{
+		std::cout << "\nREQUEST ET SA SOCKET : " << conn_sock << "\n\n" << std::endl;
+		std::cout.write(request.c_str(), 200);
+	}
 
 	// std::cout << "\na1\n" << std::endl;
 	if (isNotBinaryData(SocketUploadFile, conn_sock))
 	{
+		
 		// std::cout << "\na1.1\n" << std::endl;
 		// std::cout << "\n\nRequest :\n\n" << request << std::endl;
 		/*	Cette partie permet de parser la requete afin de pouvoir travailler
@@ -264,9 +247,19 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		if (((ServerRequest.getMethod() == "GET" || ServerRequest.getMethod() == "DELETE") || (ServerRequest.getMethod() == "POST" && request.find("WebKitFormBoundary") == std::string::npos)) && CodeStatus == 200)
 		{
 			// std::cout << "\na1.4\n" << std::endl;
-			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
-			ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
-			return ;
+			if (GoodServerConf->getClientMaxBodySize() < ServerRequest.getContentLength())
+			{
+				// std::cout << "\na1.6\n" << std::endl;
+				server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
+				ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 413, MsgToSent);
+				return 0;
+			}
+			else
+			{
+				server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
+				ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
+				return 0;
+			}
 		}
 		else if (ServerRequest.getMethod() == "POST")
 		{
@@ -280,22 +273,20 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 				while (PathToStore.find("//") != std::string::npos)
 					PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
 				UploadFilePath.insert ( std::pair< int , std::string >(conn_sock, PathToStore));
-				// delete ServerRequest;
-				// return ;
 			}
 			else
 			{
 				// std::cout << "\na1.6\n" << std::endl;
 				server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 				ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 413, MsgToSent);
-				return ;
+				return 0;
 			}
 		}
 		else if (isNotinUnauthorizedSocket(UnauthorizedSocket, conn_sock))
 		{
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 			ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
-			return ;
+			return 0;
 		}
 	}
 
@@ -351,7 +342,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 				file.write(it->second.c_str(), it->second.size());
 				file.close();
 				// std::cout << "\nC0" << std::endl;
-				MsgToSent->push_back(std::pair<int, std::string>(conn_sock, "HTTP/1.1 200 OK\nContent-Length: 0\n\n")); // remplace sent
+				MsgToSent->insert(std::make_pair(conn_sock, std::make_pair("HTTP/1.1 200 OK\nContent-Length: 0\n\n", "")));
 				SocketUploadFile.erase(it);
 				// server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
 				// ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 201);
@@ -361,6 +352,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 		}
 	}
 	// std::cout << "\na1.7\n" << std::endl;
+	return 0;
 }
 
 void	ChangePort(std::map<int, int>& StorePort, int conn_sock, int listen_sock)
@@ -428,6 +420,19 @@ std::multimap<int, int>	ChangeOrKeepPort(std::multimap<int, int>* StorePort, int
 	return (*StorePort);
 }
 
+int isNotPort(int fd, int* listen_sock, size_t len)
+{
+	size_t i = 0;
+	while(i < len)
+	{
+		// std::cout << "LISTEN IS NOT PORT " << listen_sock[i] << std::endl;
+		if (fd == listen_sock[i])
+			return 0;
+		i++;
+	}
+	return 1;
+}
+
 int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Ports, std::vector<std::string> Hosts)
 {
 	struct sockaddr_in addr[Ports.size()];
@@ -436,7 +441,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	int listen_sock[Ports.size()];
 	std::multimap<int, int> StorePort;
 	int CodeStatus = 0;
-	std::vector<std::pair<int, std::string> > MsgToSent;
+	std::map<int, std::pair<std::string, std::string> > MsgToSent;
 	std::string PartialFileSent;
 	
 
@@ -505,9 +510,10 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 
 	for (size_t i = 0; i < Ports.size(); i++)
 	{
-		ev.events = EPOLLIN | EPOLLOUT;
+		ev.events = EPOLLIN;
 		ev.data.fd = listen_sock[i];
-		if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock[i], &ev) == -1) 
+		// std::cout << "\nLISTEN " << i << " : " << listen_sock[i] << std::endl;
+ 		if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock[i], &ev) == -1) 
 		{
 			std::fprintf(stderr, "Error: epoll_ctl: listen_sock, %s\n", strerror(errno));
 			return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
@@ -519,16 +525,17 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 			std::fprintf(stderr, "Error: epoll_wait: %s\n", strerror(errno));
 			return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
 		}
+		// std::cout << "\nWAIT TIME" << std::endl;
 		for (int n = 0; n < nfds; ++n)
 		{
 			for (size_t i = 0; i < Ports.size(); i++)
 			{
 				if (events[n].data.fd == listen_sock[i])
 				{
-					// std::cout << "\nACCEPT SOCKET : " << events[n].events << std::endl;
+					// std::cout << "\nACCEPT SOCKET : " << events[n].data.fd << " + " << listen_sock[i] <<  std::endl;
 					CodeStatus = 200; // a voir comment on gère le code status après envoi ds le handle connection
 					// std::fprintf(stderr, "\nEVENTS I = %d ET N = %d\n", i, n);
-					conn_sock = accept(listen_sock[i], (struct sockaddr *) &addr[i], &addrlen[i]);
+					conn_sock = accept(events[n].data.fd, (struct sockaddr *) &addr[i], &addrlen[i]);
 					// std::cout << "EPOLL_WAIT : " << std::endl;
 					// std::cout << "CON SOCK : " << conn_sock << std::endl;
 					// std::cout << "listen_sock[i] : " << listen_sock[i] << std::endl;
@@ -551,68 +558,71 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 						// return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
 					}
 				}
-				if (events[n].events & EPOLLIN)
-				{
-					// std::cout << "\nEPOLLIN : " << events[n].events << std::endl;
-					// std::cout << "\nSENT : " << events[n].data.fd << std::endl;
-					// ev.events = EPOLLOUT;
-					// epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &ev);
-					handle_connection(servers, events[n].data.fd, StorePort, CodeStatus, &MsgToSent);
-				}
-				if (events[n].events & EPOLLOUT)
-				{
-					// epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &ev);
-					// std::cout << "\nEPOLLOUT : " << events[n].events << std::endl;
-					for (std::vector<std::pair<int, std::string> >::iterator it = MsgToSent.begin(); it != MsgToSent.end(); it++)
-					{
-						if (events[n].data.fd == it->first)
-						{
-							// std::cout << "\nAS-TU ENVOYE? " << it->second.c_str() << std::endl;
-							if (it->second.size() < 500000)
-							{
-								// std::cout << "\n< 500000 " << std::endl;
-								// std::cout << it->first << std::endl; 
-								// std::cout << it->second << std::endl; 
-								if (send(it->first, it->second.c_str() , it->second.size(), 0) == -1)
-									std::cerr << "\nSend pb 1: " << errno << std::endl;
-								for(std::vector<int>::iterator it2 = open_ports.begin(); it2 < open_ports.end(); it2++)
-								{
-									if (*it2 == it->first)
-									{
-										close (*it2);
-										open_ports.erase(it2);
-										break;
-									}
-								}
-								MsgToSent.erase(it);
-								// it->first = 0;
-								// it->second = "";
-								break;
-							}
-							else
-							{
-								// std::cout << "\n> 500000 " << std::endl;
-								// std::cout << it->first << std::endl; 
-								// std::cout << "\na0.1\n" << std::endl;
-								errno = 0;
-								if (send(it->first, it->second.substr(0, 500000).c_str(), 500000, 0) == -1)
-								{
-									std::cout << "\nSend pb 2: " << errno << std::endl;
-									MsgToSent.erase(it);
-									break;
-								}
-								else
-								{
-									usleep(2000);
-									// std::cout << "\na0.4\n" << std::endl;
-									it->second.erase(0,500000);
-								}
-								break;
-							}
-						}
-					}
-				}
 			}
+			if ((events[n].events & EPOLLIN) && isNotPort(events[n].data.fd, listen_sock, Ports.size()))
+			{
+				// std::cout << "\nEPOLLIN : " << events[n].data.fd << " + " << events[n].data.fd << std::endl;
+				// std::cout << "\nSENT : " << events[n].data.fd << std::endl;
+				// ev.events = EPOLLOUT;
+				// epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &ev);
+				int error = handle_connection(servers, events[n].data.fd, StorePort, CodeStatus, &MsgToSent);
+				if (error)
+				{
+					// epoll_ctl(epollfd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
+					// close (events[n].data.fd);
+				}
+				// events[n].events |= EPOLLOUT;
+				// if (epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &ev) == -1) {
+				// 	perror("epoll_ctl1");
+				// }
+			}
+			if ((events[n].events & EPOLLOUT) && isNotPort(events[n].data.fd, listen_sock, Ports.size()))
+			{
+				// epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &ev);
+				// std::cout << "\nEPOLLOUT : " << events[n].data.fd << std::endl;
+				std::map<int, std::pair<std::string, std::string> >::iterator it = MsgToSent.find(events[n].data.fd);
+				if (it != MsgToSent.end())
+				{
+					if (it->second.second.size() > 0)
+						std::cout << "\nGROS FICHIER" << std::endl;
+					else
+					{
+						std::cout.write(it->second.first.c_str(), it->second.first.size());
+						send(it->first, it->second.first.c_str() , it->second.first.size(), 0);
+					}
+					
+				}
+
+				// for (std::map<int, std::pair<std::string, std::string> >::iterator it = MsgToSent.begin(); it != MsgToSent.end(); it++) 
+				// {
+				// 	if (events[n].data.fd == it->first)
+				// 	{
+				// 		// std::cout << "\nAS-TU ENVOYE? " << it->second.c_str() << std::endl;
+				// 		if (it->second.size() < 500000)
+				// 		{
+				// 			std::cout << "\n< 500000 " << std::endl;
+				// 			// std::cout << it->first << std::endl; 
+				// 			// std::cout << it->second << std::endl;
+				// 			std::cout.write(it->second.c_str(), it->second.size());
+				// 			send(it->first, it->second.c_str() , it->second.size(), 0);
+				// 			MsgToSent.erase(it);
+				// 			// it->first = 0;
+				// 			// it->second = "";
+				// 			break;
+				// 		}
+				// 		else
+				// 		{
+				// 			std::cout << "\n> 500000 " << std::endl;
+				// 			// std::cout << it->first << std::endl; 
+				// 			// std::cout << "\na0.1\n" << std::endl;
+				// 			errno = 0;
+				// 			std::cout.write(it->second.substr(0, 500000).c_str(), 50000);
+				// 			send(it->first, it->second.substr(0, 500000).c_str(), 500000, 0);
+				// 			break;
+				// 		}
+				// }
+			}
+			
 		}
 	}
 	return 0;

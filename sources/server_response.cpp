@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 17:02:56 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/04 17:58:32 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -374,7 +374,7 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 
 bool	server_response::manageCgi(const server_request& Server_Request, server_configuration *server)
 {
-	std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
+	// std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
 	if (access(server->getCgi().find("." + Server_Request.getType())->second.data(), X_OK))
 		_status_code = 502;
 	else
@@ -402,7 +402,7 @@ bool	server_response::manageCgi(const server_request& Server_Request, server_con
 	return (0);
 }
 
-bool	server_response::AnswerGet(const server_request& Server_Request, server_configuration *server)
+int	server_response::AnswerGet(const server_request& Server_Request, server_configuration *server)
 {
 	if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
 	{
@@ -415,49 +415,40 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 		std::stringstream buffer;
 		if (is_dir(_finalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
 		{
-			// std::cout << "AUTOLISTING ON" << std::endl;
-			buffer << list_dir(_finalPath);
+			std::cout << "AUTOLISTING ON" << std::endl;
+			buffer << list_dir(_finalPath); // transformer en fichier temporaire pr mettre le nom de fichier ds content
 		}
 		else if (is_dir(_finalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
 			_status_code = 403;
-		else if (_status_code == 200)
+		else if (_status_code == 200) // ici il faudra juste envoyer le nom du fichier et le mettre ds content;
 		{
 			if (_isCgi == 1)
 				_finalPath = _fileName;
-			std::ifstream file(_finalPath.c_str());
+			std::ifstream file(_finalPath.c_str()); //500000 la taille qu'on veut
 			if (!file.is_open())
 				_status_code = 403;
-			else
-			{
-				std::size_t chunk_size = 4096;
-				char chunk[chunk_size];
-				while(true)
-				{
-					file.read(chunk, chunk_size);
-					std::streamsize bytes_read = file.gcount();
-        			if (bytes_read == 0) {
-        			    break; // end of file
-        			}
-        			buffer.write(chunk, bytes_read);
-					if (g_code == 42)
-					{
-						_status_code = 500;
-						return (1);
-					}
-				}
-				// buffer << file.rdbuf();
-			}
+			file.seekg(0, std::ios::end);
+			int FileSize = file.tellg();
+			file.seekg(0, std::ios::beg);
+			if (FileSize < 500000)
+				buffer << file.rdbuf();
+			else 
+				return FileSize;
 		}
 		_content = buffer.str();
 	}
-	return (1);
+	return (0);
 }
 
-void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp, std::vector<std::pair<int, std::string> >* MsgToSent)
+void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp, std::map<int, std::pair<std::string, std::string> >* MsgToSent)
 {
 	if (StatusCodeTmp != 200)
 		_status_code = StatusCodeTmp;
 
+	
+	std::cout << "\nTEST CONFIG" << std::endl;
+	std::cout << *server << std::endl;
+	std::cout << "FIN" << std::endl; 
 	/*	Ci-dessous, on genere un ID de session pour chaque nouvel utilisateur
 		et on verifie que si un ID est recu, c'est bien nous qui l'avons emis
 		pour renvoyer sinon une erreur 401 et un id_session a zero (a savoir 
@@ -479,7 +470,8 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			<< getRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) << "\r\n";
 			std::string response_str = response.str();
 			errno = 0;
-			MsgToSent->push_back(std::pair<int, std::string>(conn_sock, response_str)); // remplace sent
+			MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(response_str, "")));
+			// MsgToSent->push_back(std::pair<int, std::string>(conn_sock, response_str)); // remplace sent
 			errno = 0;
 	}
 	/*********************************************************************/
@@ -498,7 +490,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	// PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	// while (PathToStore.find("//") != std::string::npos)
 	// 	PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
-	if (0)
+	if (1)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
@@ -550,15 +542,26 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		manageCgi(Server_Request, server);
 	}
 	
+	std::map<int, std::pair<std::string, std::string> > MsgToSentTmp; // Je cree un TMP pour envoyer tout d'un coup apres au vrai objet.
+	MsgToSentTmp.insert(std::make_pair(conn_sock, std::make_pair("", ""))); // Ici, j'ajoute la conn_sock car on sait deja;
+	int MsgSize = 0;
 	// std::cout << "\n TEST : " << Server_Request.getMethod() << std::endl;
 	std::stringstream response;
 	if ((Server_Request.getMethod() == "GET" || Server_Request.getMethod() == "POST") && _status_code != 500)
 	{
 		// std::cout << "\nGETMETHOD SERVER_RESPONSE\n" << std::endl;
 		if (_status_code == 200)
-			AnswerGet(Server_Request, server);
-		createResponse(server, _content, Server_Request, id_session);
-		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
+		{
+			MsgSize = AnswerGet(Server_Request, server);
+			if (MsgSize)	
+				MsgToSentTmp[conn_sock].second = _finalPath;
+		}
+		createResponse(server, _content, Server_Request, id_session, MsgSize);
+		MsgToSentTmp[conn_sock].first = _ServerResponse;
+		std::map<int, std::pair<std::string, std::string> >::iterator it = MsgToSentTmp.find(conn_sock);
+		if (it != MsgToSentTmp.end())
+			MsgToSent->insert(*it);
+		// MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplacait send, mais a egalement ete remplace
 		return ;
 	}
 	else if (Server_Request.getMethod() == "DELETE" && _status_code != 500)
@@ -567,9 +570,10 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			this->delete_dir(_finalPath.c_str());
 		if (_status_code == 200)
 			_content = server->getErrorPage()[STATUS200].second;
-		createResponse(server, _content, Server_Request, id_session);
-		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
-
+		createResponse(server, _content, Server_Request, id_session, 0);
+		
+		// MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
+		MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(_ServerResponse, "")));
 		return ;
 	}
 	else
@@ -577,7 +581,8 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, id_session);
 		response << addBody(server->getErrorPage()[STATUS500].second);
 		_ServerResponse = response.str();
-		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
+		MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(_ServerResponse, "")));
+		// MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
 		return ;
 	}
 	if (_isCgi)
@@ -663,7 +668,7 @@ void	server_response::addLength()
 	_content.insert(0, tmp);
 }
 
-void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request, int IdSession)
+void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request, int IdSession, int MsgSize)
 {
 	std::stringstream	response;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
@@ -700,10 +705,10 @@ void	server_response::createResponse(server_configuration * server, std::string 
 				{
 					if (_isCgi == 0)
 						response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request, server, IdSession);
-					// std::cout <<"\nTEST PR WARNING" << std::endl;
-					response << addBody(file);
-					// std::cout <<"\nTEST FIN" << std::endl;
-					break;
+					if (MsgSize == 0)
+						response << addBody(file);
+					else
+						response << "Content-Length: " << MsgSize << "\r\n\r\n";
 				}
 				case 201:
 				{
@@ -956,7 +961,7 @@ void	server_response::createResponse(server_configuration * server, std::string 
 			response << addBody(server->getErrorPage()[STATUS500].second);
 			break;
 	}
-	_ServerResponse = response.str();
+	_ServerResponse = response.str(); // il faut mettre ca ds la premiere case
 }
 
 // ajouter dans l'env avant exec (source https://www.youtube.com/watch?v=37choLzDTgY) :
@@ -1007,14 +1012,14 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	_env.push_back("REDIRECT_STATUS=1");
 	if (_body.find(std::string("content-length")) != std::string::npos)
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
-	std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
+	// std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
 	if (this->getType(_req->getType()) != "")
 	 	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
 	//_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
-	std::cerr << "_body = '" << _body << "'" << std::endl;
+	// std::cerr << "_body = '" << _body << "'" << std::endl;
 	if (_req->getIsBody())
 	{
-		std::cerr << "PPPPPP" << std::endl;
+		// std::cerr << "PPPPPP" << std::endl;
 		std::ofstream file(getBodyName().c_str());
 		if (file) {
 			file << _req->getBody();
@@ -1032,7 +1037,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 			return (1);
 		}
 		std::remove(getBodyName().data());
-		std::cerr << "cgi fd = '" << _cgiFd << "'" << "_req->getBody().size() = " << _req->getBody().size() << std::endl;
+		// std::cerr << "cgi fd = '" << _cgiFd << "'" << "_req->getBody().size() = " << _req->getBody().size() << std::endl;
 	}
 	try
 	{

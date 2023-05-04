@@ -20,7 +20,7 @@ server {
 
 			cgi .php /usr/bin/php-cgi ;
 
-			upload_store /var/www/uploads/;
+			upload_store /site/upload/;
 		}
 
 		location /password/ {

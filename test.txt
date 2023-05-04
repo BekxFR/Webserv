@@ -1,1 +1,5 @@
-BENZEMA
+std::map<int, std::pair<std::string, std::string>>::iterator it = sourceMap.find(1);
+if (it != sourceMap.end() && it->first == anotherInt) {
+    // Key matches anotherInt, do something
+    std::cout << "Key matches anotherInt!" << std::endl;
+}

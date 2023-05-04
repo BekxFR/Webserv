@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 15:09:37 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/04 17:41:19 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,11 +63,11 @@ class server_response
 
 	void								setIsCgi(bool i) { _isCgi = i; }
 	// OTHER
-	void		SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp, std::vector<std::pair<int, std::string> >* MsgToSent);
+	void		SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp, std::map<int, std::pair<std::string, std::string> >* MsgToSent);
 	void		addLength();
 	void		setStatusCode(int st) { _status_code = (st); }
 	void		addType();
-	void		createResponse(server_configuration*, std::string, const server_request& Server_Request, int IdSession);
+	void		createResponse(server_configuration*, std::string, const server_request& Server_Request, int IdSession, int MsgSize);
 	void		delete_dir(const char * path);
 	std::string	getRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	std::string	list_dir(std::string path);
@@ -79,7 +79,7 @@ class server_response
 	bool		isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool		autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI);
 	bool		manageCgi(const server_request& Server_Request, server_configuration *server);	
-	bool		AnswerGet(const server_request& Server_Request, server_configuration *server);
+	int			AnswerGet(const server_request& Server_Request, server_configuration *server);
 	void		SendingPostResponse(const server_request& Server_Request, int conn_sock, server_configuration *server, std::string PostContent, std::string filename);
 	int			getIdSessionOrSetError401(const server_request& Server_Request);
 	static void		*download_file(void *arg);
