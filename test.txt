@@ -3,3 +3,15 @@ if (it != sourceMap.end() && it->first == anotherInt) {
     // Key matches anotherInt, do something
     std::cout << "Key matches anotherInt!" << std::endl;
 }
+
+
+			std::ifstream file(_finalPath.c_str()); //500000 la taille qu'on veut
+			if (!file.is_open())
+				_status_code = 403;
+			file.seekg(0, std::ios::end);
+			int FileSize = file.tellg();
+			file.seekg(0, std::ios::beg);
+			if (FileSize < 500000)
+				buffer << file.rdbuf();
+			else 
+				return FileSize;

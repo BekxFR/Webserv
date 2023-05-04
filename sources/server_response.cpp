@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/04 17:58:32 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/04 19:31:20 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -446,9 +446,9 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		_status_code = StatusCodeTmp;
 
 	
-	std::cout << "\nTEST CONFIG" << std::endl;
-	std::cout << *server << std::endl;
-	std::cout << "FIN" << std::endl; 
+	// std::cout << "\nTEST CONFIG" << std::endl;
+	// std::cout << *server << std::endl;
+	// std::cout << "FIN" << std::endl; 
 	/*	Ci-dessous, on genere un ID de session pour chaque nouvel utilisateur
 		et on verifie que si un ID est recu, c'est bien nous qui l'avons emis
 		pour renvoyer sinon une erreur 401 et un id_session a zero (a savoir 

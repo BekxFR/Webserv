@@ -6,12 +6,14 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/04 18:18:56 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/04 20:55:33 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "initServ.hpp"
 #include "server_response.hpp"
+#include <stdio.h>
+#include <stdlib.h>
 
 extern std::vector<int> open_ports;
 extern volatile std::sig_atomic_t	g_code;
@@ -201,12 +203,12 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		}
 	}
 	
-	static int k = 0;
-	if (k < 5)
-	{
-		std::cout << "\nREQUEST ET SA SOCKET : " << conn_sock << "\n\n" << std::endl;
-		std::cout.write(request.c_str(), 200);
-	}
+	// static int k = 0;
+	// if (k < 5)
+	// {
+	// 	std::cout << "\nREQUEST ET SA SOCKET : " << conn_sock << "\n\n" << std::endl;
+	// 	std::cout.write(request.c_str(), 200);
+	// }
 
 	// std::cout << "\na1\n" << std::endl;
 	if (isNotBinaryData(SocketUploadFile, conn_sock))
@@ -584,11 +586,27 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 				if (it != MsgToSent.end())
 				{
 					if (it->second.second.size() > 0)
-						std::cout << "\nGROS FICHIER" << std::endl;
+					{
+						std::cout << "\nTEST SEND GROS FICHIER" << std::endl;
+						if (strlen(itos(atoi(it->second.first.c_str())).c_str()) != it->second.first.size())
+						{
+							send(it->first, it->second.first.c_str() , it->second.first.size(), 0);
+						}
+						std::cout << it->second.second.c_str() << std::endl;
+						std::ifstream file(it->second.second.c_str()); 
+						if (!file.is_open())
+						{
+							// il faut creer une autre struct en static avec le socket et le nombre qui a deja ete lu
+							// plutot que mon strlen(........) bizarre et changer le content en chiffre
+						}
+						MsgToSent.erase(it);
+					}
 					else
 					{
+						std::cout << "\nTEST SEND PETIT FICHIER" << std::endl;
 						std::cout.write(it->second.first.c_str(), it->second.first.size());
 						send(it->first, it->second.first.c_str() , it->second.first.size(), 0);
+						MsgToSent.erase(it);
 					}
 					
 				}
