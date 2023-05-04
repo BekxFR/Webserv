@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 20:14:02 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/04 16:40:30 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1009,10 +1009,10 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	_env.push_back("REDIRECT_STATUS=1");
 	if (_body.find(std::string("content-length")) != std::string::npos)
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
-	std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
-	// if (this->getType(_req->getType()) != "")
-	//  	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
-	_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+	// std::cerr << std::endl << "E = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
+	if (this->getType(_req->getType()) != "")
+	 	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
+	// _env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
 	std::cerr << "_body = '" << _body << "'" << std::endl;
 	if (_req->getIsBody())
 	{
@@ -1038,7 +1038,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	try
 	{
 		int status = 0;
-		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName);
+		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName, _req->getQuery().c_str());
 		waitpid(cgi.getPid(), &status, 0);
 		if (WIFEXITED(status))
 			if (WEXITSTATUS(status) != 0)

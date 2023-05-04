@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:06 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/25 19:11:23 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/04 12:30:57 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,12 @@ class Cgi
 		char**			_envp;
 		std::string		_fileName;
 		server_request*	_request;
+		char*			_pythonArg;
 
 		Cgi();
 
 	public:
-		Cgi(std::string& cgi_path, std::string& file_path, std::vector<std::string> & env, int input_fd, std::string);
+		Cgi(std::string& cgi_path, std::string& file_path, std::vector<std::string> & env, int input_fd, std::string filen, const char* pythonArg);
 		Cgi(const Cgi & o);
 		~Cgi();
 		Cgi & operator=(const Cgi & o);
@@ -47,6 +48,7 @@ class Cgi
 		char**	getCmd() const { return (_cmd); }
 		char**	getEnvp() const { return (_envp); }
 		int	getStatus() const { return (_status); }
+		char*	getPythonArg() const { return (_pythonArg); }
 		server_request*	getRequest() const { return (_request); }
 
 	// OTHER

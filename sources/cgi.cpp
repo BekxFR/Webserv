@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 20:33:14 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/04 12:32:16 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,13 @@
 
 extern volatile std::sig_atomic_t	g_code;
 
-Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string filen): _input_fd(input_fd), _status(0) 
+Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string filen, const char* pythonArg) : _input_fd(input_fd), _status(0)
 {
-	_cmd = new char*[3];
+	_cmd = new char*[4];
 	_cmd[0] = &(cgi_path[0]);
 	_cmd[1] = &(file_path[0]);
-	_cmd[2] = NULL;
+	_cmd[2] = (char *)pythonArg;
+	_cmd[3] = NULL;
 	_envp = new char* [env.size() + 1];
 	size_t	i = 0;
 	for (std::vector<std::string>::iterator it = env.begin(); it != env.end(); it++, i++)
@@ -66,6 +67,7 @@ Cgi	&Cgi::operator=(Cgi const &o)
 	_pdes[0] = o.getPdes()[0];
 	_pdes[1] = o.getPdes()[1];
 	_status = o.getStatus();
+	_pythonArg = o.getPythonArg();
 	return (*this);
 }
 
@@ -167,6 +169,14 @@ void	Cgi::dupping()
 	//	_pdes[1] = -1;
 	//	close (_pdes[0]);
 	//	_pdes[0] = -1;
-	if (execve(_cmd[0], _cmd, _envp) == -1) // si execve rate, on laisse passer pour appeler les destructeurs mais en changeant le code global pour sortir une 500
+	// _cmd[2] = strdup("text=sheeper");
+	std::cerr << " _cmd[0] = " << _cmd[0] << " _cmd[1] = " << _cmd[1] << " _cmd[2] = " << _cmd[2] << " _cmd[3] = " << _cmd[3] << std::endl;
+	if (std::strcmp(_cmd[0], "python"))
+	{
+		// _cmd[2] = _pythonArg;
+		if (execve(_cmd[0], _cmd, NULL) == -1)
+			g_code = 1;
+	}
+	else if (execve(_cmd[0], _cmd, _envp) == -1 ) // si execve rate, on laisse passer pour appeler les destructeurs mais en changeant le code global pour sortir une 500
 		g_code = 1;
 }
