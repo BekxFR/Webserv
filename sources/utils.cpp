@@ -6,12 +6,13 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:20:43 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 19:35:33 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/04 17:33:19 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils.hpp"
 
+extern std::vector<int> open_ports;
 
 std::string	itos(int nb)
 {
@@ -53,16 +54,25 @@ void PrintServer(std::vector<server_configuration*> servers)
 	}
 }
 
-void	CloseSockets(int *listen_sock, sockaddr_in *addr, std::vector<int> Ports)
+void	CloseSockets(int *listen_sock, int epollfd, sockaddr_in *addr, std::vector<int> Ports)
 {
-	int tablen = Ports.size();
-	
-	for (int i = 0; i < tablen; i++)
+	(void)addr;
+	(void)epollfd;
+	(void)Ports;
+	for (size_t i = 0; i < Ports.size(); i++)
 	{
-		close(listen_sock[i]);
-		close(Ports[i]);
-		close(addr[i].sin_port);
+		if (listen_sock[i] != -1)
+			close(listen_sock[i]);
 	}
+//	for (int i = 0; i < tablen; i++)
+//	{
+//		close(listen_sock[i]);
+//		if (Ports[i] != -1)
+//			close(Ports[i]);
+//		close(addr[i].sin_port);
+//	}
+//	if (epollfd != -1)
+//		close(epollfd);
 }
 
 void	DeleteServers(std::vector<server_configuration*> servers)
@@ -75,6 +85,19 @@ void	DeleteServers(std::vector<server_configuration*> servers)
 	}
 }
 
+bool	checkStatus(int status)
+{
+	if (status >= 200 && status <= 206)
+		return (1);
+	return (0);
+}
+
+bool	isMethodPossible(std::string method)
+{
+	if (method == "POST" || method == "GET" || method == "DELETE")
+		return (1);
+	return (0);
+}
 
 bool	is_dir(const char* path, server_response& sr)
 {

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/04 11:34:08 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/04 17:34:34 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,9 @@ int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std
 	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
 	dans une location */
 	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
+	{
 		return (200);
+	}
 	// s'il passe ici c'est qu'aucune loc n'a éte trouvée et que donc c'est possible, meme ds le principal
 	return (405);
 }
@@ -165,7 +167,6 @@ std::string UpdateFileNameifAlreadyExist(std::string UploadFileName)
 	return (UploadFileName);
 }
 
-
 int	handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus, std::vector<std::pair<int, std::string> >* MsgToSent)
 {
 	server_configuration *GoodServerConf;
@@ -210,7 +211,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 	// std::cout << "\na1\n" << std::endl;
 	if (isNotBinaryData(SocketUploadFile, conn_sock))
 	{
-		// std::cout << "\na1.1\n" << std::endl;
+		std::cout << "\na1.1\n" << std::endl;
 		// std::cout << "\n\nRequest :\n\n" << request << std::endl;
 		/*	Cette partie permet de parser la requete afin de pouvoir travailler
 			sur chaque élément indépendemment */
@@ -234,7 +235,10 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		if (CodeStatus == 200)
 		{
 			// std::cout << "\na1.3\n" << std::endl;
-			CodeStatus = isMethodAuthorised(ServerRequest.getMethod(), GoodServerConf, ServerRequest.getRequestURI()); // on sait s'ils ont le droit
+			if (!isMethodPossible(ServerRequest.getMethod()))
+				CodeStatus = 400;
+			else
+				CodeStatus = isMethodAuthorised(ServerRequest.getMethod(), GoodServerConf, ServerRequest.getRequestURI()); // on sait s'ils ont le droit
 			if (CodeStatus != 200)
 				UnauthorizedSocket.push_back(conn_sock);
 		}
@@ -242,7 +246,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 
 		// std::cout << "\nMETHOD REQUETE " << ServerRequest.getMethod() << std::endl;
 		// std::cout << "\nROOT " << GoodServerConf->getRoot() << std::endl;
-		if (((ServerRequest.getMethod() == "GET" || ServerRequest.getMethod() == "DELETE") || (ServerRequest.getMethod() == "POST" && request.find("WebKitFormBoundary") == std::string::npos)) && CodeStatus == 200)
+		if (((ServerRequest.getMethod() == "GET" || ServerRequest.getMethod() == "DELETE") || (ServerRequest.getMethod() == "POST" && request.find("WebKitFormBoundary") == std::string::npos)) && checkStatus(CodeStatus))
 		{
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 			// std::cout << "\na1.4\n" << std::endl;
@@ -253,7 +257,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			return 0;
 
 		}
-		else if (ServerRequest.getMethod() == "POST")
+		else if (ServerRequest.getMethod() == "POST" && checkStatus(CodeStatus))
 		{
 			// std::cout << "\na1.5\n" << std::endl;
 			// std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
@@ -278,6 +282,14 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		{
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 			ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
+			return 0;
+		}
+		else
+		{
+			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
+			ServerResponse.setStatusCode(CodeStatus);
+			ServerResponse.createResponse(GoodServerConf, "", ServerRequest, 0);
+			MsgToSent->push_back(std::pair<int, std::string>(conn_sock, ServerResponse.getServerResponse())); // remplace sent
 			return 0;
 		}
 	}
@@ -429,7 +441,9 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 {
 	struct sockaddr_in addr[Ports.size()];
 	socklen_t addrlen[Ports.size()];
-	int conn_sock, nfds, epollfd;
+	int	conn_sock = -1;
+	int	nfds = -1;
+	int	epollfd = -1;
 	int listen_sock[Ports.size()];
 	std::multimap<int, int> StorePort;
 	int CodeStatus = 0;
@@ -494,7 +508,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	epollfd = epoll_create1(0);
 	if (epollfd == -1) {
 		std::fprintf(stderr, "Error: epoll_create1: %s\n", strerror(errno));
-		return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
+		return(CloseSockets(listen_sock, epollfd, addr, Ports), EXIT_FAILURE);
 	}
 	open_ports.push_back(epollfd);
 	
@@ -508,14 +522,15 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
  		if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock[i], &ev) == -1) 
 		{
 			std::fprintf(stderr, "Error: epoll_ctl: listen_sock, %s\n", strerror(errno));
-			return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
+			return(CloseSockets(listen_sock, epollfd, addr, Ports), EXIT_FAILURE);
 		}
 	}
 	for (;;) {
+		if (g_code == 42)
+			return(CloseSockets(listen_sock, epollfd, addr, Ports), EXIT_FAILURE);
 		nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
 		if (nfds == -1) {
-			std::fprintf(stderr, "Error: epoll_wait: %s\n", strerror(errno));
-			return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
+			return(CloseSockets(listen_sock, epollfd, addr, Ports), EXIT_FAILURE);
 		}
 		// std::cout << "\nWAIT TIME" << std::endl;
 		for (int n = 0; n < nfds; ++n)

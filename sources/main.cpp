@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 14:59:37 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/04 17:34:16 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,11 @@ volatile std::sig_atomic_t	g_code = 0;
 
 void sigint_handler(int signum)
 {
-    std::cerr << "\nSignal SIGINT (" << signum << ") received." << std::endl;
+	std::cerr << "\nSignal SIGINT (" << signum << ") received." << std::endl;
 	for (size_t i = 0; i < open_ports.size(); i++)
 	{
-		close(open_ports[i]);
+		if (open_ports[i])
+			close(open_ports[i]);
 	}
 	g_code = 42;
 	// close(8083); // Port 1
