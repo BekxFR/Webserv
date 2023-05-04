@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 15:00:50 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/04 18:41:47 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ class server_configuration
 		std::string														getRoot() const { return _Root;}
 		std::string														getIndex() const { return _Index;}
 		std::vector<int>												getPort() const { return _Port;}
+		std::vector<int>&												getPort() { return _Port;}
 		std::vector<std::string>										getHttpMethodAccepted() const { return (_HttpMethodAccepted); }
 		std::vector<std::string>&										getHttpMethodAccepted() { return (_HttpMethodAccepted); }
 		std::vector<std::string>										getHost() const { return _Host;}

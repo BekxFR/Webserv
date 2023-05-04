@@ -1,0 +1,159 @@
+[0;34m###[0mCreation du fichier objects/initServ.o[0;34m###[0;33m
+c++ -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/ -g3 -c sources/initServ.cpp -o objects/initServ.o
+[0m
+[0;34m###[0mCreation du fichier webserv[0;34m###[0;33m
+c++ objects/main.o objects/server_configuration.o objects/server_request.o objects/server_response.o objects/server_location_configuration.o objects/ErrorCorresp.o objects/cgi.o objects/utils.o objects/initServ.o -std=c++98 -Wall -Wextra -Werror -MMD -MP -Isources/ -g3 -o webserv
+[0m
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./webserv sources/server.conf3
+[1;32mPort 8083 is listening[0m
+
+[1;32mPort 8080 is listening[0m
+
+[1;31mPort 8083 is already listening[0m
+
+[1;32mPort 8084 is listening[0m
+
+[1;32mPort 8099 is listening[0m
+
+
+PASSE LA 9
+
+a1.1
+
+
+REMOVE 2: 9
+
+PASSE LA 10
+
+a1.1
+
+
+REMOVE 2: 10
+
+PASSE LA 9
+
+a1.1
+
+
+REMOVE 2: 9
+
+PASSE LA 9
+
+a1.1
+
+
+REMOVE 2: 9
+
+PASSE LA 9
+
+a1.1
+
+
+REMOVE 2: 9
+
+PASSE LA 9
+
+a1.1
+
+
+REMOVE 2: 9
+
+PASSE LA 9
+
+a1.1
+
+
+REMOVE 2: 9
+
+PASSE LA 10
+
+a1.1
+
+
+REMOVE 2: 10
+
+PASSE LA 9
+
+a1.1
+
+
+REMOVE 2: 9
+
+PASSE LA 9
+
+a1.1
+
+
+REMOVE 2: 9
+
+PASSE LA 10
+
+a1.1
+
+
+REMOVE 2: 10
+
+PASSE LA 9
+
+a1.1
+
+
+REMOVE 2: 9
+
+PASSE LA 10
+
+a1.1
+
+
+REMOVE 2: 10
+
+PASSE LA 11
+
+a1.1
+
+
+REMOVE 2: 11
+
+PASSE LA 12
+
+a1.1
+
+
+REMOVE 2: 12
+
+PASSE LA 11
+
+a1.1
+
+
+REMOVE 2: 11
+
+PASSE LA 12
+
+a1.1
+
+
+REMOVE 2: 12
+
+PASSE LA 9
+
+a1.1
+
+
+REMOVE 2: 9
+
+PASSE LA 10
+
+a1.1
+
+
+REMOVE 2: 10
+
+PASSE LA 9
+
+a1.1
+
+
+REMOVE 2: 9
+
+FIN DU PROGRAMME

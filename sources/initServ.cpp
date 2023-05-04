@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/04 17:34:34 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/04 19:46:00 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,7 +169,7 @@ std::string UpdateFileNameifAlreadyExist(std::string UploadFileName)
 
 int	handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus, std::vector<std::pair<int, std::string> >* MsgToSent)
 {
-	server_configuration *GoodServerConf;
+	server_configuration *GoodServerConf = NULL;
 	char buffer[2048];
 	int n = 0; 
 	int Port = 0;
@@ -225,7 +225,11 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			if (it->second == conn_sock)
 				Port = it->first;
 		}
+	//	std::cerr << "PORT apres set = '" << Port << "'" << std::endl;
 		GoodServerConf = getGoodServer(servers, &ServerRequest, Port);
+	//	std::cerr << "Serveur Port in initserv when checking good serv:" << std::endl;
+	//	for (std::vector<int>::iterator it = GoodServerConf->getPort().begin(); it != GoodServerConf->getPort().end(); it++)
+	//		std::cerr << *it << std::endl;
 		/********************************************************************/
 	
 	
@@ -376,6 +380,7 @@ std::multimap<int, int>	ChangeOrKeepPort(std::multimap<int, int>* StorePort, int
 {
 	// std::cout << "\nINSIDE CHANGE OR KEEP\n" << std::endl;
 	
+	std::cerr << "shoud insert dans port = '" << Port << "' le socket '" << conn_sock << "'" << std::endl;
 	for (std::multimap<int, int>::iterator it = StorePort->begin(); it != StorePort->end(); it++)
 	{
 		// std::cout << "\nChangeOrKeep normal : " << std::endl;
@@ -391,8 +396,10 @@ std::multimap<int, int>	ChangeOrKeepPort(std::multimap<int, int>* StorePort, int
 		/*************************/
 		if (it->second == conn_sock)
 		{
-			// std::cout << "RETURN CHANGE OR KEEP" << std::endl;
-			return (*StorePort);
+	//		std::cout << "RETURN CHANGE OR KEEP" << std::endl;
+			StorePort->erase(it); //j'ai ajoute au lieu de return
+			break; // same
+	//		return (*StorePort);
 		}
 	}
 	// std::cout << "shoud insert" << std::endl;
@@ -542,12 +549,16 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					// std::cout << "\nACCEPT SOCKET : " << events[n].data.fd << " + " << listen_sock[i] <<  std::endl;
 					CodeStatus = 200; // a voir comment on gère le code status après envoi ds le handle connection
 					// std::fprintf(stderr, "\nEVENTS I = %d ET N = %d\n", i, n);
+					std::cerr << "Conn_sock: '" << conn_sock << "'" << std::endl;
 					conn_sock = accept(events[n].data.fd, (struct sockaddr *) &addr[i], &addrlen[i]);
 					// std::cout << "EPOLL_WAIT : " << std::endl;
 					// std::cout << "CON SOCK : " << conn_sock << std::endl;
 					// std::cout << "listen_sock[i] : " << listen_sock[i] << std::endl;
 					// std::cout << "Ports[i] : " << Ports[i] << std::endl;
 					open_ports.push_back(conn_sock);
+			//		std::cerr << "StorePort in response:" << std::endl;
+			//		for (std::multimap<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
+			//			std::cerr << it->first << it->second << std::endl;
 					StorePort = ChangeOrKeepPort(&StorePort, conn_sock, Ports[i]);
 					if (conn_sock == -1) {
 						CodeStatus = 500;
