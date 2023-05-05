@@ -6,13 +6,14 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/05 15:03:46 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/05 16:35:42 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lib.hpp"
 
 std::vector<int> open_ports;
+std::vector<int> sockets;
 volatile std::sig_atomic_t	g_code = 0;
 
 void sigint_handler(int signum)
@@ -22,6 +23,11 @@ void sigint_handler(int signum)
 	{
 		if (open_ports[i] != -1)
 			close(open_ports[i]);
+	}
+	for (size_t i = 0; i < sockets.size(); i++)
+	{
+		if (sockets[i] != -1)
+			close(sockets[i]);
 	}
 	g_code = 42;
 }

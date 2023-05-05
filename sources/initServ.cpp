@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/05 15:26:05 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/05 16:36:04 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <stdlib.h>
 
 extern std::vector<int> open_ports;
+extern std::vector<int> sockets;
 extern volatile std::sig_atomic_t	g_code;
 
 int	setnonblocking(int sockfd)
@@ -516,7 +517,6 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 			std::fprintf(stderr, "Error: listen failed: %s\n", strerror(errno));
 			// return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 		}
-		// open_ports.push_back(listen_sock[i]);
 	}
 
 	// std::cout << "STOREMAP" << std::endl;
@@ -546,6 +546,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 		}
 	}
 	for (;;) {
+		std::cerr << "SOCKET = '" << conn_sock << "'" << std::endl;
 		if (g_code == 42)
 			return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 		nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
@@ -563,12 +564,17 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					// std::cout << "\nACCEPT SOCKET : " << events[n].data.fd << " + " << listen_sock[i] <<  std::endl;
 					CodeStatus = 200; // a voir comment on gère le code status après envoi ds le handle connection
 					// std::fprintf(stderr, "\nEVENTS I = %d ET N = %d\n", i, n);
+					if (sockets.size() > 100)
+					{
+						close(*(sockets.begin()));
+						sockets.erase(sockets.begin());
+					}
 					conn_sock = accept(events[n].data.fd, (struct sockaddr *) &addr[i], &addrlen[i]);
+					sockets.push_back(conn_sock);
 					// std::cout << "EPOLL_WAIT : " << std::endl;
 					// std::cout << "CON SOCK : " << conn_sock << std::endl;
 					// std::cout << "listen_sock[i] : " << listen_sock[i] << std::endl;
 					// std::cout << "Ports[i] : " << Ports[i] << std::endl;
-					open_ports.push_back(conn_sock);
 					StorePort = ChangeOrKeepPort(&StorePort, conn_sock, Ports[i]);
 					if (conn_sock == -1) {
 						CodeStatus = 500;
@@ -596,12 +602,12 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 				int error = handle_connection(servers, events[n].data.fd, StorePort, CodeStatus, &MsgToSent);
 				if (error)
 				{
-					for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
+					for (std::vector < int >::iterator it2 = sockets.begin(); it2 != sockets.end(); it2++)
 					{
 						// std::cout << "\nit2 : " << *it2 << " events fd : " << events[n].data.fd << std::endl;
 						if (*it2 == events[n].data.fd)
 						{
-							open_ports.erase(it2);
+							sockets.erase(it2);
 							break;
 						}
 					}
@@ -632,11 +638,11 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 							if (send(it->first, it->second.first.c_str() , it->second.first.size(), 0) == -1)
 							{
 								std::cout << "\nsend 1 pb" << std::endl;
-								for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
+								for (std::vector < int >::iterator it2 = sockets.begin(); it2 != sockets.end(); it2++)
 								{
 									if (*it2 == it->first)
 									{
-										open_ports.erase(it2);
+										sockets.erase(it2);
 										break;
 									}
 								}
@@ -662,11 +668,11 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 									if (send(it->first, "\r\n\r\n", 4, 0) == -1)
 									{
 										std::cout << "\nsend 2 pb" << std::endl;
-										for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
+										for (std::vector < int >::iterator it2 = sockets.begin(); it2 != sockets.end(); it2++)
 										{
 											if (*it2 == it->first)
 											{
-												open_ports.erase(it2);
+												sockets.erase(it2);
 												break;
 											}
 										}
@@ -683,11 +689,11 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 									if (send(it->first, chunk, bytes_read, 0) == -1)
 									{
 										std::cout << "\nsend 3 pb" << std::endl;
-										for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
+										for (std::vector < int >::iterator it2 = sockets.begin(); it2 != sockets.end(); it2++)
 										{
 											if (*it2 == it->first)
 											{
-												open_ports.erase(it2);
+												sockets.erase(it2);
 												break;
 											}
 										}
