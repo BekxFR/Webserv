@@ -38,7 +38,8 @@ std::string	itos(int nb);
 std::string	readingFileEP( std::string file );
 
 //Cleaning
-void		CloseSockets(int *listen_sock, std::vector<int> Ports);
+void		closeSockets();
+void		CloseListenSockets(std::vector<int>);
 void		DeleteServers(std::vector<server_configuration*> servers);
 
 #endif

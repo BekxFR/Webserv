@@ -616,13 +616,12 @@ std::map<std::string, class server_location_configuration*>	server_configuration
 	
 	for (std::map<std::string, std::string>::iterator it = _Location.begin(); it != _Location.end(); it++)
 	{
-		pair_location.first = it->first;
-		server_location_configuration* tmp = new server_location_configuration(it->second);
-		pair_location.second = tmp;
-		map_location.insert(pair_location);
+			pair_location.first = it->first;
+			server_location_configuration* tmp = new server_location_configuration(it->second);
+			pair_location.second = tmp;
+			map_location.insert(pair_location);
 	}
 	return (map_location);
-	
 }
 
 std::ostream&	server_configuration::printLoc(std::ostream &out)

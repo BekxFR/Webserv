@@ -23,7 +23,6 @@ class Cgi
 	private:
 		int				_input_fd;
 		int				_output_fd;
-		int				_pdes[2];
 		int				_status;
 		pid_t			_pid;
 		FILE*			_fp;
@@ -41,7 +40,6 @@ class Cgi
 		Cgi & operator=(const Cgi & o);
 
 	// GETTERS
-		const int*	getPdes() const { return (_pdes); }
 		pid_t	getPid() const { return (_pid); }
 		int	getInputFd() const { return (_input_fd); }
 		char**	getCmd() const { return (_cmd); }
@@ -54,7 +52,6 @@ class Cgi
 		void	setStatus(int); // setter
 		void	setPid();
 		void	setPid(pid_t); // setter
-		void	setPdes();
 		void	dupping();
 		void	closePdes();
 		void	del();

@@ -12,6 +12,8 @@
 
 #include "utils.hpp"
 
+extern std::vector<int> open_ports;
+extern std::vector<int> sockets;
 
 std::string	itos(int nb)
 {
@@ -48,18 +50,15 @@ void PrintServer(std::vector<server_configuration*> servers)
 	for (size_t i = 0; i < servers.size(); i++)
 	{
 		server_configuration* server = servers[i];
-		std::cout << "Server " << i << ":" << std::endl;
-		std::cout << *server << std::endl;
+		std::cout << "Server " << i << ":" << std::endl << *server << std::endl;
 	}
 }
 
-void	CloseSockets(int *listen_sock, std::vector<int> Ports)
+void	CloseListenSockets(std::vector<int> listen_sock)
 {
-	for (size_t i = 0; i < Ports.size(); i++)
-	{
-		if (listen_sock[i] != -1)
-			close(listen_sock[i]);
-	}
+	for (std::vector<int>::iterator it = listen_sock.begin(); it != listen_sock.end(); it++)
+		if (*it != -1)
+			close(*it);
 }
 
 void	DeleteServers(std::vector<server_configuration*> servers)
@@ -70,6 +69,16 @@ void	DeleteServers(std::vector<server_configuration*> servers)
 			delete it->second;
 		delete servers[i];
 	}
+}
+
+void	closeSockets()
+{
+	for (size_t i = 0; i < open_ports.size(); i++)
+		if (open_ports[i] != -1)
+			close(open_ports[i]);
+	for (size_t i = 0; i < sockets.size(); i++)
+		if (sockets[i] != -1)
+			close(sockets[i]);
 }
 
 bool	checkStatus(int status)
