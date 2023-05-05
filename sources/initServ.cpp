@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/04 19:55:55 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/05 19:29:38 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,31 +164,67 @@ std::string UpdateFileNameifAlreadyExist(std::string UploadFileName)
 	return (UploadFileName);
 }
 
-bool check_Second_Line(const std::string& str)
-{
-    std::stringstream ss(str);
-    std::string word;
-    std::string line;
-    int count = 0;
+#include <cctype>
+#include <algorithm>
 
-    while (std::getline(ss, line)) {
-		if (count == 2)
-			break;
-        if (count == 1) {
-			std::istringstream iss(line);
-            std::cout << line << std::endl;
-			iss >> word;
-			if (word != "Host:")
-			{
-				return (1);
-			}
-        }
-        count++;
-    }
-    return 0;
+bool check_End_Line(const std::string& str)
+{
+	if (str.find("\r\n\r\n") == std::string::npos)
+		return (1);
+	return (0);
 }
 
-bool check_First_Line(const std::string& str)
+int check_Host_Line(const std::string& str)
+{
+    std::string word;
+    std::string tmpStr;
+    std::string line;
+    int count = 0;
+    int status = 0;
+
+	std::string::size_type host_start = str.find("HTTP/1.1\r\n");
+	std::string::size_type host_end = str.find("\r\n\r\n", host_start);
+	tmpStr = str.substr(host_start + 8, host_end);
+	std::transform(tmpStr.begin(), tmpStr.end(), tmpStr.begin(), ::tolower);
+	if (str.find("host:") == std::string::npos)
+	{
+		if (check_End_Line(tmpStr))
+			return(1);
+		return (2);
+	}
+	std::istringstream ss(tmpStr);
+	std::istringstream iss(tmpStr);
+	while (std::getline(ss, line)) {
+		// if (line.size() < 3)
+		// 	return (2);
+		if (line.size() >= 5 && line.substr(0, 5) == "host:")
+			break ;
+		count++;
+	}
+	if (ss.eof()) {
+		return (1);
+	}
+	for(int i = 0; i < count; i++)
+		std::getline(iss, line);
+	count = 0;
+	while (iss >> word)
+	{
+		if (count == 2)
+			break ;
+		if (count == 0 && (word == "host:" || word.size() > 5))
+		{
+			status = 1;
+		}
+		if (count == 1 && status == 1)
+			return(0);
+		count++;
+	}
+	if (count == 1 && status == 1)
+		return (2);
+	return (1);
+}
+
+int check_First_Line(const std::string& str)
 {
     std::istringstream ss(str);
 	std::string line;
@@ -198,53 +234,126 @@ bool check_First_Line(const std::string& str)
 	if (std::getline(ss,line))
 	{
 		std::istringstream iss(line);
-		while (iss >> word) {
-			std::cerr << "\n\n word =" << word << "'" << std::endl;
+		while (iss >> word)
+		{
 			if (count > 2)
-				return (1);
-			if ((count == 0) && (word != "GET" && word != "POST" && word != "DELETE")){
-				return (1);}
-			if (count == 1 && word[0] != '/'){
-				return (1);}
-			if (count == 2 && word != "HTTP/1.1"){
-				return (1);}
+				return (2);
+			if ((count == 0) && (word != "GET" && word != "POST" && word != "DELETE"))
+				return (2);
+			if (count == 1 && word[0] != '/')
+				return (2);
+			if (count == 2 && word != "HTTP/1.1")
+				return (2);
 			count++;
 		}
 	}
-    return (count == 3);
+	if (count == 3)
+		return (0);
+	if (count < 3 && str.size() > 2)
+	{
+		return (2);
+	}
+	return (1);
 }
 
 int check_Request_Value(const std::string& request, const int status)
 {
-	if (status == 0 && !check_First_Line(request))
-		return (1);
-	if (status == 1 && !check_Second_Line(request))
-		return (1);
+	int status_Ref = 0;
+
+	if (status == 0){
+		status_Ref = check_First_Line(request);}
+		std::cerr << "\nWARNING 1\n" << status_Ref << std::endl;
+	if (status == 1){
+		status_Ref = check_Host_Line(request);
+		std::cerr << "\nWARNING 2\n" << status_Ref << std::endl;
+	}
+	if (status == 2){
+		status_Ref = check_End_Line(request);}
+		std::cerr << "\nWARNING 3\n" << status_Ref << std::endl;
 	// if (status == 1 && request.find("Host: ") == std::string::npos)
 	// 	return (1);
-	return (0);
+	return (status_Ref);
+}
+
+void	add_Request_To_File(int conn_sock, std::string request)
+{
+	char str[10];
+	sprintf(str, "%d", conn_sock);
+	std::ofstream file(str, std::ios::app);
+	if (file) {
+		file << request;
+		file.close();
+	}
+}
+
+std::string get_file_contents(int conn_sock)
+{
+	char str[10];
+	sprintf(str, "%d", conn_sock);
+    std::ifstream file(str);
+    std::string content;
+
+    if (file.is_open()) {
+        std::string line;
+        while (getline(file, line)) {
+            content += line + "\n";
+        }
+        file.close();
+    }
+    return content;
 }
 
 int pre_Request_Parser(std::map<int, int>& RequestSocketStatus, int conn_sock, std::string request)
 {
+	int status_Ref = 0;
+	int index_Status = 0;
+	std::string new_Request;
+	
 	for (std::map<int, int>::iterator it = RequestSocketStatus.begin(); it != RequestSocketStatus.end(); ++it) {
 		if (it->first == conn_sock && it->second == 0)
 		{
-			if (check_Request_Value(request, it->second) == 0)
+			if (request.size() < 3)
+				return (0);
+			index_Status = 1;
+			add_Request_To_File(conn_sock, request);
+			new_Request = get_file_contents(conn_sock);
+			status_Ref = check_Request_Value(new_Request, it->second);
+			if (status_Ref == 0)
 			{
+				std::cerr << "\nPHASE 1 IS OK\n" << std::endl;
 				it->second = 1;
 			}
-			else
-				return (1);
+			if (status_Ref == 2)
+				return (status_Ref);
 		}
 		if (it->first == conn_sock && it->second == 1)
 		{
-			if (check_Request_Value(request, it->second) == 0)
+			if (index_Status == 0)
+				add_Request_To_File(conn_sock, request);
+			new_Request = get_file_contents(conn_sock);
+			status_Ref = check_Request_Value(new_Request, it->second);
+			if (status_Ref == 0)
 			{
+				std::cerr << "\nPHASE 2 IS OK\n" << std::endl;
 				it->second = 2;
 			}
-			else
+			if (status_Ref == 2)
+				return (status_Ref);
+		}
+		if (it->first == conn_sock && it->second == 2)
+		{
+			if (index_Status == 0)
+				add_Request_To_File(conn_sock, request);
+			new_Request = get_file_contents(conn_sock);
+			status_Ref = check_Request_Value(new_Request, it->second);
+			if (status_Ref == 0)
+			{
+				std::cerr << "\nPHASE 3 IS OK\n" << std::endl;
+				it->second = 3;
 				return (1);
+			}
+			if (status_Ref == 2)
+				return (status_Ref);
 		}
 	}
 	return (0);
@@ -261,10 +370,10 @@ int already_In_Map(std::map<int, int>& RequestSocketStatus, int conn_sock)
 
 void add_To_map(std::map<int, int>& RequestSocketStatus, int conn_sock)
 {
-	for (std::map<int, int>::iterator it = RequestSocketStatus.begin(); it != RequestSocketStatus.end(); ++it) {
-		if (it->first == conn_sock)
-			return ;
-	}
+	// for (std::map<int, int>::iterator it = RequestSocketStatus.begin(); it != RequestSocketStatus.end(); ++it) {
+	// 	if (it->first == conn_sock)
+	// 		return ;
+	// }
 	RequestSocketStatus.insert(std::pair<int, int>(conn_sock, 0));
 }
 
@@ -281,6 +390,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 	char buffer[2048];
 	int n = 0; 
 	int Port = 0;
+	int status = 0;
 	static std::map<int, std::string> SocketUploadFile;
 	static std::map<int, int> RequestSocketStatus;
 	static std::map<int, std::string> UploadFilePath;
@@ -354,25 +464,46 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 // si il n'existe pas on l'ajoute
 // si il existe on verifie le deuxieme element
 // si le deuxieme element est a 0 on verifie la string recu
-
-	add_To_map(RequestSocketStatus, conn_sock);
-	print_Map(RequestSocketStatus);
-	pre_Request_Parser(RequestSocketStatus, conn_sock, request);
-
 		std::cout << "\na1.1\n" << std::endl;
 		std::cerr << "\n\nRequest :\n\n" << request << std::endl;
 		char str[10];
 		sprintf(str, "%d", conn_sock);
-		std::ofstream file(str, std::ios::app);
-		if (file) {
-			file << request;
-			file.close();
+		// std::ofstream file(str, std::ios::app);
+		// if (file) {
+		// 	file << request;
+		// 	file.close();
+		// }
+
+		// std::ifstream infile(str);
+		// if file.open() {
+		// 	std::string buffer\
+		// 	buffer << file;
+		// 	buffer.find("/r/n/r/n")
+		// 	// file << request;
+		// 	file.close();
+		// }
+		server_request ServerRequest;
+		add_To_map(RequestSocketStatus, conn_sock);
+		print_Map(RequestSocketStatus);
+		status = pre_Request_Parser(RequestSocketStatus, conn_sock, request);
+		if (status == 2)
+		{
+			MsgToSent->push_back(std::pair<int, std::string>(conn_sock, "HTTP/1.1 400 Bad Request\nContent-Type: text/html\nContent-Length: 353\r\n\r\n<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>400 Bad Request</title></head><body style=\"background: #0e0e0e; height: 100%;text-align:center;color:white;\"><h1>400 Bad Request</h1><img src=\"https://http.cat/400\" style=\"display: block;margin: auto;\" alt=\"400 Bad Request\"><p>webserv</p></body></html>")); // remplace sent
+			remove(str);
+			RequestSocketStatus.clear();
+			return ;
+		}
+		if (status == 1)
+		{
+			std::string fullRequest;
+			fullRequest = get_file_contents(conn_sock);
+			ServerRequest = server_request(fullRequest);
+			ServerRequest.request_parser();
+			remove(str);
 		}
 
 		/*	Cette partie permet de parser la requete afin de pouvoir travailler
 			sur chaque élément indépendemment */
-		server_request ServerRequest(request);
-		ServerRequest.request_parser();
 		/* Cette partie permet de connaitre le port utilisé afin de d'avoir les 
 		bonnes configurations de serveur */
 		for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:29:37 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 15:02:21 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/05 18:12:47 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,9 @@ class server_request
 		std::string							_contentLength;
 		std::string							_body;
 		bool								_isBody;
-		server_request();
 
 	public:
+		server_request();
 		server_request(std::string ServerRequest);
 		server_request(server_request const &obj);
 		~server_request();
