@@ -1,0 +1,401 @@
+###############################POST REQUEST#############################################
+
+how server http receive POST request http ? and what is the template of POST request ?
+
+When an HTTP server receives a POST request, the following steps typically occur:
+
+The client (usually a web browser) initiates the request by sending an HTTP POST request to the server.
+The server receives the request and parses it to extract the relevant information.
+The server performs the necessary actions based on the information in the request, such as processing a form submission, updating a database, or performing some other operation.
+The server then sends an HTTP response back to the client, indicating the success or failure of the operation.
+The template for an HTTP POST request typically looks like this:
+
+////////////////
+
+POST /path/to/resource HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 27
+
+username=johndoe&password=pass
+
+////////////////
+
+Let's break down each part of this template:
+
+POST indicates that this is a POST request. Other common HTTP methods include GET, PUT, and DELETE.
+/path/to/resource is the path to the resource that the client is requesting. This could be a URL or a file path on the server.
+HTTP/1.1 indicates the version of the HTTP protocol being used. Other versions include HTTP/1.0 and HTTP/2.
+Host specifies the domain name of the server that the client is requesting.
+Content-Type specifies the format of the data being sent in the request. In this case, the data is in the application/x-www-form-urlencoded format, which is commonly used for form submissions.
+Content-Length specifies the length of the data being sent in the request, in bytes.
+The data being sent in the request is included in the body of the request, after a blank line. In this case, the data is in the format of key=value pairs, separated by ampersands (&).
+
+###############################GET REQUEST#############################################
+
+how server http receive GET request http ? and what is the template of GET request ?
+
+When an HTTP server receives a GET request, the following steps typically occur:
+
+The client (usually a web browser) initiates the request by sending an HTTP GET request to the server.
+The server receives the request and parses it to extract the relevant information.
+The server performs the necessary actions based on the information in the request, such as retrieving a file, generating a dynamic web page, or serving up static content.
+The server then sends an HTTP response back to the client, containing the requested content.
+The template for an HTTP GET request typically looks like this:
+
+////////////////
+
+GET /path/to/resource HTTP/1.1
+Host: example.com
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+
+////////////////
+
+Let's break down each part of this template:
+
+GET indicates that this is a GET request. Other common HTTP methods include POST, PUT, and DELETE.
+/path/to/resource is the path to the resource that the client is requesting. This could be a URL or a file path on the server.
+HTTP/1.1 indicates the version of the HTTP protocol being used. Other versions include HTTP/1.0 and HTTP/2.
+Host specifies the domain name of the server that the client is requesting.
+User-Agent specifies the web browser or other client software being used to make the request.
+Accept specifies the MIME types of content that the client can understand.
+Accept-Language specifies the preferred language for the response.
+Accept-Encoding specifies the preferred encoding for the response.
+Connection specifies whether the client wants the connection to be kept alive or closed after the response is received.
+Upgrade-Insecure-Requests specifies whether the client wants the server to upgrade insecure requests to secure requests (HTTPS).
+
+###############################DELETE REQUEST#############################################
+
+how server http receive DELETE request http ? and what is the template of DELETE request ?
+
+When an HTTP server receives a DELETE request, the following steps typically occur:
+
+The client (usually a web browser or other HTTP client) initiates the request by sending an HTTP DELETE request to the server.
+The server receives the request and parses it to extract the relevant information.
+The server performs the necessary actions based on the information in the request, such as deleting a resource on the server.
+The server then sends an HTTP response back to the client, indicating the success or failure of the operation.
+The template for an HTTP DELETE request typically looks like this:
+
+////////////////
+
+DELETE /path/to/resource HTTP/1.1
+Host: example.com
+Authorization: Basic YWRtaW46cGFzc3dvcmQ=
+Content-Type: application/json
+Content-Length: 123
+
+////////////////
+
+Let's break down each part of this template:
+
+DELETE indicates that this is a DELETE request. Other common HTTP methods include GET, POST, and PUT.
+/path/to/resource is the path to the resource that the client wants to delete. This could be a URL or a file path on the server.
+HTTP/1.1 indicates the version of the HTTP protocol being used. Other versions include HTTP/1.0 and HTTP/2.
+Host specifies the domain name of the server that the client is requesting.
+Authorization provides authentication information for the request. In this example, it is using basic authentication with a username and password encoded in Base64.
+Content-Type specifies the format of the data being sent in the request. In this case, the data is in JSON format.
+Content-Length specifies the length of the data being sent in the request, in bytes.
+Note that a DELETE request typically does not include a message body, as the request is only intended to delete the resource specified in the request URI.
+However, some APIs may allow for additional data to be included in the request body, such as a reason for the deletion or a confirmation token.
+
+###############################POST RETURN#############################################
+
+what the server http return after execute POST request ? and what is the template of POST server return ?
+
+After executing a POST request, an HTTP server typically returns an HTTP response to the client indicating the success or failure of the operation.
+The exact contents of the response depend on the application and the context in which the POST request was made, but it typically includes a status code, response headers, and a message body.
+
+The template for an HTTP response to a POST request typically looks like this:
+
+////////////////
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 123
+Server: Apache/2.4.38 (Unix) OpenSSL/1.1.1d PHP/7.3.8
+Date: Thu, 17 Mar 2023 12:00:00 GMT
+
+{"status": "success", "message": "The resource was created successfully."}
+
+////////////////
+
+Let's break down each part of this template:
+
+HTTP/1.1 indicates the version of the HTTP protocol being used. Other versions include HTTP/1.0 and HTTP/2.
+200 OK is the HTTP status code returned by the server. In this case, it indicates that the request was successful.
+Content-Type specifies the format of the data being sent in the response. In this case, the data is in JSON format.
+Content-Length specifies the length of the data being sent in the response, in bytes.
+Server specifies the type and version of the server software being used to handle the request.
+Date specifies the date and time that the response was generated by the server.
+The message body contains the data returned by the server. In this case, it is a JSON object with a status message and a success message.
+Note that the specific contents of the response depend on the application and the context in which the POST request was made.
+For example, if the POST request was made to create a new resource on the server, the response might include the URL or ID of the newly created resource.
+Conversely, if the POST request failed, the response might include an error message explaining the reason for the failure.
+
+###############################GET RETURN#############################################
+
+what the server http return after execute GET request ? and what is the template of GET server return ?
+
+After executing a GET request, an HTTP server typically returns an HTTP response to the client containing the requested resource or information about the request.
+The exact contents of the response depend on the application and the context in which the GET request was made, but it typically includes a status code, response headers, and a message body.
+
+The template for an HTTP response to a GET request typically looks like this:
+
+////////////////
+
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Content-Length: 1234
+Server: Apache/2.4.38 (Unix) OpenSSL/1.1.1d PHP/7.3.8
+Date: Thu, 17 Mar 2023 12:00:00 GMT
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Example Website</title>
+</head>
+<body>
+  <h1>Welcome to Example Website</h1>
+  <p>This is an example website.</p>
+</body>
+</html>
+
+////////////////
+
+Let's break down each part of this template:
+
+HTTP/1.1 indicates the version of the HTTP protocol being used. Other versions include HTTP/1.0 and HTTP/2.
+200 OK is the HTTP status code returned by the server. In this case, it indicates that the request was successful and the requested resource is being returned in the response.
+Content-Type specifies the format of the data being sent in the response. In this case, it is an HTML document with a UTF-8 character encoding.
+Content-Length specifies the length of the data being sent in the response, in bytes.
+Server specifies the type and version of the server software being used to handle the request.
+Date specifies the date and time that the response was generated by the server.
+The message body contains the requested resource or information about the request. In this case, it is an HTML document with a title, heading, and paragraph.
+Note that the specific contents of the response depend on the application and the context in which the GET request was made.
+For example, if the GET request was made to retrieve data from a database, the response might include a JSON or XML document containing the requested data.
+If the request was unsuccessful, the response might include an error message explaining the reason for the failure.
+
+###############################DELETE RETURN#############################################
+
+what the server http return after execute DELETE request ? and what is the template of DELETE server return ?
+
+After executing a DELETE request, an HTTP server typically returns an HTTP response to the client indicating the success or failure of the operation.
+The exact contents of the response depend on the application and the context in which the DELETE request was made, but it typically includes a status code, response headers, and a message body.
+
+The template for an HTTP response to a DELETE request typically looks like this:
+
+////////////////
+
+HTTP/1.1 204 No Content
+Server: Apache/2.4.38 (Unix) OpenSSL/1.1.1d PHP/7.3.8
+Date: Thu, 17 Mar 2023 12:00:00 GMT
+
+////////////////
+
+Let's break down each part of this template:
+
+HTTP/1.1 indicates the version of the HTTP protocol being used. Other versions include HTTP/1.0 and HTTP/2.
+204 No Content is the HTTP status code returned by the server. In this case, it indicates that the request was successful and that there is no content to return in the response body.
+Server specifies the type and version of the server software being used to handle the request.
+Date specifies the date and time that the response was generated by the server.
+Note that the specific contents of the response depend on the application and the context in which the DELETE request was made.
+For example, if the DELETE request was made to delete a resource on the server, the response might include a success message indicating that the resource was deleted.
+Conversely, if the DELETE request failed, the response might include an error message explaining the reason for the failure.
+However, it is common for DELETE requests to return a 204 No Content response with no message body, as the client typically knows that the request was successful and does not need additional information in the response.
+
+############################################################################
+
+POST REQUEST
+
+////////////////
+
+POST /login HTTP/1.1
+Host: 127.0.0.1
+Content-Type: apptest/test-www-form-urlencoded
+Content-Length: 256
+
+username=John&password=Bekx
+
+////////////////
+
+#########################TELNET AND CURL POST REQUEST###################################################
+
+Oui, il est possible de simuler une requête POST avec Telnet ou Curl vers un serveur HTTP. Voici comment faire pour chaque outil :
+
+Avec Telnet :
+
+Ouvrez une session Telnet en utilisant la commande suivante dans un terminal : telnet <adresse-du-serveur> <port-du-serveur>.
+Entrez la requête POST en suivant le format HTTP. Par exemple, pour envoyer un formulaire de connexion avec un nom d'utilisateur et un mot de passe, vous pouvez taper :
+
+////////////////
+
+POST /login HTTP/1.1
+Host: <adresse-du-serveur>
+Content-Type: application/x-www-form-urlencoded
+Content-Length: <longueur-du-corps>
+
+username=<nom-d-utilisateur>&password=<mot-de-passe>
+
+////////////////
+
+Assurez-vous de remplacer <adresse-du-serveur> et <port-du-serveur> par les valeurs appropriées pour votre serveur.
+
+Avec Curl :
+
+Ouvrez un terminal et utilisez la commande suivante : curl -X POST -d '<données-du-corps>' <adresse-du-serveur>.
+Remplacez <données-du-corps> par les données que vous souhaitez envoyer dans le corps de la requête POST, par exemple : curl -X POST -d 'username=admin&password=pass123' http://example.com/login.
+Curl est généralement plus facile à utiliser pour les requêtes POST, car il gère automatiquement l'encodage des données de formulaire et la création de l'en-tête HTTP appropriée. Cependant, Telnet peut être utile si vous avez besoin de personnaliser davantage la requête HTTP.
+
+Pour arrêter une requête faite avec Telnet vers un serveur HTTP, vous pouvez utiliser la combinaison de touches Ctrl + ], puis entrer la commande quit pour quitter la session Telnet.
+
+Lorsque vous appuyez sur Ctrl + ], vous passez en mode Telnet et vous pouvez entrer des commandes spécifiques pour Telnet. La commande quit ferme la session Telnet en cours et vous ramène à votre terminal.
+
+#################TELNET AND CURL FILE POST REQUEST###########################################################
+
+Oui, il est possible de simuler une requête POST d'upload de fichier avec Telnet ou Curl vers un serveur HTTP. Voici comment faire pour chaque outil :
+
+Avec Telnet :
+
+Ouvrez une session Telnet en utilisant la commande suivante dans un terminal : telnet <adresse-du-serveur> <port-du-serveur>.
+Entrez la requête POST en suivant le format HTTP. Pour envoyer un fichier, vous pouvez inclure une en-tête Content-Type appropriée pour le type de fichier et le contenu binaire du fichier dans le corps de la requête POST. Par exemple :
+
+////////////////EXEMPLE1
+
+POST /upload HTTP/1.1
+Host: <adresse-du-serveur>
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=<nom-du-fichier>
+Content-Length: <longueur-du-corps>
+
+<contenu-binaire-du-fichier>
+
+////////////////EXEMPLE2
+
+POST /upload HTTP/1.1
+Host: <adresse-du-serveur>
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="exemple.pdf"
+Content-Type: application/pdf
+
+<Contenu-du-fichier>
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+////////////////
+
+Assurez-vous de remplacer <adresse-du-serveur> et <port-du-serveur> par les valeurs appropriées pour votre serveur. Remplacez également <nom-du-fichier> par le nom du fichier que vous voulez envoyer, et <contenu-binaire-du-fichier> par le contenu binaire du fichier.
+
+Avec Curl :
+
+Ouvrez un terminal et utilisez la commande suivante : curl -X POST -F '<nom-du-fichier>=@<chemin-du-fichier>' <adresse-du-serveur>.
+Remplacez <nom-du-fichier> par le nom que vous souhaitez donner au fichier sur le serveur, <chemin-du-fichier> par le chemin du fichier que vous voulez envoyer, et <adresse-du-serveur> par l'adresse du serveur cible. Par exemple :
+
+////////////////
+
+curl -X POST -F 'file=@/chemin/vers/monfichier.png' http://example.com/upload
+
+////////////////
+
+La commande Curl utilise l'option -F pour spécifier un formulaire à envoyer via une requête POST multipart. L'option -F prend un argument au format 'name=@/chemin/vers/fichier', où name est le nom de la clé pour le formulaire et /chemin/vers/fichier est le chemin d'accès absolu du fichier à envoyer.
+
+Remarque : les requêtes POST multipart peuvent être plus complexes à créer manuellement avec Telnet que les requêtes POST standard. Il est recommandé d'utiliser Curl ou une bibliothèque HTTP pour créer des requêtes POST multipart.
+
+
+#################DELETE REQUEST AND RETURN###########################################################
+
+Bien sûr, voici un exemple de requête DELETE et des réponses du serveur en cas de succès ou d'échec :
+
+**Requête DELETE :**
+//////
+DELETE /users/123 HTTP/1.1
+Host: example.com
+//////
+Cette requête supprime la ressource "users/123" sur le serveur.
+
+**Réponse du serveur en cas de succès :**
+//////
+HTTP/1.1 204 No Content
+Date: Wed, 22 Sep 2021 14:30:00 GMT
+Server: Apache/2.4.46 (Unix)
+//////
+La réponse 204 No Content indique que la suppression de la ressource a été effectuée avec succès et qu'il n'y a pas de contenu supplémentaire à renvoyer. La date et le serveur peuvent varier selon le contexte.
+
+**Réponse du serveur en cas d'échec :**
+//////
+HTTP/1.1 404 Not Found
+Date: Wed, 22 Sep 2021 14:31:00 GMT
+Server: Apache/2.4.46 (Unix)
+
+{"message": "La ressource demandée est introuvable."}
+//////
+La réponse 404 Not Found indique que la ressource spécifiée dans la requête n'a pas été trouvée sur le serveur. Le message d'erreur peut varier selon le contexte.
+
+#################POST PHP###########################################################
+
+En HTML pur, il n'est pas possible de lister les fichiers présents dans un répertoire et de les supprimer avec une requête DELETE. Il est également difficile de télécharger des fichiers avec une requête POST en utilisant uniquement HTML.
+
+Cependant, il est possible de créer un formulaire HTML pour télécharger des fichiers à partir d'un répertoire spécifique sur le serveur. Voici un exemple simple :
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Télécharger un fichier</title>
+</head>
+<body>
+	<h1>Télécharger un fichier</h1>
+	<form action="/path/to/download.php" method="POST">
+		<select name="file">
+			<option value="">Sélectionnez un fichier</option>
+			<?php 
+				$dir = "path/to/files";
+				$files = scandir($dir);
+				foreach($files as $file){
+					if($file !== '.' && $file !== '..'){
+						echo '<option value="'.$file.'">'.$file.'</option>';
+					}
+				}
+			?>
+		</select>
+		<input type="submit" value="Télécharger">
+	</form>
+</body>
+</html>
+
+Ce code utilise la fonction PHP `scandir()` pour récupérer la liste des fichiers dans le dossier spécifié (`path/to/files`), puis génère des options de sélection pour chacun de ces fichiers. Lorsque l'utilisateur soumet le formulaire, le fichier sélectionné est envoyé via une requête POST au script PHP spécifié dans l'attribut `action` du formulaire (`/path/to/download.php`).
+
+Pour supprimer des fichiers, vous devez utiliser une requête DELETE à l'aide de JavaScript ou de tout autre langage de programmation côté client. Le serveur doit également être configuré pour répondre aux requêtes DELETE. En utilisant des langages de programmation côté client tels que JavaScript, vous pouvez envoyer une requête DELETE en utilisant l'objet XMLHttpRequest ou jQuery.ajax().
+
+#################DELETE javascript###########################################################
+
+En JavaScript, les requêtes HTTP (y compris les requêtes DELETE) peuvent être effectuées à l'aide de l'API Fetch. Voici un exemple de code pour effectuer une requête DELETE avec Fetch :
+
+fetch('ma-page.php', {
+  method: 'DELETE',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    id: 1234
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error(error));
+
+Dans cet exemple, nous envoyons une requête DELETE à la page PHP `ma-page.php`. Nous définissons la méthode HTTP `DELETE` en utilisant l'option `method` de l'objet de configuration de la requête.
+
+Nous spécifions également le type de contenu de la charge utile à l'aide de l'en-tête `Content-Type`. Dans cet exemple, nous utilisons le format JSON pour la charge utile.
+
+Ensuite, nous définissons la charge utile elle-même en utilisant l'option `body` et en convertissant notre objet JavaScript `{id: 1234}` en une chaîne JSON à l'aide de `JSON.stringify()`.
+
+Enfin, nous traitons la réponse de la requête à l'aide des fonctions `then()` et `catch()`. Dans cet exemple, nous supposons que la réponse est également au format JSON et nous affichons son contenu dans la console.
+
+
+
+

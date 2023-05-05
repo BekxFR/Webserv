@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/05 14:08:13 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/05 15:26:05 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,7 +171,7 @@ std::string UpdateFileNameifAlreadyExist(std::string UploadFileName)
 int	handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus, std::map<int, std::pair<std::string, std::string> >* MsgToSent)
 
 {
-	server_configuration *GoodServerConf;
+	server_configuration *GoodServerConf = NULL;
 	char buffer[2048];
 	int n = 0; 
 	int Port = 0;
@@ -232,7 +232,12 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			if (it->second == conn_sock)
 				Port = it->first;
 		}
+
+	//	std::cerr << "PORT apres set = '" << Port << "'" << std::endl;
 		GoodServerConf = getGoodServer(servers, &ServerRequest, Port);
+	//	std::cerr << "Serveur Port in initserv when checking good serv:" << std::endl;
+	//	for (std::vector<int>::iterator it = GoodServerConf->getPort().begin(); it != GoodServerConf->getPort().end(); it++)
+	//		std::cerr << *it << std::endl;
 		/********************************************************************/
 
 		std::cout << "\nREQUEST PARSED" << std::endl;
@@ -250,7 +255,10 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		if (CodeStatus == 200)
 		{
 			// std::cout << "\na1.3\n" << std::endl;
-			CodeStatus = isMethodAuthorised(ServerRequest.getMethod(), GoodServerConf, ServerRequest.getRequestURI()); // on sait s'ils ont le droit
+			if (!isMethodPossible(ServerRequest.getMethod()))
+				CodeStatus = 400;
+			else
+				CodeStatus = isMethodAuthorised(ServerRequest.getMethod(), GoodServerConf, ServerRequest.getRequestURI()); // on sait s'ils ont le droit
 			if (CodeStatus != 200)
 				UnauthorizedSocket.push_back(conn_sock);
 		}
@@ -258,24 +266,18 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 
 		// std::cout << "\nMETHOD REQUETE " << ServerRequest.getMethod() << std::endl;
 		// std::cout << "\nROOT " << GoodServerConf->getRoot() << std::endl;
-		if (((ServerRequest.getMethod() == "GET" || ServerRequest.getMethod() == "DELETE") || (ServerRequest.getMethod() == "POST" && request.find("WebKitFormBoundary") == std::string::npos)) && CodeStatus == 200)
+		if (((ServerRequest.getMethod() == "GET" || ServerRequest.getMethod() == "DELETE") || (ServerRequest.getMethod() == "POST" && request.find("WebKitFormBoundary") == std::string::npos)) && checkStatus(CodeStatus))
 		{
+			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 			// std::cout << "\na1.4\n" << std::endl;
 			if (GoodServerConf->getClientMaxBodySize() < ServerRequest.getContentLength())
-			{
-				// std::cout << "\na1.6\n" << std::endl;
-				server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 				ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 413, MsgToSent);
-				return 0;
-			}
 			else
-			{
-				server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 				ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
-				return 0;
-			}
+			return 0;
+
 		}
-		else if (ServerRequest.getMethod() == "POST")
+		else if (ServerRequest.getMethod() == "POST" && checkStatus(CodeStatus))
 		{
 			// std::cout << "\na1.5\n" << std::endl;
 			// std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
@@ -300,6 +302,15 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		{
 			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 			ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
+			return 0;
+		}
+		else
+		{
+			std::cerr << "je dl mais je dois pas" << std::endl;
+			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
+			ServerResponse.setStatusCode(CodeStatus);
+			ServerResponse.createResponse(GoodServerConf, "", ServerRequest, 0, 0);
+			MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(ServerResponse.getServerResponse(), "")));
 			return 0;
 		}
 	}
@@ -451,7 +462,9 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 {
 	struct sockaddr_in addr[Ports.size()];
 	socklen_t addrlen[Ports.size()];
-	int conn_sock, nfds, epollfd;
+	int	conn_sock = -1;
+	int	nfds = -1;
+	int	epollfd = -1;
 	int listen_sock[Ports.size()];
 	std::multimap<int, int> StorePort;
 	int CodeStatus = 0;
@@ -484,7 +497,6 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 		int val = 1;
 		if (setsockopt(listen_sock[i], SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0) {
 			std::fprintf(stderr, "Error: setsockopt() failed: %s\n", strerror(errno));
-			// return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
 		}
 		if (bind(listen_sock[i], (struct sockaddr *) &addr[i], addrlen[i]) == -1)
 		{
@@ -493,7 +505,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 				if (1)
 					std::cout << "\033[1;31m" << "Port " << Ports[i] << " is already listening" << "\033[0m\n" << std::endl;
 				// std::fprintf(stderr, "Error: bind failed: %s\n", strerror(errno));
-				// return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
+				// return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 			}
 		}
 		else
@@ -502,7 +514,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 		}
 		if (listen(listen_sock[i], SOMAXCONN) == -1) {
 			std::fprintf(stderr, "Error: listen failed: %s\n", strerror(errno));
-			// return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
+			// return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 		}
 		// open_ports.push_back(listen_sock[i]);
 	}
@@ -516,7 +528,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	epollfd = epoll_create1(0);
 	if (epollfd == -1) {
 		std::fprintf(stderr, "Error: epoll_create1: %s\n", strerror(errno));
-		return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
+		return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 	}
 	open_ports.push_back(epollfd);
 	
@@ -530,14 +542,16 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
  		if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock[i], &ev) == -1) 
 		{
 			std::fprintf(stderr, "Error: epoll_ctl: listen_sock, %s\n", strerror(errno));
-			return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
+			return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 		}
 	}
 	for (;;) {
+		if (g_code == 42)
+			return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 		nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
 		if (nfds == -1) {
 			std::fprintf(stderr, "Error: epoll_wait: %s\n", strerror(errno));
-			return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
+			return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 		}
 		// std::cout << "\nWAIT TIME" << std::endl;
 		for (int n = 0; n < nfds; ++n)
@@ -559,17 +573,17 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					if (conn_sock == -1) {
 						CodeStatus = 500;
 						std::fprintf(stderr, "Error: server accept failed: %s\n", strerror(errno));
-						// return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
+						// return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 					}
 					if (setnonblocking(conn_sock) == -1) {
 						std::fprintf(stderr, "Error: setnonblocking: %s\n", strerror(errno));
-						// return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
+						// return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 					}
 					ev.events = EPOLLIN | EPOLLOUT;
 					ev.data.fd = conn_sock;
 					if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock, &ev) == -1) {
 						std::fprintf(stderr, "Error: epoll_ctl: conn_sock, %s\n", strerror(errno));
-						// return(CloseSockets(listen_sock, addr, Ports), EXIT_FAILURE);
+						// return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 					}
 				}
 			}
@@ -584,7 +598,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 				{
 					for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
 					{
-						std::cout << "\nit2 : " << *it2 << " events fd : " << events[n].data.fd << std::endl;
+						// std::cout << "\nit2 : " << *it2 << " events fd : " << events[n].data.fd << std::endl;
 						if (*it2 == events[n].data.fd)
 						{
 							open_ports.erase(it2);
@@ -695,37 +709,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 						send(it->first, it->second.first.c_str() , it->second.first.size(), 0);
 						MsgToSent.erase(it);
 					}
-					
 				}
-
-				// for (std::map<int, std::pair<std::string, std::string> >::iterator it = MsgToSent.begin(); it != MsgToSent.end(); it++) 
-				// {
-				// 	if (events[n].data.fd == it->first)
-				// 	{
-				// 		// std::cout << "\nAS-TU ENVOYE? " << it->second.c_str() << std::endl;
-				// 		if (it->second.size() < 500000)
-				// 		{
-				// 			std::cout << "\n< 500000 " << std::endl;
-				// 			// std::cout << it->first << std::endl; 
-				// 			// std::cout << it->second << std::endl;
-				// 			std::cout.write(it->second.c_str(), it->second.size());
-				// 			send(it->first, it->second.c_str() , it->second.size(), 0);
-				// 			MsgToSent.erase(it);
-				// 			// it->first = 0;
-				// 			// it->second = "";
-				// 			break;
-				// 		}
-				// 		else
-				// 		{
-				// 			std::cout << "\n> 500000 " << std::endl;
-				// 			// std::cout << it->first << std::endl; 
-				// 			// std::cout << "\na0.1\n" << std::endl;
-				// 			errno = 0;
-				// 			std::cout.write(it->second.substr(0, 500000).c_str(), 50000);
-				// 			send(it->first, it->second.substr(0, 500000).c_str(), 500000, 0);
-				// 			break;
-				// 		}
-				// }
 			}
 			
 		}

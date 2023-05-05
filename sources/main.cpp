@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/04 18:47:52 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/05 15:03:46 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,20 +20,10 @@ void sigint_handler(int signum)
     std::cerr << "\nSignal SIGINT (" << signum << ") received." << std::endl;
 	for (size_t i = 0; i < open_ports.size(); i++)
 	{
-		close(open_ports[i]);
+		if (open_ports[i] != -1)
+			close(open_ports[i]);
 	}
 	g_code = 42;
-	// close(8083); // Port 1
-	// close(8086); // Port 2
-	// close(3); // listen_socket 1
-	// close(4); // listen_socket 2
-	// close(5); // epoll_create1
-	// close(6); // accept AF_INET socket conn_sock ev.data.fd Conf1
-	// close(7); // accept AF_INET socket conn_sock ev.data.fd Conf1
-	// close(8); // accept AF_INET socket conn_sock ev.data.fd Conf2
-	// close(9); // accept AF_INET socket conn_sock ev.data.fd Conf2
-	// close(0); // bind listen
-	// close(1); // nfds
 }
 
 int main(int argc, char const **argv)

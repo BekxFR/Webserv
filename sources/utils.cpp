@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:20:43 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 19:35:33 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/05 15:15:47 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,15 +53,12 @@ void PrintServer(std::vector<server_configuration*> servers)
 	}
 }
 
-void	CloseSockets(int *listen_sock, sockaddr_in *addr, std::vector<int> Ports)
+void	CloseSockets(int *listen_sock, std::vector<int> Ports)
 {
-	int tablen = Ports.size();
-	
-	for (int i = 0; i < tablen; i++)
+	for (size_t i = 0; i < Ports.size(); i++)
 	{
-		close(listen_sock[i]);
-		close(Ports[i]);
-		close(addr[i].sin_port);
+		if (listen_sock[i] != -1)
+			close(listen_sock[i]);
 	}
 }
 
@@ -75,6 +72,19 @@ void	DeleteServers(std::vector<server_configuration*> servers)
 	}
 }
 
+bool	checkStatus(int status)
+{
+	if (status >= 200 && status <= 206)
+		return (1);
+	return (0);
+}
+
+bool	isMethodPossible(std::string method)
+{
+	if (method == "POST" || method == "GET" || method == "DELETE")
+		return (1);
+	return (0);
+}
 
 bool	is_dir(const char* path, server_response& sr)
 {

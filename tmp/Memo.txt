@@ -1,0 +1,33 @@
+Voici quelques étapes générales qui pourraient être utiles lors du démarrage d'un projet de serveur Web :
+
+Familiarisez-vous avec les concepts et technologies de base liés aux serveurs Web, tels que HTTP, TCP/IP et les sockets.
+
+Choisissez une bibliothèque ou un framework de serveur Web à utiliser, comme Boost.Asio ou CPPREST SDK, et apprenez à l'utiliser efficacement.
+
+Planifiez l'architecture et la conception du serveur en tenant compte de facteurs tels que l'évolutivité, la sécurité et les performances.
+
+Implémentez les fonctionnalités du serveur, y compris la gestion des demandes, le traitement des données et la diffusion du contenu.
+
+Testez minutieusement le serveur, à la fois en termes de fonctionnalités et de performances, à l'aide d'une gamme de cas de test et de scénarios.
+
+Déployez le serveur, localement ou sur une plate-forme d'hébergement distante, et surveillez ses performances et sa stabilité.
+
+Il est important de noter que la création d'un serveur Web peut être une tâche complexe et difficile, et peut nécessiter des connaissances et des compétences avancées en programmation et en développement de logiciels. Il est donc recommandé de demander conseil et soutien à des développeurs expérimentés ou à des ressources en ligne, telles que des forums et des tutoriels, pour assurer le succès de votre projet.
+
+// setsockopt
+
+La fonction setsockopt est utilisée pour configurer les options de socket. Elle permet de définir des propriétés pour une socket spécifique, comme le réutilisation de l'adresse IP et du port.
+
+L'appel à la fonction setsockopt que vous avez fourni prend cinq arguments :
+
+1. listen_sock[i] est la socket pour laquelle nous voulons définir une option. Il s'agit donc d'un entier représentant un descripteur de fichier correspondant à la socket.
+
+2. SOL_SOCKET est le niveau auquel l'option doit être définie. Dans ce cas, il s'agit du niveau de socket.
+
+3. SO_REUSEPORT est l'option que nous voulons définir. Dans ce cas, il s'agit de l'option qui permet de réutiliser un port local sans attendre que celui-ci soit libéré.
+
+4. &val est un pointeur vers une mémoire tampon contenant la nouvelle valeur de l'option. Dans ce cas, elle pointe vers la variable val.
+
+5. sizeof(val) est la taille de la mémoire tampon pointée par &val. Il s'agit de la taille d'une variable de type int.
+
+En résumé, la fonction setsockopt configure l'option SO_REUSEPORT pour la socket listen_sock[i], en lui attribuant la valeur contenue dans la variable val. Cette option permet de réutiliser un port local sans attendre que celui-ci soit libéré.

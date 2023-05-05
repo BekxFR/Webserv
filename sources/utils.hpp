@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:28:11 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 15:51:57 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/05 15:16:10 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ void	printMap(std::map<T, T> map)
 void		PrintServer(std::vector<server_configuration*> servers);
 
 // Tools
+bool		checkStatus(int status);
+bool		isMethodPossible(std::string method);
 bool		is_dir(const char* path, server_response& sr);
 std::string	prev_link(std::string path);
 bool		isGenerallyAuthorised(std::string MethodUsed, server_configuration *server, std::string ite);
@@ -36,7 +38,7 @@ std::string	itos(int nb);
 std::string	readingFileEP( std::string file );
 
 //Cleaning
-void		CloseSockets(int *listen_sock, sockaddr_in *addr, std::vector<int> Ports);
+void		CloseSockets(int *listen_sock, std::vector<int> Ports);
 void		DeleteServers(std::vector<server_configuration*> servers);
 
 #endif
