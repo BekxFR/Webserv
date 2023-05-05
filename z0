@@ -1,164 +1,17 @@
-[1;32mPort 8083 is listening[0m
+GNU gdb (Ubuntu 12.1-0ubuntu1~22.04) 12.1
+Copyright (C) 2022 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
 
-[1;32mPort 8080 is listening[0m
-
-[1;31mPort 8083 is already listening[0m
-
-[1;32mPort 8084 is listening[0m
-
-[1;32mPort 8099 is listening[0m
-
-CON SOCK 9
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8080
-SERVERNAME : webserv.com
-HOST : localhost:8080
-I : 1
-J : 0
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8084
-
-PORT : 8080
-GOODSERVER : 8099
-RealPath : ./site/
-RealPathIndex : ./site/index.html
-PathToStore : 
-CON SOCK 10
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8080
-SERVERNAME : webserv.com
-HOST : localhost:8080
-I : 1
-J : 0
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8084
-
-PORT : 8080
-GOODSERVER : 8099
-RealPath : ./site/happysheep.gif
-RealPathIndex : ./site/happysheep.gif
-PathToStore : 
-./site/happysheep.gif
-./site/happysheep.gif
-./site/happysheep.gif
-./site/happysheep.gif
-CON SOCK 12
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8080
-SERVERNAME : webserv.com
-HOST : localhost:8080
-I : 1
-J : 0
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8084
-
-PORT : 8080
-GOODSERVER : 8099
-RealPath : ./site/favicon.ico
-RealPathIndex : ./site/favicon.ico
-PathToStore : 
-CON SOCK 13
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8080
-SERVERNAME : webserv.com
-HOST : localhost:8080
-I : 1
-J : 0
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8084
-
-PORT : 8080
-GOODSERVER : 8099
-RealPath : ./site/pg1.php
-RealPathIndex : ./site/pg1.php
-PathToStore : 
-CON SOCK 14
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8080
-SERVERNAME : webserv.com
-HOST : localhost:8080
-I : 1
-J : 0
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8084
-
-PORT : 8080
-GOODSERVER : 8099
-RealPath : ./site/happysheep.gif
-RealPathIndex : ./site/happysheep.gif
-PathToStore : 
-./site/happysheep.gif
-./site/happysheep.gif
-./site/happysheep.gif
-./site/happysheep.gif
-CON SOCK 15
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8080
-SERVERNAME : webserv.com
-HOST : localhost:8080
-I : 1
-J : 0
-
-PORT : 8080
-GOODSERVER : 8083
-
-PORT : 8080
-GOODSERVER : 8084
-
-PORT : 8080
-GOODSERVER : 8099
-RealPath : ./site/list.php
-RealPathIndex : ./site/list.php
-PathToStore : 
-ERRNO : 9
-ERRNO : 9
-ERRNO : 9
-ERRNO : 9
-ERRNO : 9
-ERRNO : 9
-
-FIN DU PROGRAMME
+For help, type "help".
+Type "apropos word" to search for commands related to "word".
+[?2004h(gdb) file [K[K./we[?2004l[?2004h(gdb) exit
+[?2004l

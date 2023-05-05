@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/05 13:07:46 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/05 14:08:13 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,13 +235,13 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		GoodServerConf = getGoodServer(servers, &ServerRequest, Port);
 		/********************************************************************/
 
-		// std::cout << "\nREQUEST PARSED" << std::endl;
-		// std::cout << ServerRequest << std::endl;
-		// std::cout << "\nFIN REQUEST PARSED" << std::endl;
+		std::cout << "\nREQUEST PARSED" << std::endl;
+		std::cout << ServerRequest << std::endl;
+		std::cout << "\nFIN REQUEST PARSED" << std::endl;
 
-		// std::cout << "\nCONF\n" << std::endl; 
-		// std::cout << *GoodServerConf << std::endl;
-		// std::cout << "\nFIN CONF" << std::endl;
+		std::cout << "\nCONF\n" << std::endl; 
+		std::cout << *GoodServerConf << std::endl;
+		std::cout << "\nFIN CONF" << std::endl;
 		// exit(0);
 		
 		/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
@@ -582,13 +582,17 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 				int error = handle_connection(servers, events[n].data.fd, StorePort, CodeStatus, &MsgToSent);
 				if (error)
 				{
+					for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
+					{
+						std::cout << "\nit2 : " << *it2 << " events fd : " << events[n].data.fd << std::endl;
+						if (*it2 == events[n].data.fd)
+						{
+							open_ports.erase(it2);
+							break;
+						}
+					}
 					epoll_ctl(epollfd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
 					close (events[n].data.fd);
-					for (std::vector < int >::iterator it = open_ports.begin(); it != open_ports.end(); it++)
-					{
-						if (*it == events[n].data.fd)
-							open_ports.erase(it);
-					}
 				}
 				// events[n].events |= EPOLLOUT;
 				// if (epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &ev) == -1) {
@@ -613,13 +617,17 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 							// std::cout << "\nFIN" << std::endl;
 							if (send(it->first, it->second.first.c_str() , it->second.first.size(), 0) == -1)
 							{
-								epoll_ctl(epollfd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
-								close (events[n].data.fd);
-								for (std::vector < int >::iterator it = open_ports.begin(); it != open_ports.end(); it++)
+								std::cout << "\nsend 1 pb" << std::endl;
+								for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
 								{
-									if (*it == events[n].data.fd)
-										open_ports.erase(it);
+									if (*it2 == it->first)
+									{
+										open_ports.erase(it2);
+										break;
+									}
 								}
+								epoll_ctl(epollfd, EPOLL_CTL_DEL, it->first, &ev);
+								close (it->first);
 							}
 							PercentageSent.insert(std::make_pair(it->first, 0));
 						}
@@ -639,13 +647,17 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 								{
 									if (send(it->first, "\r\n\r\n", 4, 0) == -1)
 									{
-										epoll_ctl(epollfd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
-										close (events[n].data.fd);
-										for (std::vector < int >::iterator it = open_ports.begin(); it != open_ports.end(); it++)
+										std::cout << "\nsend 2 pb" << std::endl;
+										for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
 										{
-											if (*it == events[n].data.fd)
-												open_ports.erase(it);
+											if (*it2 == it->first)
+											{
+												open_ports.erase(it2);
+												break;
+											}
 										}
+										epoll_ctl(epollfd, EPOLL_CTL_DEL, it->first, &ev);
+										close (it->first);
 									}
 									PercentageSent.erase(PercentageSent.find(it->first));
 									MsgToSent.erase(it);
@@ -656,13 +668,17 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 								{
 									if (send(it->first, chunk, bytes_read, 0) == -1)
 									{
-										epoll_ctl(epollfd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
-										close (events[n].data.fd);
-										for (std::vector < int >::iterator it = open_ports.begin(); it != open_ports.end(); it++)
+										std::cout << "\nsend 3 pb" << std::endl;
+										for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
 										{
-											if (*it == events[n].data.fd)
-												open_ports.erase(it);
+											if (*it2 == it->first)
+											{
+												open_ports.erase(it2);
+												break;
+											}
 										}
+										epoll_ctl(epollfd, EPOLL_CTL_DEL, it->first, &ev);
+										close (it->first);
 									}
 									PercentageSent[it->first] = PercentageSent[it->first] + bytes_read;
 									file.close();
