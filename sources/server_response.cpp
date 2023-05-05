@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/04 19:31:20 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/05 11:39:24 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -706,9 +706,17 @@ void	server_response::createResponse(server_configuration * server, std::string 
 					if (_isCgi == 0)
 						response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request, server, IdSession);
 					if (MsgSize == 0)
+					{
 						response << addBody(file);
+						break;
+					}
 					else
+					{
 						response << "Content-Length: " << MsgSize << "\r\n\r\n";
+						_ServerResponse = response.str();
+						return ;
+					}
+					
 				}
 				case 201:
 				{

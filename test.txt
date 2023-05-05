@@ -1,17 +1,22 @@
-std::map<int, std::pair<std::string, std::string>>::iterator it = sourceMap.find(1);
-if (it != sourceMap.end() && it->first == anotherInt) {
-    // Key matches anotherInt, do something
-    std::cout << "Key matches anotherInt!" << std::endl;
-}
-
-
-			std::ifstream file(_finalPath.c_str()); //500000 la taille qu'on veut
-			if (!file.is_open())
-				_status_code = 403;
-			file.seekg(0, std::ios::end);
-			int FileSize = file.tellg();
-			file.seekg(0, std::ios::beg);
-			if (FileSize < 500000)
-				buffer << file.rdbuf();
-			else 
-				return FileSize;
+	n = recv(conn_sock, buffer, 2048, MSG_DONTWAIT);
+	if (n <= 0)
+	{
+		// std::cout << "ERRNO : " << errno << std::endl;
+		return 1;
+	}
+	// std::cout << "\nPASSE LA FIN " << std::endl;
+	std::string request;
+	request.append(buffer, n);
+	memset(buffer, 0, n);
+	while (n >= 2048)
+	{
+		// std::cout << "\nN VALUE : " << n << std::endl;
+		n = recv(conn_sock, buffer, n, MSG_DONTWAIT);
+		// std::cout << "\nN VALUE after read : " << n << std::endl;
+		if (n > 0)
+		{
+			request.append(buffer, n);
+			memset(buffer, 0, n);
+		}
+	}
+	

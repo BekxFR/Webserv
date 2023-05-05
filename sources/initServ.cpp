@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/04 20:55:33 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/05 11:31:52 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -445,7 +445,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	int CodeStatus = 0;
 	std::map<int, std::pair<std::string, std::string> > MsgToSent;
 	std::string PartialFileSent;
-	
+	static std::map<int, int> PercentageSent;
 
 	signal(SIGPIPE, SIG_IGN);
 
@@ -588,23 +588,50 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					if (it->second.second.size() > 0)
 					{
 						std::cout << "\nTEST SEND GROS FICHIER" << std::endl;
-						if (strlen(itos(atoi(it->second.first.c_str())).c_str()) != it->second.first.size())
-						{
-							send(it->first, it->second.first.c_str() , it->second.first.size(), 0);
-						}
 						std::cout << it->second.second.c_str() << std::endl;
-						std::ifstream file(it->second.second.c_str()); 
-						if (!file.is_open())
+						if (PercentageSent.find(it->first) == PercentageSent.end())
 						{
-							// il faut creer une autre struct en static avec le socket et le nombre qui a deja ete lu
-							// plutot que mon strlen(........) bizarre et changer le content en chiffre
+							std::cout << "\nSENT THE HEADER OF A BIG MESSAGE" << std::endl;
+							std::cout.write(it->second.first.c_str() , it->second.first.size());
+							std::cout << "\nFIN" << std::endl;
+							send(it->first, it->second.first.c_str() , it->second.first.size(), 0);
+							PercentageSent.insert(std::make_pair(it->first, 0));
 						}
-						MsgToSent.erase(it);
+						else
+						{
+							std::cout << "SENT THE CONTENT OF A BIG MESSAGE" << std::endl;
+							std::ifstream file(it->second.second.c_str(), std::ios::binary);
+							if (file.is_open())
+							{
+								char chunk[500000];
+								file.seekg(PercentageSent[it->first], std::ios::beg);
+								file.read(chunk, 500000);
+								std::cout << "PERCENTAGE READ : " << PercentageSent[it->first] << std::endl;
+								std::streamsize bytes_read = file.gcount();
+								std::cout << "bytes_read : " << bytes_read << std::endl;
+								if (bytes_read == 0)
+								{
+									send(it->first, "\r\n\r\n", 4, 0);
+									PercentageSent.erase(PercentageSent.find(it->first));
+									MsgToSent.erase(it);
+									file.close();
+        			    			break; // end of file
+        						}
+								else
+								{
+									send(it->first, chunk, bytes_read, 0);
+									PercentageSent[it->first] = PercentageSent[it->first] + bytes_read;
+									file.close();
+								}
+							}
+						}
 					}
 					else
 					{
 						std::cout << "\nTEST SEND PETIT FICHIER" << std::endl;
 						std::cout.write(it->second.first.c_str(), it->second.first.size());
+						std::cout << "\n FIN TEST SEND PETIT FICHIER" << std::endl;
+
 						send(it->first, it->second.first.c_str() , it->second.first.size(), 0);
 						MsgToSent.erase(it);
 					}

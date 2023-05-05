@@ -1,0 +1,56 @@
+[1;32mPort 8083 is listening[0m
+
+[1;32mPort 8080 is listening[0m
+
+[1;31mPort 8083 is already listening[0m
+
+[1;32mPort 8084 is listening[0m
+
+[1;32mPort 8099 is listening[0m
+
+RealPath : ./site/upload/42.jpg
+RealPathIndex : ./site/upload/42.jpg
+PathToStore : 
+
+TEST SEND GROS FICHIER
+./site/upload/42.jpg
+
+SENT THE HEADER OF A BIG MESSAGE
+HTTP/1.1 200 OK
+Content-Type: image/jpeg
+Content-Length: 740872
+
+
+FIN
+
+TEST SEND GROS FICHIER
+./site/upload/42.jpg
+SENT THE CONTENT OF A BIG MESSAGE
+PERCENTAGE READ : 0
+bytes_read : 500000
+
+TEST SEND GROS FICHIER
+./site/upload/42.jpg
+SENT THE CONTENT OF A BIG MESSAGE
+PERCENTAGE READ : 500000
+bytes_read : 240872
+
+TEST SEND GROS FICHIER
+./site/upload/42.jpg
+SENT THE CONTENT OF A BIG MESSAGE
+PERCENTAGE READ : 740872
+bytes_read : 0
+RealPath : ./site/upload/teSTEUR.txt
+RealPathIndex : ./site/upload/teSTEUR.txt
+PathToStore : 
+
+TEST SEND PETIT FICHIER
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Content-Length: 20
+
+Je m'appelle mathieu
+
+ FIN TEST SEND PETIT FICHIER
+
+FIN DU PROGRAMME
