@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/04 19:46:00 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/05 14:37:41 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -397,9 +397,7 @@ std::multimap<int, int>	ChangeOrKeepPort(std::multimap<int, int>* StorePort, int
 		if (it->second == conn_sock)
 		{
 	//		std::cout << "RETURN CHANGE OR KEEP" << std::endl;
-			StorePort->erase(it); //j'ai ajoute au lieu de return
-			break; // same
-	//		return (*StorePort);
+			return (*StorePort);
 		}
 	}
 	// std::cout << "shoud insert" << std::endl;
