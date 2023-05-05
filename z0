@@ -8,49 +8,157 @@
 
 [1;32mPort 8099 is listening[0m
 
-RealPath : ./site/upload/42.jpg
-RealPathIndex : ./site/upload/42.jpg
+CON SOCK 9
+
+PORT : 8080
+GOODSERVER : 8083
+
+PORT : 8080
+GOODSERVER : 8080
+SERVERNAME : webserv.com
+HOST : localhost:8080
+I : 1
+J : 0
+
+PORT : 8080
+GOODSERVER : 8083
+
+PORT : 8080
+GOODSERVER : 8084
+
+PORT : 8080
+GOODSERVER : 8099
+RealPath : ./site/
+RealPathIndex : ./site/index.html
 PathToStore : 
+CON SOCK 10
 
-TEST SEND GROS FICHIER
-./site/upload/42.jpg
+PORT : 8080
+GOODSERVER : 8083
 
-SENT THE HEADER OF A BIG MESSAGE
-HTTP/1.1 200 OK
-Content-Type: image/jpeg
-Content-Length: 740872
+PORT : 8080
+GOODSERVER : 8080
+SERVERNAME : webserv.com
+HOST : localhost:8080
+I : 1
+J : 0
 
+PORT : 8080
+GOODSERVER : 8083
 
-FIN
+PORT : 8080
+GOODSERVER : 8084
 
-TEST SEND GROS FICHIER
-./site/upload/42.jpg
-SENT THE CONTENT OF A BIG MESSAGE
-PERCENTAGE READ : 0
-bytes_read : 500000
-
-TEST SEND GROS FICHIER
-./site/upload/42.jpg
-SENT THE CONTENT OF A BIG MESSAGE
-PERCENTAGE READ : 500000
-bytes_read : 240872
-
-TEST SEND GROS FICHIER
-./site/upload/42.jpg
-SENT THE CONTENT OF A BIG MESSAGE
-PERCENTAGE READ : 740872
-bytes_read : 0
-RealPath : ./site/upload/teSTEUR.txt
-RealPathIndex : ./site/upload/teSTEUR.txt
+PORT : 8080
+GOODSERVER : 8099
+RealPath : ./site/happysheep.gif
+RealPathIndex : ./site/happysheep.gif
 PathToStore : 
+./site/happysheep.gif
+./site/happysheep.gif
+./site/happysheep.gif
+./site/happysheep.gif
+CON SOCK 12
 
-TEST SEND PETIT FICHIER
-HTTP/1.1 200 OK
-Content-Type: text/plain
-Content-Length: 20
+PORT : 8080
+GOODSERVER : 8083
 
-Je m'appelle mathieu
+PORT : 8080
+GOODSERVER : 8080
+SERVERNAME : webserv.com
+HOST : localhost:8080
+I : 1
+J : 0
 
- FIN TEST SEND PETIT FICHIER
+PORT : 8080
+GOODSERVER : 8083
+
+PORT : 8080
+GOODSERVER : 8084
+
+PORT : 8080
+GOODSERVER : 8099
+RealPath : ./site/favicon.ico
+RealPathIndex : ./site/favicon.ico
+PathToStore : 
+CON SOCK 13
+
+PORT : 8080
+GOODSERVER : 8083
+
+PORT : 8080
+GOODSERVER : 8080
+SERVERNAME : webserv.com
+HOST : localhost:8080
+I : 1
+J : 0
+
+PORT : 8080
+GOODSERVER : 8083
+
+PORT : 8080
+GOODSERVER : 8084
+
+PORT : 8080
+GOODSERVER : 8099
+RealPath : ./site/pg1.php
+RealPathIndex : ./site/pg1.php
+PathToStore : 
+CON SOCK 14
+
+PORT : 8080
+GOODSERVER : 8083
+
+PORT : 8080
+GOODSERVER : 8080
+SERVERNAME : webserv.com
+HOST : localhost:8080
+I : 1
+J : 0
+
+PORT : 8080
+GOODSERVER : 8083
+
+PORT : 8080
+GOODSERVER : 8084
+
+PORT : 8080
+GOODSERVER : 8099
+RealPath : ./site/happysheep.gif
+RealPathIndex : ./site/happysheep.gif
+PathToStore : 
+./site/happysheep.gif
+./site/happysheep.gif
+./site/happysheep.gif
+./site/happysheep.gif
+CON SOCK 15
+
+PORT : 8080
+GOODSERVER : 8083
+
+PORT : 8080
+GOODSERVER : 8080
+SERVERNAME : webserv.com
+HOST : localhost:8080
+I : 1
+J : 0
+
+PORT : 8080
+GOODSERVER : 8083
+
+PORT : 8080
+GOODSERVER : 8084
+
+PORT : 8080
+GOODSERVER : 8099
+RealPath : ./site/list.php
+RealPathIndex : ./site/list.php
+PathToStore : 
+ERRNO : 9
+ERRNO : 9
+ERRNO : 9
+ERRNO : 9
+ERRNO : 9
+ERRNO : 9
 
 FIN DU PROGRAMME
