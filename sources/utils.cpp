@@ -3,16 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:20:43 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/04 17:33:19 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/05 15:15:47 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils.hpp"
 
-extern std::vector<int> open_ports;
 
 std::string	itos(int nb)
 {
@@ -54,25 +53,13 @@ void PrintServer(std::vector<server_configuration*> servers)
 	}
 }
 
-void	CloseSockets(int *listen_sock, int epollfd, sockaddr_in *addr, std::vector<int> Ports)
+void	CloseSockets(int *listen_sock, std::vector<int> Ports)
 {
-	(void)addr;
-	(void)epollfd;
-	(void)Ports;
 	for (size_t i = 0; i < Ports.size(); i++)
 	{
 		if (listen_sock[i] != -1)
 			close(listen_sock[i]);
 	}
-//	for (int i = 0; i < tablen; i++)
-//	{
-//		close(listen_sock[i]);
-//		if (Ports[i] != -1)
-//			close(Ports[i]);
-//		close(addr[i].sin_port);
-//	}
-//	if (epollfd != -1)
-//		close(epollfd);
 }
 
 void	DeleteServers(std::vector<server_configuration*> servers)

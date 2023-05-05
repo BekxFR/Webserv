@@ -6,7 +6,7 @@
 #    By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/01 12:07:22 by chillion          #+#    #+#              #
-#    Updated: 2023/05/03 14:50:39 by mgruson          ###   ########.fr        #
+#    Updated: 2023/05/04 12:08:43 by mgruson          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -88,6 +88,9 @@ t2 : all
 
 t3 : all
 	$(VAL) ./${SOFT_NAME} sources/server.conf3
+
+t5 : all
+	$(VAL) ./${SOFT_NAME} sources/server.conf5
 	
 tc : tmp
 	$(VAL) ./${SOFT_NAME2} ./site/arbo-OLD2.php

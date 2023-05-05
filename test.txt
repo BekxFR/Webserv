@@ -1,1 +1,22 @@
-BENZEMA
+	n = recv(conn_sock, buffer, 2048, MSG_DONTWAIT);
+	if (n <= 0)
+	{
+		// std::cout << "ERRNO : " << errno << std::endl;
+		return 1;
+	}
+	// std::cout << "\nPASSE LA FIN " << std::endl;
+	std::string request;
+	request.append(buffer, n);
+	memset(buffer, 0, n);
+	while (n >= 2048)
+	{
+		// std::cout << "\nN VALUE : " << n << std::endl;
+		n = recv(conn_sock, buffer, n, MSG_DONTWAIT);
+		// std::cout << "\nN VALUE after read : " << n << std::endl;
+		if (n > 0)
+		{
+			request.append(buffer, n);
+			memset(buffer, 0, n);
+		}
+	}
+	

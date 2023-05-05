@@ -1,0 +1,84 @@
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./webserv sources/server.conf3
+[1;32mPort 8083 is listening[0m
+
+[1;32mPort 8080 is listening[0m
+
+[1;31mPort 8083 is already listening[0m
+
+[1;32mPort 8084 is listening[0m
+
+[1;32mPort 8099 is listening[0m
+
+CON SOCK 9
+
+PORT : 8084
+GOODSERVER : 8083
+
+PORT : 8084
+GOODSERVER : 8080
+
+PORT : 8084
+GOODSERVER : 8083
+
+PORT : 8084
+GOODSERVER : 8084
+SERVERNAME : webserv2.com
+HOST : localhost:8084
+I : 0
+J : 0
+
+PORT : 8084
+GOODSERVER : 8099
+
+REQUEST PARSED
+Method : GET
+RequestURI : /pg1.php
+ServerRequest : GET /pg1.php HTTP/1.1
+Host: localhost:8084
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9,fr;q=0.8
+Cookie: IdSession=1145974030
+
+
+
+
+FIN REQUEST PARSED
+
+CONF
+
+Server name : webserv2.com
+Root : ./site/
+Index : index.html
+Port : 8084
+Port : 8099
+Host : localhost
+Host : 127.0.0.1
+Cliend Body Limit : 1048576
+CGI (first = extension, second = root):
+
+
+***
+
+Location : 
+
+***
+
+
+
+FIN CONF
+RealPath : ./site/pg1.php
+RealPathIndex : ./site/pg1.php
+PathToStore : 
+
+FIN DU PROGRAMME

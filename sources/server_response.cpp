@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/04 19:46:38 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/05 15:18:23 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,7 +151,6 @@ void	server_response::addType()
 	_contentType.insert(std::make_pair<std::string, std::string>("3gp", "Content-Type: video/3gpp\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("3g2", "Content-Type: video/3gpp2\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("7z", "Content-Type: \r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("", "Content-Type: \r\n"));
 }
 
 std::string server_response::getType(std::string type)
@@ -461,7 +460,7 @@ bool	server_response::manageCgi(const server_request& Server_Request, server_con
 	return (0);
 }
 
-bool	server_response::AnswerGet(const server_request& Server_Request, server_configuration *server)
+int	server_response::AnswerGet(const server_request& Server_Request, server_configuration *server)
 {
 	if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
 	{
@@ -486,37 +485,28 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 			std::ifstream file(_finalPath.c_str());
 			if (!file.is_open())
 				_status_code = 403;
-			else
-			{
-				std::size_t chunk_size = 4096;
-				char chunk[chunk_size];
-				while(true)
-				{
-					file.read(chunk, chunk_size);
-					std::streamsize bytes_read = file.gcount();
-        			if (bytes_read == 0) {
-        			    break; // end of file
-        			}
-        			buffer.write(chunk, bytes_read);
-					if (g_code == 42)
-					{
-						_status_code = 500;
-						return (1);
-					}
-				}
-				// buffer << file.rdbuf();
-			}
+			file.seekg(0, std::ios::end);
+			int FileSize = file.tellg();
+			file.seekg(0, std::ios::beg);
+			if (FileSize < 500000)
+				buffer << file.rdbuf();
+			else 
+				return FileSize;
 		}
 		_content = buffer.str();
 	}
-	return (1);
+	return (0);
 }
 
-void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp, std::vector<std::pair<int, std::string> >* MsgToSent)
+void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp, std::map<int, std::pair<std::string, std::string> >* MsgToSent)
 {
 	if (StatusCodeTmp != 200)
 		_status_code = StatusCodeTmp;
 
+	
+	// std::cout << "\nTEST CONFIG" << std::endl;
+	// std::cout << *server << std::endl;
+	// std::cout << "FIN" << std::endl; 
 	/*	Ci-dessous, on genere un ID de session pour chaque nouvel utilisateur
 		et on verifie que si un ID est recu, c'est bien nous qui l'avons emis
 		pour renvoyer sinon une erreur 401 et un id_session a zero (a savoir 
@@ -538,7 +528,8 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			<< getRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) << "\r\n";
 			std::string response_str = response.str();
 			errno = 0;
-			MsgToSent->push_back(std::pair<int, std::string>(conn_sock, response_str)); // remplace sent
+			MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(response_str, "")));
+			// MsgToSent->push_back(std::pair<int, std::string>(conn_sock, response_str)); // remplace sent
 			errno = 0;
 	}
 	/*********************************************************************/
@@ -557,7 +548,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	// PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	// while (PathToStore.find("//") != std::string::npos)
 	// 	PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
-	if (0)
+	if (1)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
@@ -609,15 +600,25 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		manageCgi(Server_Request, server);
 	}
 	
+	std::map<int, std::pair<std::string, std::string> > MsgToSentTmp; // Je cree un TMP pour envoyer tout d'un coup apres au vrai objet.
+	MsgToSentTmp.insert(std::make_pair(conn_sock, std::make_pair("", ""))); // Ici, j'ajoute la conn_sock car on sait deja;
+	int MsgSize = 0;
 	// std::cout << "\n TEST : " << Server_Request.getMethod() << std::endl;
 	std::stringstream response;
 	if ((Server_Request.getMethod() == "GET" || Server_Request.getMethod() == "POST") && checkStatus(_status_code))
 	{
 		// std::cout << "\nGETMETHOD SERVER_RESPONSE\n" << std::endl;
 		if (_status_code == 200)
-			AnswerGet(Server_Request, server);
-		createResponse(server, _content, Server_Request, id_session);
-		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
+		{
+			MsgSize = AnswerGet(Server_Request, server);
+			if (MsgSize)	
+				MsgToSentTmp[conn_sock].second = _finalPath;
+		}
+		createResponse(server, _content, Server_Request, id_session, MsgSize);
+		MsgToSentTmp[conn_sock].first = _ServerResponse;
+		std::map<int, std::pair<std::string, std::string> >::iterator it = MsgToSentTmp.find(conn_sock);
+		if (it != MsgToSentTmp.end())
+			MsgToSent->insert(*it);
 		return ;
 	}
 	else if (Server_Request.getMethod() == "DELETE" && checkStatus(_status_code))
@@ -626,18 +627,14 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 			this->delete_dir(_finalPath.c_str());
 		if (_status_code == 200)
 			_content = server->getErrorPage()[STATUS200].second;
-		createResponse(server, _content, Server_Request, id_session);
-		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
-
+		createResponse(server, _content, Server_Request, id_session, 0);
+		MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(_ServerResponse, "")));
 		return ;
 	}
 	else
 	{
-		createResponse(server, "", Server_Request, id_session);
-//		response << addHeader(STATUS400, server->getErrorPage().find(STATUS400)->second, Server_Request, server, id_session);
-//		response << addBody(server->getErrorPage()[STATUS400].second);
-//		_ServerResponse = response.str();
-		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
+		createResponse(server, "", Server_Request, id_session, 0);
+		MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(_ServerResponse, "")));
 		return ;
 	}
 	if (_isCgi)
@@ -723,7 +720,7 @@ void	server_response::addLength()
 	_content.insert(0, tmp);
 }
 
-void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request, int IdSession)
+void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request, int IdSession, int MsgSize)
 {
 	std::stringstream	response;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
@@ -760,10 +757,18 @@ void	server_response::createResponse(server_configuration * server, std::string 
 				{
 					if (_isCgi == 0)
 						response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request, server, IdSession);
-					// std::cout <<"\nTEST PR WARNING" << std::endl;
-					response << addBody(file);
-					// std::cout <<"\nTEST FIN" << std::endl;
-					break;
+					if (MsgSize == 0)
+					{
+						response << addBody(file);
+						break;
+					}
+					else
+					{
+						response << "Content-Length: " << MsgSize << "\r\n\r\n";
+						_ServerResponse = response.str();
+						return ;
+					}
+					
 				}
 				case 201:
 				{

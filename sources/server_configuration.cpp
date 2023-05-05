@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/04 11:35:37 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/05 12:16:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -555,7 +555,7 @@ size_t server_configuration::findClientMaxBodySize()
 				return (ClientBodySize);
 		}
 	}
-	return (1000000000);
+	return (1048576);
 }
 
 std::map<std::string, std::string> server_configuration::findLocation()
@@ -653,7 +653,8 @@ std::ostream&	server_configuration::printLoc(std::ostream &out)
 std::ostream&	operator<<(std::ostream &out, server_configuration &ServConfig)
 {
 	out << "Server name : " << ServConfig.getServerName() \
-		<< "\nRoot : " << ServConfig.getRoot();
+		<< "\nRoot : " << ServConfig.getRoot() \
+		<< "\nIndex : " << ServConfig.getIndex();
 		for (size_t i = 0; i < ServConfig.getPort().size(); i++)
 			out << "\nPort : " << ServConfig.getPort()[i];
 		for (size_t i = 0; i < ServConfig.getHost().size(); i++)
