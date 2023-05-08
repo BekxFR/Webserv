@@ -20,6 +20,8 @@ void sigint_handler(int signum)
 {
     std::cerr << "\nSignal SIGINT (" << signum << ") received." << std::endl;
 	closeSockets();
+	std::remove(".cgi-tmp");
+	std::remove(".upload");
 	g_code = 42;
 }
 

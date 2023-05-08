@@ -439,7 +439,7 @@ bool	server_response::manageCgi(const server_request& Server_Request, server_con
 	{
 		std::stringstream buffer;
 		if (_fileName == "")
-			_fileName = ".cgi-tmp.txt";
+			_fileName = ".cgi-tmp";
 		if (!doCgi(_finalPath,server))
 		{
 			std::ifstream	cgiContent(_fileName.data());
