@@ -168,7 +168,7 @@ int check_Host_Line(const std::string& str)
 	std::string::size_type host_end = str.find("\r\n\r\n", host_start);
 	tmpStr = str.substr(host_start + 8, host_end);
 	std::transform(tmpStr.begin(), tmpStr.end(), tmpStr.begin(), ::tolower);
-	if (str.find("host:") == std::string::npos)
+	if (tmpStr.find("host:") == std::string::npos)
 	{
 		std::cerr << "\nNO HOST IN ALL\n" << std::endl;
 		if (check_End_Line(tmpStr))
