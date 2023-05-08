@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   initServ.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/08 13:04:15 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/08 17:49:48 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,6 +149,15 @@ std::string UpdateFileNameifAlreadyExist(std::string UploadFileName)
 #include <cctype>
 #include <algorithm>
 
+bool check_Header_Size(const std::string& str)
+{
+	std::string::size_type header_end = str.find("\r\n\r\n");
+	std::string header = str.substr(0, header_end);
+	if (header.size() >= 4096)
+		return (1);
+	return (0);
+}
+
 bool check_End_Line(const std::string& str)
 {
 	if (str.find("\r\n\r\n") == std::string::npos)
@@ -168,7 +177,7 @@ int check_Host_Line(const std::string& str)
 	std::string::size_type host_end = str.find("\r\n\r\n", host_start);
 	tmpStr = str.substr(host_start + 8, host_end);
 	std::transform(tmpStr.begin(), tmpStr.end(), tmpStr.begin(), ::tolower);
-	if (str.find("host:") == std::string::npos)
+	if (tmpStr.find("host:") == std::string::npos)
 	{
 		std::cerr << "\nNO HOST IN ALL\n" << std::endl;
 		if (check_End_Line(tmpStr))
@@ -212,23 +221,6 @@ int check_Host_Line(const std::string& str)
 	if (ss.eof()) {
 		return (1);
 	}
-	// for(int i = 0; i < count; i++)
-	// 	std::getline(iss, line);
-	// count = 0;
-	// while (iss >> word)
-	// {
-	// 	if (count == 2)
-	// 		break ;
-	// 	if (count == 0 && (word == "host:" || word.size() > 5))
-	// 	{
-	// 		status = 1;
-	// 	}
-	// 	if (count == 1 && status == 1)
-	// 		return(0);
-	// 	count++;
-	// }
-	// if (count == 1 && status == 1)
-	// 	return (2);
 	return (1);
 }
 
@@ -325,7 +317,7 @@ int pre_Request_Parser(std::map<int, int>& RequestSocketStatus, int conn_sock, s
 			index_Status = 1;
 			add_Request_To_File(conn_sock, request);
 			new_Request = get_file_contents(conn_sock);
-			if (new_Request.size() >= 4096)
+			if (check_Header_Size(new_Request) == 1)
 				return (2);
 			status_Ref = check_Request_Value(new_Request, it->second);
 			if (status_Ref == 0)
@@ -342,7 +334,7 @@ int pre_Request_Parser(std::map<int, int>& RequestSocketStatus, int conn_sock, s
 				add_Request_To_File(conn_sock, request);
 			index_Status = 1;
 			new_Request = get_file_contents(conn_sock);
-			if (new_Request.size() >= 4096)
+			if (check_Header_Size(new_Request) == 1)
 				return (2);
 			status_Ref = check_Request_Value(new_Request, it->second);
 			if (status_Ref == 0)
@@ -358,7 +350,7 @@ int pre_Request_Parser(std::map<int, int>& RequestSocketStatus, int conn_sock, s
 			if (index_Status == 0)
 				add_Request_To_File(conn_sock, request);
 			new_Request = get_file_contents(conn_sock);
-			if (new_Request.size() >= 4096)
+			if (check_Header_Size(new_Request) == 1)
 				return (2);
 			status_Ref = check_Request_Value(new_Request, it->second);
 			if (status_Ref == 0)
@@ -439,21 +431,21 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		}
 	}
 	
-	// std::cout << "CON SOCK " << conn_sock << std::endl;
-	// static int k = 0;
-	// if (k < 5)
-	// {
-	// 	std::cout << "\nREQUEST ET SA SOCKET : " << conn_sock << "\n\n" << std::endl;
-	// 	std::cout.write(request.c_str(), 200);
-	// }
+	std::cout << "CON SOCK " << conn_sock << std::endl;
+	static int k = 0;
+	if (k < 5)
+	{
+		std::cout << "\nREQUEST ET SA SOCKET : " << conn_sock << "\n\n" << std::endl;
+		std::cout.write(request.c_str(), 200);
+	}
 
 	// std::cout << "\na1\n" << std::endl;
-	if (isNotBinaryData(SocketUploadFile, conn_sock))
+	if (SocketUploadFile.find(conn_sock) == SocketUploadFile.end())
 	{
 		
 		// std::cout << "\na1.1\n" << std::endl;
 		// std::cout << "\n\nRequest :\n\n" << request << std::endl;
-				std::cout << "\na1.1\n" << std::endl;
+		std::cout << "\na1.1\n" << std::endl;
 		std::cerr << "\n\nRequest :\n\n" << request << std::endl;
 		char str[10];
 		sprintf(str, "%d", conn_sock);
@@ -495,6 +487,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		else if (status == 0)
 			return 0;
 
+		std::cout << "\nTEST SERVER REQUEST : " << ServerRequest.getServerRequest() << std::endl;
 		/*	Cette partie permet de parser la requete afin de pouvoir travailler
 			sur chaque élément indépendemment */
 	//	server_request ServerRequest(request);
@@ -558,7 +551,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			// std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
 			if (GoodServerConf->getClientMaxBodySize() > ServerRequest.getContentLength())
 			{	
-				// std::cout << "\na1.5.1\n" << std::endl;
+				std::cout << "\nTEST POST REQUEST\n" << request << std::endl;
 				SocketUploadFile.insert (std::pair< int , std::string >(conn_sock, ""));
 				std::string PathToStore = getPathToStore(ServerRequest.getMethod(), GoodServerConf, ServerRequest.getRequestURI());
 				while (PathToStore.find("//") != std::string::npos)
