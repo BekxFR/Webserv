@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/05 19:29:38 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/08 15:17:09 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,39 +188,65 @@ int check_Host_Line(const std::string& str)
 	std::transform(tmpStr.begin(), tmpStr.end(), tmpStr.begin(), ::tolower);
 	if (str.find("host:") == std::string::npos)
 	{
+		std::cerr << "\nNO HOST IN ALL\n" << std::endl;
 		if (check_End_Line(tmpStr))
 			return(1);
 		return (2);
 	}
+	std::cerr << "\nREPAIR NO EOF AND HOST FIND\n" << std::endl;
 	std::istringstream ss(tmpStr);
 	std::istringstream iss(tmpStr);
 	while (std::getline(ss, line)) {
 		// if (line.size() < 3)
 		// 	return (2);
 		if (line.size() >= 5 && line.substr(0, 5) == "host:")
-			break ;
-		count++;
+		{
+			std::getline(iss, line);
+			std::cerr << "\nLINE BEGin BY HOST\n" << std::endl;
+			while (iss >> word)
+			{
+				std::cerr << "\nWORD END = " << word << std::endl;
+				if (count == 2)
+					break ;
+				if (count == 0)
+				{
+					if (word.size() > 5 && word.substr(0, 5) == "host:")
+						return (0);
+					if (word.size() == 5 && word.substr(0, 5) == "host:")
+						status = 1;
+					status = 1;
+				}
+				if (count == 1 && status == 1){
+					std::cerr << "\nTWO HOST STRINGs\n" << std::endl;
+					return(0);}
+				count++;
+			}
+			count = 0;
+		}
+		count = 0;
 	}
+	if (!check_End_Line(tmpStr))
+		return (2);
 	if (ss.eof()) {
 		return (1);
 	}
-	for(int i = 0; i < count; i++)
-		std::getline(iss, line);
-	count = 0;
-	while (iss >> word)
-	{
-		if (count == 2)
-			break ;
-		if (count == 0 && (word == "host:" || word.size() > 5))
-		{
-			status = 1;
-		}
-		if (count == 1 && status == 1)
-			return(0);
-		count++;
-	}
-	if (count == 1 && status == 1)
-		return (2);
+	// for(int i = 0; i < count; i++)
+	// 	std::getline(iss, line);
+	// count = 0;
+	// while (iss >> word)
+	// {
+	// 	if (count == 2)
+	// 		break ;
+	// 	if (count == 0 && (word == "host:" || word.size() > 5))
+	// 	{
+	// 		status = 1;
+	// 	}
+	// 	if (count == 1 && status == 1)
+	// 		return(0);
+	// 	count++;
+	// }
+	// if (count == 1 && status == 1)
+	// 	return (2);
 	return (1);
 }
 
@@ -491,6 +517,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			MsgToSent->push_back(std::pair<int, std::string>(conn_sock, "HTTP/1.1 400 Bad Request\nContent-Type: text/html\nContent-Length: 353\r\n\r\n<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>400 Bad Request</title></head><body style=\"background: #0e0e0e; height: 100%;text-align:center;color:white;\"><h1>400 Bad Request</h1><img src=\"https://http.cat/400\" style=\"display: block;margin: auto;\" alt=\"400 Bad Request\"><p>webserv</p></body></html>")); // remplace sent
 			remove(str);
 			RequestSocketStatus.clear();
+			RequestSocketStatus.erase(conn_sock);
 			return ;
 		}
 		if (status == 1)
@@ -500,6 +527,7 @@ void handle_connection(std::vector<server_configuration*> servers, int conn_sock
 			ServerRequest = server_request(fullRequest);
 			ServerRequest.request_parser();
 			remove(str);
+			RequestSocketStatus.erase(conn_sock);
 		}
 
 		/*	Cette partie permet de parser la requete afin de pouvoir travailler
