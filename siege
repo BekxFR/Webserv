@@ -1,0 +1,32 @@
+sur index.html
+
+Lifting the server siege...
+Transactions:		       30761 hits
+Availability:		      100.00 %
+Elapsed time:		       60.03 secs
+Data transferred:	    11547.25 MB
+Response time:		        0.05 secs
+Transaction rate:	      512.43 trans/sec
+Throughput:		      192.36 MB/sec
+Concurrency:		       24.95
+Successful transactions:       30761
+Failed transactions:	           0
+Longest transaction:	        0.09
+Shortest transaction:	        0.00
+
+sur page5
+
+Lifting the server siege...
+Transactions:		       35483 hits
+Availability:		       99.99 %
+Elapsed time:		       60.88 secs
+Data transferred:	        0.07 MB
+Response time:		        0.04 secs
+Transaction rate:	      582.84 trans/sec
+Throughput:		        0.00 MB/sec
+Concurrency:		       24.95
+Successful transactions:       35481
+Failed transactions:	           2
+Longest transaction:	        0.11
+Shortest transaction:	        0.01
+

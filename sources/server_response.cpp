@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/05 15:18:23 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/08 12:34:05 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ void	server_response::addType()
 	_contentType.insert(std::make_pair<std::string, std::string>("jad", "Content-Type: text/vnd.sun.j2me.app-descriptor\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jar", "Content-Type: application/java-archive\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jng", "Content-Type: image/x-jng\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("jpeg", "Content-Type: \r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("jpeg", "Content-Type: image/jpeg\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jpg", "Content-Type: image/jpeg\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("js", "Content-Type: image/jpeg\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("json", "Content-Type: application/json\r\n"));
@@ -150,7 +150,7 @@ void	server_response::addType()
 	_contentType.insert(std::make_pair<std::string, std::string>("zip", "Content-Type: application/zip\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("3gp", "Content-Type: video/3gpp\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("3g2", "Content-Type: video/3gpp2\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("7z", "Content-Type: \r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("7z", "Content-Type: application/x-7z-compressed\r\n"));
 }
 
 std::string server_response::getType(std::string type)
