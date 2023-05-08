@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/05 15:26:05 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/08 17:17:13 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@
 #include <stdlib.h>
 
 extern std::vector<int> open_ports;
-extern volatile std::sig_atomic_t	g_code;
+extern volatile std::sig_atomic_t g_code;
 
-int	setnonblocking(int sockfd)
+int setnonblocking(int sockfd)
 {
 	(void)sockfd;
 	// int flags;
@@ -33,12 +33,12 @@ int	setnonblocking(int sockfd)
 	return 0;
 }
 
-server_configuration*	getGoodServer(std::vector<server_configuration*> servers, server_request *ServerRequest, int Port)
+server_configuration *getGoodServer(std::vector<server_configuration *> servers, server_request *ServerRequest, int Port)
 {
-	std::vector<server_configuration*> SamePort;
+	std::vector<server_configuration *> SamePort;
 	int j = 0;
 	// std::cout << "c1.0.4" << std::endl;
-	for (std::vector<server_configuration*>::iterator it = servers.begin(); it != servers.end(); it++)
+	for (std::vector<server_configuration *>::iterator it = servers.begin(); it != servers.end(); it++)
 	{
 		// std::cout << "c1.0.5 (*it)->getPort().size() " << (*it)->getPort().size() << std::endl;
 		for (size_t i = 0; i < (*it)->getPort().size(); i++)
@@ -66,8 +66,8 @@ server_configuration*	getGoodServer(std::vector<server_configuration*> servers, 
 }
 
 int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
+{
+	for (std::map<std::string, class server_location_configuration *>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
@@ -90,8 +90,8 @@ int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std
 }
 
 std::string getPathToStore(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
-	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
+{
+	for (std::map<std::string, class server_location_configuration *>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
@@ -99,7 +99,7 @@ std::string getPathToStore(std::string MethodUsed, server_configuration *server,
 			{
 				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
-					/*	Ci-dessous, on renvoie directement le path au store, car ce path se suffit à lui-même. 
+					/*	Ci-dessous, on renvoie directement le path au store, car ce path se suffit à lui-même.
 						Si on ne le trouve pas, alors on renvoie le root car on enregistra à la racine du root. */
 					if (it->second->getUploadStore().size() > 0)
 						return (it->second->getUploadStore());
@@ -112,17 +112,20 @@ std::string getPathToStore(std::string MethodUsed, server_configuration *server,
 	return (server->getRoot());
 }
 
-bool isNotBinaryData(std::map<int, std::string> SocketUploadFile, int conn_sock)
+bool isNotBinaryData(std::map<int, std::pair<std::string, int> > SocketUploadFile, int conn_sock)
 {
-	for (std::map<int, std::string>::iterator it = SocketUploadFile.begin(); it != SocketUploadFile.end(); it++)
-	{
-		if (it->first == conn_sock)
-			return 0;
-	}
+	if (SocketUploadFile.find(conn_sock) != SocketUploadFile.end())
+		return 0;
 	return 1;
+	// for (std::map<int, std::pair<std::string, int> >::iterator it = SocketUploadFile.begin(); it != SocketUploadFile.end(); it++)
+	// {
+	// 	if (it[]->first == conn_sock)
+	// 		return 0;
+	// }
+	// return 1; // a checker pour voir si ca marche bien
 }
 
-bool	isNotinUnauthorizedSocket(std::vector<int> UnauthorizedSocket, int conn_sock)
+bool isNotinUnauthorizedSocket(std::vector<int> UnauthorizedSocket, int conn_sock)
 {
 	for (std::vector<int>::iterator it = UnauthorizedSocket.begin(); it != UnauthorizedSocket.end(); it++)
 	{
@@ -167,20 +170,19 @@ std::string UpdateFileNameifAlreadyExist(std::string UploadFileName)
 	return (UploadFileName);
 }
 
-
-int	handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus, std::map<int, std::pair<std::string, std::string> >* MsgToSent)
+int handle_connection(std::vector<server_configuration *> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus, std::map<int, std::pair<std::string, std::string> > *MsgToSent)
 
 {
 	server_configuration *GoodServerConf = NULL;
 	char buffer[2048];
-	int n = 0; 
+	int n = 0;
 	int Port = 0;
-	static std::map<int, std::string> SocketUploadFile;
+	static std::map<int, std::pair<std::string, int> > SocketUploadFile;
 	static std::map<int, std::string> UploadFilePath;
+	static std::map<int, std::string> FileName;
 	static std::vector<int> UnauthorizedSocket;
 	errno = 0;
-	
-	
+
 	// std::cout << "\nPASSE LA " << conn_sock << std::endl;
 	n = recv(conn_sock, buffer, 2048, MSG_DONTWAIT);
 	if (n == 0)
@@ -205,7 +207,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			memset(buffer, 0, n);
 		}
 	}
-	
+
 	std::cout << "CON SOCK " << conn_sock << std::endl;
 	// static int k = 0;
 	// if (k < 5)
@@ -217,14 +219,14 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 	// std::cout << "\na1\n" << std::endl;
 	if (isNotBinaryData(SocketUploadFile, conn_sock))
 	{
-		
+
 		// std::cout << "\na1.1\n" << std::endl;
 		// std::cout << "\n\nRequest :\n\n" << request << std::endl;
 		/*	Cette partie permet de parser la requete afin de pouvoir travailler
 			sur chaque élément indépendemment */
 		server_request ServerRequest(request);
 		ServerRequest.request_parser();
-		/* Cette partie permet de connaitre le port utilisé afin de d'avoir les 
+		/* Cette partie permet de connaitre le port utilisé afin de d'avoir les
 		bonnes configurations de serveur */
 		for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
 		{
@@ -233,22 +235,23 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 				Port = it->first;
 		}
 
-	//	std::cerr << "PORT apres set = '" << Port << "'" << std::endl;
+		//	std::cerr << "PORT apres set = '" << Port << "'" << std::endl;
 		GoodServerConf = getGoodServer(servers, &ServerRequest, Port);
-	//	std::cerr << "Serveur Port in initserv when checking good serv:" << std::endl;
-	//	for (std::vector<int>::iterator it = GoodServerConf->getPort().begin(); it != GoodServerConf->getPort().end(); it++)
-	//		std::cerr << *it << std::endl;
+		//	std::cerr << "Serveur Port in initserv when checking good serv:" << std::endl;
+		//	for (std::vector<int>::iterator it = GoodServerConf->getPort().begin(); it != GoodServerConf->getPort().end(); it++)
+		//		std::cerr << *it << std::endl;
 		/********************************************************************/
 
 		std::cout << "\nREQUEST PARSED" << std::endl;
 		std::cout << ServerRequest << std::endl;
 		std::cout << "\nFIN REQUEST PARSED" << std::endl;
 
-		std::cout << "\nCONF\n" << std::endl; 
+		std::cout << "\nCONF\n"
+				  << std::endl;
 		std::cout << *GoodServerConf << std::endl;
 		std::cout << "\nFIN CONF" << std::endl;
 		// exit(0);
-		
+
 		/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
 		car sinon un code erreur peut être renvoyé. Je le mets ici pour etre
 		sur que le status code n'est pas modifié par la suite */
@@ -268,46 +271,45 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		// std::cout << "\nROOT " << GoodServerConf->getRoot() << std::endl;
 		if (((ServerRequest.getMethod() == "GET" || ServerRequest.getMethod() == "DELETE") || (ServerRequest.getMethod() == "POST" && request.find("WebKitFormBoundary") == std::string::npos)) && checkStatus(CodeStatus))
 		{
-			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
+			server_response ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 			// std::cout << "\na1.4\n" << std::endl;
 			if (GoodServerConf->getClientMaxBodySize() < ServerRequest.getContentLength())
 				ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 413, MsgToSent);
 			else
 				ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
 			return 0;
-
 		}
 		else if (ServerRequest.getMethod() == "POST" && checkStatus(CodeStatus))
 		{
 			// std::cout << "\na1.5\n" << std::endl;
 			// std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
 			if (GoodServerConf->getClientMaxBodySize() > ServerRequest.getContentLength())
-			{	
+			{
 				// std::cout << "\na1.5.1\n" << std::endl;
-				SocketUploadFile.insert (std::pair< int , std::string >(conn_sock, ""));
+				SocketUploadFile.insert(std::make_pair(conn_sock, std::make_pair("", 0)));
 				std::string PathToStore = getPathToStore(ServerRequest.getMethod(), GoodServerConf, ServerRequest.getRequestURI());
 				while (PathToStore.find("//") != std::string::npos)
 					PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
-				UploadFilePath.insert ( std::pair< int , std::string >(conn_sock, PathToStore));
+				UploadFilePath.insert(std::pair<int, std::string>(conn_sock, PathToStore));
 			}
 			else
 			{
 				// std::cout << "\na1.6\n" << std::endl;
-				server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
+				server_response ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 				ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 413, MsgToSent);
 				return 0;
 			}
 		}
 		else if (isNotinUnauthorizedSocket(UnauthorizedSocket, conn_sock))
 		{
-			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
+			server_response ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 			ServerResponse.SendingResponse(ServerRequest, conn_sock, GoodServerConf, 200, MsgToSent);
 			return 0;
 		}
 		else
 		{
 			std::cerr << "je dl mais je dois pas" << std::endl;
-			server_response	ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
+			server_response ServerResponse(GoodServerConf->getStatusCode(), &ServerRequest);
 			ServerResponse.setStatusCode(CodeStatus);
 			ServerResponse.createResponse(GoodServerConf, "", ServerRequest, 0, 0);
 			MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(ServerResponse.getServerResponse(), "")));
@@ -315,72 +317,95 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		}
 	}
 
-	for (std::map<int, std::string>::iterator it = SocketUploadFile.begin(); it != SocketUploadFile.end(); it++)
+	if (SocketUploadFile.find(conn_sock) != SocketUploadFile.end())
 	{
-		if (g_code == 42)
-			break ;
-		// std::cout << "\na1.6\n" << std::endl;
-		if (it->first == conn_sock)
+		// std::cout << "\nSOCKET TEST 2: " << conn_sock << std::endl;
+		if (SocketUploadFile[conn_sock].first.empty())
 		{
-			// std::cout << "\nSOCKET TEST 2: " << conn_sock << std::endl;
-			if (g_code == 42)
-						break ;
-			it->second = it->second + request;
-			if (g_code == 42)
-						break ;
-			size_t pos = 0;
-			size_t found = 0;
-			if (request.find("WebKitFormBoundary") != std::string::npos)
+			std::string temp_filename = ".up" + itos(SocketUploadFile.find(conn_sock)->first);
+			std::ofstream temp_file(temp_filename.c_str(), std::ios::binary);
+			if (!temp_file.is_open())
 			{
-				while (it->second.find("WebKitFormBoundary", pos) != std::string::npos)
+				// handle error
+			}
+			// Store the temporary file path in the map
+			SocketUploadFile[conn_sock].first = temp_filename;
+		}
+		std::ofstream temp_file(SocketUploadFile[conn_sock].first.c_str(), std::ios::binary | std::ios::app);
+		if (!temp_file.is_open())
+		{
+			// handle error
+		}
+
+		size_t pos = 0;
+		size_t found = 0;
+		while (request.find("WebKitFormBoundary", pos) != std::string::npos)
+		{
+			pos = request.find("WebKitFormBoundary", pos) + strlen("WebKitFormBoundary");
+			found++;
+			// std::cout << "\nSOCKET TEST 3 found for " <<  conn_sock << " : " << found << std::endl;
+		}
+
+		SocketUploadFile[conn_sock].second = SocketUploadFile[conn_sock].second + found;
+
+		if (FileName.find(conn_sock) == FileName.end() || temp_file.tellp() > 0)
+		{
+			if (temp_file.tellp() == 0)
+			{
+				size_t SaveFilePos = request.find("\r\n\r\n", request.find("filename=\""));
+				if (SaveFilePos != std::string::npos)
 				{
-					if (g_code == 42)
-						break ;
-					pos = it->second.find("WebKitFormBoundary", pos) + strlen("WebKitFormBoundary");
-					found++;
-					// std::cout << "\nSOCKET TEST 3 found for " <<  conn_sock << " : " << found << std::endl;
+					
+					int FileNamePos = request.find("filename=\"") + strlen("filename=\"");
+					// std::cout << "\nREQUEST FOR FILENAME : " << request << std::endl;
+					// std::cout << "\nFILENAMEPOS : " << FileNamePos << std::endl;
+					FileName.insert(std::make_pair(SocketUploadFile.find(conn_sock)->first, request.substr(FileNamePos, request.find("\"", FileNamePos) - FileNamePos)));
+					// std::cout << "\nFILENAME : " << FileName[conn_sock] << std::endl;
+					request = request.substr(SaveFilePos + 4);
+					temp_file.write(request.c_str(), request.size());
+					temp_file.close();
 				}
 			}
-			if (found >= 3)
+			else
 			{
-				// std::cout << "\nSOCKET TEST 4" << std::endl;
-				// std::cout << "\ncontenu du fichier\n" << std::endl;
-				// std::cout.write(it->second.c_str(), it->second.size());
-				int posfilename = it->second.find("filename=\"") + strlen("filename=\"");
-				// std::cout << "\nPOST FILE NAME \n" << posfilename <<
-				std::string UploadFileName = it->second.substr(posfilename, it->second.find("\"", posfilename) - posfilename);
-				// std::cout << "\nUPLOADNAME : " << UploadFileName << " FIN" << std::endl;
-				for (std::map<int, std::string>::iterator it = UploadFilePath.begin(); it != UploadFilePath.end(); it++)
-				{
-					if (it->first == conn_sock)
-						UploadFileName = it->second + "/" + UploadFileName;
-					// std::cout << " TEST UPLOADFILE PATH : " << UploadFileName << std::cout;
-				}
-				if (g_code == 42)
-						break ;
-				UploadFileName = UpdateFileNameifAlreadyExist(UploadFileName);
-				std::ofstream file(UploadFileName.c_str(), std::ios::binary);
-				// std::cout << "\nTEST POUR POSIINIT " << it->second.substr(posfilename, 50) << std::endl;
-				pos = it->second.find("\r\n\r\n", posfilename) + strlen("\r\n\r\n");
-				size_t end_pos = it->second.find("------WebKitFormBoundary", pos);
-				it->second = it->second.substr(pos, (end_pos - pos));
-				file.write(it->second.c_str(), it->second.size());
-				file.close();
-				// std::cout << "\nC0" << std::endl;
-				MsgToSent->insert(std::make_pair(conn_sock, std::make_pair("HTTP/1.1 200 OK\nContent-Length: 0\n\n", "")));
-				SocketUploadFile.erase(it);
-				// server_response	ServerResponse(GoodServerConf->getStatusCode(), GoodServerConf->getEnv(), ServerRequest);
-				// ServerResponse.SendingResponse(*ServerRequest, conn_sock, GoodServerConf, 201);
-				// std::cout << "\ne9\n" << std::cout;
-				break ;
+				temp_file.write(request.c_str(), request.size());
+				temp_file.close();
 			}
 		}
+	
+
+		if (SocketUploadFile[conn_sock].second >= 3)
+		{
+			std::ifstream file(SocketUploadFile[conn_sock].first.c_str());
+			if (!file.is_open())
+			{
+			}
+
+
+			if (UploadFilePath.find(conn_sock) != UploadFilePath.end())
+			{
+				FileName[conn_sock] = UploadFilePath[conn_sock] + "/" + FileName[conn_sock];
+			}
+
+			std::cout << "\nNOUVEAU NOM : " << FileName[conn_sock].c_str() << std::endl;
+			FileName[conn_sock] = UpdateFileNameifAlreadyExist(FileName[conn_sock].c_str());
+			std::cout << "\nANCIENn NOM : " << SocketUploadFile[conn_sock].first.c_str() << "\nNOUVEAU NOM : " << FileName[conn_sock].c_str() << std::endl;
+			int result = std::rename(SocketUploadFile[conn_sock].first.c_str(), FileName[conn_sock].c_str());
+			if (result != 0)
+			{
+				std::perror("Error renaming file");
+				return 1;
+			}
+
+			MsgToSent->insert(std::make_pair(conn_sock, std::make_pair("HTTP/1.1 200 OK\nContent-Length: 0\n\n", "")));
+			SocketUploadFile.erase(SocketUploadFile.find(conn_sock));
+		}
 	}
-	// std::cout << "\na1.7\n" << std::endl;
+
 	return 0;
 }
 
-void	ChangePort(std::map<int, int>& StorePort, int conn_sock, int listen_sock)
+void ChangePort(std::map<int, int> &StorePort, int conn_sock, int listen_sock)
 {
 	for (std::map<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
 	{
@@ -393,10 +418,10 @@ void	ChangePort(std::map<int, int>& StorePort, int conn_sock, int listen_sock)
 	}
 }
 
-std::multimap<int, int>	ChangeOrKeepPort(std::multimap<int, int>* StorePort, int conn_sock, int Port)
+std::multimap<int, int> ChangeOrKeepPort(std::multimap<int, int> *StorePort, int conn_sock, int Port)
 {
 	// std::cout << "\nINSIDE CHANGE OR KEEP\n" << std::endl;
-	
+
 	for (std::multimap<int, int>::iterator it = StorePort->begin(); it != StorePort->end(); it++)
 	{
 		// std::cout << "\nChangeOrKeep normal : " << std::endl;
@@ -441,14 +466,14 @@ std::multimap<int, int>	ChangeOrKeepPort(std::multimap<int, int>* StorePort, int
 		}
 	}
 	// std::cout << "\nEND TEST" << std::endl;
-	
+
 	return (*StorePort);
 }
 
-int isNotPort(int fd, int* listen_sock, size_t len)
+int isNotPort(int fd, int *listen_sock, size_t len)
 {
 	size_t i = 0;
-	while(i < len)
+	while (i < len)
 	{
 		// std::cout << "LISTEN IS NOT PORT " << listen_sock[i] << std::endl;
 		if (fd == listen_sock[i])
@@ -458,13 +483,13 @@ int isNotPort(int fd, int* listen_sock, size_t len)
 	return 1;
 }
 
-int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Ports, std::vector<std::string> Hosts)
+int StartServer(std::vector<server_configuration *> servers, std::vector<int> Ports, std::vector<std::string> Hosts)
 {
 	struct sockaddr_in addr[Ports.size()];
 	socklen_t addrlen[Ports.size()];
-	int	conn_sock = -1;
-	int	nfds = -1;
-	int	epollfd = -1;
+	int conn_sock = -1;
+	int nfds = -1;
+	int epollfd = -1;
 	int listen_sock[Ports.size()];
 	std::multimap<int, int> StorePort;
 	int CodeStatus = 0;
@@ -478,41 +503,50 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	{
 		addrlen[i] = sizeof(addr[i]);
 		listen_sock[i] = socket(AF_INET, SOCK_STREAM, 0);
-		if (listen_sock[i] == -1) {
+		if (listen_sock[i] == -1)
+		{
 			std::fprintf(stderr, "Error: cannot create socket: %s\n", strerror(errno));
-			return(EXIT_FAILURE);
+			return (EXIT_FAILURE);
 		}
 		memset(&addr[i], 0, sizeof(addr[i]));
 		addr[i].sin_family = AF_INET;
-		
+
 		/****Ci-dessous, tentative de bien lier les adresses IP**********/
 		if (Hosts[i].size() == 0 || Hosts[i] == "[::]")
 			addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
 		else
 			inet_pton(AF_INET, Hosts[i].c_str(), &addr[i].sin_addr);
 		/****************************************************************/
-		
+
 		addr[i].sin_port = htons(Ports[i]);
 		// StorePort.insert(std::pair<int, int>(Ports[i], listen_sock[i]));
 		int val = 1;
-		if (setsockopt(listen_sock[i], SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0) {
+		if (setsockopt(listen_sock[i], SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0)
+		{
 			std::fprintf(stderr, "Error: setsockopt() failed: %s\n", strerror(errno));
 		}
-		if (bind(listen_sock[i], (struct sockaddr *) &addr[i], addrlen[i]) == -1)
+		if (bind(listen_sock[i], (struct sockaddr *)&addr[i], addrlen[i]) == -1)
 		{
 			if (errno == EADDRINUSE) // changer
 			{
 				if (1)
-					std::cout << "\033[1;31m" << "Port " << Ports[i] << " is already listening" << "\033[0m\n" << std::endl;
+					std::cout << "\033[1;31m"
+							  << "Port " << Ports[i] << " is already listening"
+							  << "\033[0m\n"
+							  << std::endl;
 				// std::fprintf(stderr, "Error: bind failed: %s\n", strerror(errno));
 				// return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 			}
 		}
 		else
 		{
-			std::cout << "\033[1;32m" << "Port " << Ports[i] << " is listening" << "\033[0m\n" << std::endl;
+			std::cout << "\033[1;32m"
+					  << "Port " << Ports[i] << " is listening"
+					  << "\033[0m\n"
+					  << std::endl;
 		}
-		if (listen(listen_sock[i], SOMAXCONN) == -1) {
+		if (listen(listen_sock[i], SOMAXCONN) == -1)
+		{
 			std::fprintf(stderr, "Error: listen failed: %s\n", strerror(errno));
 			// return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 		}
@@ -526,32 +560,35 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	// 	std::cout << "second" << it->second << std::endl;
 	// }
 	epollfd = epoll_create1(0);
-	if (epollfd == -1) {
+	if (epollfd == -1)
+	{
 		std::fprintf(stderr, "Error: epoll_create1: %s\n", strerror(errno));
-		return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
+		return (CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 	}
 	open_ports.push_back(epollfd);
-	
-	struct epoll_event	ev, events[MAX_EVENTS];
+
+	struct epoll_event ev, events[MAX_EVENTS];
 
 	for (size_t i = 0; i < Ports.size(); i++)
 	{
 		ev.events = EPOLLIN;
 		ev.data.fd = listen_sock[i];
 		// std::cout << "\nLISTEN " << i << " : " << listen_sock[i] << std::endl;
- 		if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock[i], &ev) == -1) 
+		if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock[i], &ev) == -1)
 		{
 			std::fprintf(stderr, "Error: epoll_ctl: listen_sock, %s\n", strerror(errno));
-			return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
+			return (CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 		}
 	}
-	for (;;) {
+	for (;;)
+	{
 		if (g_code == 42)
-			return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
+			return (CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 		nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
-		if (nfds == -1) {
+		if (nfds == -1)
+		{
 			std::fprintf(stderr, "Error: epoll_wait: %s\n", strerror(errno));
-			return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
+			return (CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 		}
 		// std::cout << "\nWAIT TIME" << std::endl;
 		for (int n = 0; n < nfds; ++n)
@@ -563,25 +600,28 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					// std::cout << "\nACCEPT SOCKET : " << events[n].data.fd << " + " << listen_sock[i] <<  std::endl;
 					CodeStatus = 200; // a voir comment on gère le code status après envoi ds le handle connection
 					// std::fprintf(stderr, "\nEVENTS I = %d ET N = %d\n", i, n);
-					conn_sock = accept(events[n].data.fd, (struct sockaddr *) &addr[i], &addrlen[i]);
+					conn_sock = accept(events[n].data.fd, (struct sockaddr *)&addr[i], &addrlen[i]);
 					// std::cout << "EPOLL_WAIT : " << std::endl;
 					// std::cout << "CON SOCK : " << conn_sock << std::endl;
 					// std::cout << "listen_sock[i] : " << listen_sock[i] << std::endl;
 					// std::cout << "Ports[i] : " << Ports[i] << std::endl;
 					open_ports.push_back(conn_sock);
 					StorePort = ChangeOrKeepPort(&StorePort, conn_sock, Ports[i]);
-					if (conn_sock == -1) {
+					if (conn_sock == -1)
+					{
 						CodeStatus = 500;
 						std::fprintf(stderr, "Error: server accept failed: %s\n", strerror(errno));
 						// return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 					}
-					if (setnonblocking(conn_sock) == -1) {
+					if (setnonblocking(conn_sock) == -1)
+					{
 						std::fprintf(stderr, "Error: setnonblocking: %s\n", strerror(errno));
 						// return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 					}
 					ev.events = EPOLLIN | EPOLLOUT;
 					ev.data.fd = conn_sock;
-					if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock, &ev) == -1) {
+					if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock, &ev) == -1)
+					{
 						std::fprintf(stderr, "Error: epoll_ctl: conn_sock, %s\n", strerror(errno));
 						// return(CloseSockets(listen_sock, Ports), EXIT_FAILURE);
 					}
@@ -596,7 +636,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 				int error = handle_connection(servers, events[n].data.fd, StorePort, CodeStatus, &MsgToSent);
 				if (error)
 				{
-					for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
+					for (std::vector<int>::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
 					{
 						// std::cout << "\nit2 : " << *it2 << " events fd : " << events[n].data.fd << std::endl;
 						if (*it2 == events[n].data.fd)
@@ -606,7 +646,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 						}
 					}
 					epoll_ctl(epollfd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
-					close (events[n].data.fd);
+					close(events[n].data.fd);
 				}
 				// events[n].events |= EPOLLOUT;
 				// if (epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &ev) == -1) {
@@ -629,10 +669,10 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 							// std::cout << "\nSENT THE HEADER OF A BIG MESSAGE" << std::endl;
 							// std::cout.write(it->second.first.c_str() , it->second.first.size());
 							// std::cout << "\nFIN" << std::endl;
-							if (send(it->first, it->second.first.c_str() , it->second.first.size(), 0) == -1)
+							if (send(it->first, it->second.first.c_str(), it->second.first.size(), 0) == -1)
 							{
 								std::cout << "\nsend 1 pb" << std::endl;
-								for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
+								for (std::vector<int>::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
 								{
 									if (*it2 == it->first)
 									{
@@ -641,7 +681,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 									}
 								}
 								epoll_ctl(epollfd, EPOLL_CTL_DEL, it->first, &ev);
-								close (it->first);
+								close(it->first);
 							}
 							PercentageSent.insert(std::make_pair(it->first, 0));
 						}
@@ -662,7 +702,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 									if (send(it->first, "\r\n\r\n", 4, 0) == -1)
 									{
 										std::cout << "\nsend 2 pb" << std::endl;
-										for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
+										for (std::vector<int>::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
 										{
 											if (*it2 == it->first)
 											{
@@ -671,19 +711,19 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 											}
 										}
 										epoll_ctl(epollfd, EPOLL_CTL_DEL, it->first, &ev);
-										close (it->first);
+										close(it->first);
 									}
 									PercentageSent.erase(PercentageSent.find(it->first));
 									MsgToSent.erase(it);
 									file.close();
-        			    			break; // end of file
-        						}
+									break; // end of file
+								}
 								else
 								{
 									if (send(it->first, chunk, bytes_read, 0) == -1)
 									{
 										std::cout << "\nsend 3 pb" << std::endl;
-										for (std::vector < int >::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
+										for (std::vector<int>::iterator it2 = open_ports.begin(); it2 != open_ports.end(); it2++)
 										{
 											if (*it2 == it->first)
 											{
@@ -692,7 +732,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 											}
 										}
 										epoll_ctl(epollfd, EPOLL_CTL_DEL, it->first, &ev);
-										close (it->first);
+										close(it->first);
 									}
 									PercentageSent[it->first] = PercentageSent[it->first] + bytes_read;
 									file.close();
@@ -706,21 +746,20 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 						// std::cout.write(it->second.first.c_str(), it->second.first.size());
 						// std::cout << "\n FIN TEST SEND PETIT FICHIER" << std::endl;
 
-						send(it->first, it->second.first.c_str() , it->second.first.size(), 0);
+						send(it->first, it->second.first.c_str(), it->second.first.size(), 0);
 						MsgToSent.erase(it);
 					}
 				}
 			}
-			
 		}
 	}
 	return 0;
 }
 
-std::vector<server_configuration*>	SetupNewServers(std::string& filename, int ac)
+std::vector<server_configuration *> SetupNewServers(std::string &filename, int ac)
 {
 	std::string ConfigFileStr;
-	std::vector<server_configuration*> servers;
+	std::vector<server_configuration *> servers;
 	if (ac == 2)
 	{
 		struct stat sb;
@@ -738,7 +777,7 @@ std::vector<server_configuration*>	SetupNewServers(std::string& filename, int ac
 	}
 	else
 		ConfigFileStr = filename;
-	size_t	count = 0;
+	size_t count = 0;
 	for (size_t i = 0; ConfigFileStr.find("server {", i) != std::string::npos; i++)
 	{
 		i = ConfigFileStr.find("server {", i);
@@ -749,22 +788,23 @@ std::vector<server_configuration*>	SetupNewServers(std::string& filename, int ac
 	{
 		size_t pos1 = ConfigFileStr.find("server {");
 		size_t pos2 = ConfigFileStr.find("server {", pos1 + 1);
-		server_configuration* myserver = new server_configuration(ConfigFileStr.substr(pos1, pos2));
+		server_configuration *myserver = new server_configuration(ConfigFileStr.substr(pos1, pos2));
 		if (DEBUG)
-			std::cout << "test\n" << ConfigFileStr.substr(pos1, pos2) << std::endl;
+			std::cout << "test\n"
+					  << ConfigFileStr.substr(pos1, pos2) << std::endl;
 		servers.push_back(myserver);
 		ConfigFileStr.erase(pos1, pos2);
 	}
 	return (servers);
 }
 
-std::vector<int>	getPorts(std::vector<server_configuration*> servers)
+std::vector<int> getPorts(std::vector<server_configuration *> servers)
 {
 	std::vector<int> Ports;
 	int i = 0;
-	
-	for (std::vector<server_configuration*>::iterator it = servers.begin(); it != servers.end(); it++)
-	{		
+
+	for (std::vector<server_configuration *>::iterator it = servers.begin(); it != servers.end(); it++)
+	{
 		std::vector<int> ports = (*it)->getPort();
 		for (std::vector<int>::iterator ite = ports.begin(); ite != ports.end(); ite++)
 		{
@@ -777,13 +817,13 @@ std::vector<int>	getPorts(std::vector<server_configuration*> servers)
 	return Ports;
 }
 
-std::vector<std::string>	getHosts(std::vector<server_configuration*> servers)
+std::vector<std::string> getHosts(std::vector<server_configuration *> servers)
 {
 	std::vector<std::string> Hosts;
 	int i = 0;
-	
-	for (std::vector<server_configuration*>::iterator it = servers.begin(); it != servers.end(); it++)
-	{		
+
+	for (std::vector<server_configuration *>::iterator it = servers.begin(); it != servers.end(); it++)
+	{
 		std::vector<std::string> hosts = (*it)->getHost();
 		for (std::vector<std::string>::iterator ite = hosts.begin(); ite != hosts.end(); ite++)
 		{
