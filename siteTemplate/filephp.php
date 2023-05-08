@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8">
-    <title>WebServ</title>
+	<title>Page des fichiers uploadés</title>
     <style>
         body {
             background-color: #fa94b6;
@@ -76,11 +75,7 @@
 			background-color: rgb(129, 70, 165);
 		}
 		#menu li:nth-child(5) a {
-			background-color: rgb(75, 196, 175);
-		}
-		
-		#menu li:nth-child(6) a {
-			background-color: rgba(255, 123, 0, 0.733);
+			background-color: rgb(3, 3, 3);
 		}
 
         #menu a:hover,
@@ -157,15 +152,37 @@
 	<header>
 		<a href="/index.html">WebServ</a>
 	</header>
+	<h1>Liste des fichiers uploadés</h1>
+	<div id="files">
+	<?php
+	if (!is_dir('./upload')) {
+		echo "<p>Le répertoire upload n'existe pas.</p>";
+	} else {
+		$files = glob('./upload/*');
+		if (count($files) == 0) {
+			echo "<p>Le répertoire upload est vide.</p>";
+		} else {
+			echo "<table style='margin-left: 10px; border-collapse: collapse;'>";
+			foreach ($files as $file) {
+				echo "<tr>";
+				echo "<td style='padding: 5px; text-align: center; border: 1px solid black; font-weight: bold;'>" . basename($file) . "</td>";
+				echo "<td style='padding: 5px; text-align: center; border: 1px solid black;'>";
+				echo "<a href='upload/" . urlencode(basename($file)) . "' download><button style='color: green;'>Télécharger</button></a>";
+				echo "</td>";
+				echo "</tr>";
+			}
+			echo "</table>";
+		}
+	?>
+	</div>
+	<hr>
+	<h2 style="margin-left: 10px;">Envoyer un fichier</h2>
+	<form action="filephp.php" method="POST" enctype="multipart/form-data" style="margin-left: 10px;">
+		<input type="file" name="file">
+		<input type="submit" value="Envoyer">
+	</form>
+	<?php } ?>
     <main>
-        <ul id="menu">
-            <li><a href="/filephp.php">File Management</a></li>
-            <li><a href="/list.php">List current data</a></li>
-            <li><a href="/cgi-bin/part.py">Python CGI</a></li>
-            <li><a href="/index.php">PHP index</a></li>
-            <li><a href="/cgi-bin/get.php">GET CGI form</a></li>
-			<li><a href="/cgi-bin/post.php">POST CGI form</a></li>
-        </ul>
     </main>
 	<img id="sheep" src="happysheep.gif" alt="Sheep Happy">
     <footer>🐑 Site web créé par Nicolas, Mathieu et Cyril 🐑</footer>

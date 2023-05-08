@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/05 15:18:23 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/08 12:34:05 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ void	server_response::addType()
 	_contentType.insert(std::make_pair<std::string, std::string>("jad", "Content-Type: text/vnd.sun.j2me.app-descriptor\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jar", "Content-Type: application/java-archive\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jng", "Content-Type: image/x-jng\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("jpeg", "Content-Type: \r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("jpeg", "Content-Type: image/jpeg\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jpg", "Content-Type: image/jpeg\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("js", "Content-Type: image/jpeg\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("json", "Content-Type: application/json\r\n"));
@@ -150,7 +150,7 @@ void	server_response::addType()
 	_contentType.insert(std::make_pair<std::string, std::string>("zip", "Content-Type: application/zip\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("3gp", "Content-Type: video/3gpp\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("3g2", "Content-Type: video/3gpp2\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("7z", "Content-Type: \r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("7z", "Content-Type: application/x-7z-compressed\r\n"));
 }
 
 std::string server_response::getType(std::string type)
@@ -179,7 +179,7 @@ std::string	server_response::list_dir(std::string path)
 	std::string	testDir;
 	std::string	route;
 
-	std::cout << "PATH : '" << path << "'" << std::endl;
+	//std::cout << "PATH : '" << path << "'" << std::endl;
 	while (path.find("//") != std::string::npos)
 		path = path.erase(path.find("//"), 1);
 	errno = 0;
@@ -439,7 +439,7 @@ bool	server_response::manageCgi(const server_request& Server_Request, server_con
 	{
 		std::stringstream buffer;
 		if (_fileName == "")
-			_fileName = ".cgi-tmp.txt";
+			_fileName = ".cgi-tmp";
 		if (!doCgi(_finalPath,server))
 		{
 			std::ifstream	cgiContent(_fileName.data());
@@ -465,7 +465,7 @@ int	server_response::AnswerGet(const server_request& Server_Request, server_conf
 	if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
 	{
 		// std::cout << "d0 " << std::endl;
-		std::cerr << _finalPath << std::endl;
+		//std::cerr << _finalPath << std::endl;
 		_status_code = 404;
 	}
 	else
@@ -548,7 +548,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	// PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	// while (PathToStore.find("//") != std::string::npos)
 	// 	PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
-	if (1)
+	if (0)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
@@ -596,7 +596,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	/* Gestion des CGI pour ensuite repondre à la requete*/
 	if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end() && checkStatus(_status_code))
 	{
-		std::cerr << "cgi" << std::endl;
+		//std::cerr << "cgi" << std::endl;
 		manageCgi(Server_Request, server);
 	}
 	
@@ -634,6 +634,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	else
 	{
 		createResponse(server, "", Server_Request, id_session, 0);
+	//	std::cerr << "ServerResponse = '" << _ServerResponse << "'" << std::endl;
 		MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(_ServerResponse, "")));
 		return ;
 	}
@@ -679,7 +680,12 @@ std::string	server_response::addHeader(std::string statusMsg, std::pair<std::str
 			response << this->getType(statusContent.first.substr(statusContent.first.find('.', 0) + 1));
 	}
 	else
-		response << this->getType(Server_Request.getType());
+	{
+		if (checkStatus(_status_code))
+			response << this->getType(Server_Request.getType());
+		else
+			response << this->getType("html");
+	}
 	if (Server_Request.getServerRequest().find("IdSession=") == std::string::npos && _status_code != 401)
 		response << "Set-Cookie: " << "IdSession=" << IdSession << "\n"; // tentative d'implementation des cookies
 	if (server->getCookieHeader().size() != 0)
@@ -1092,7 +1098,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 		_cgiFd = open(getBodyName().data(), O_RDONLY);
 		if (_cgiFd < 0)
 		{
-			std::cerr << "FAIL TO OPEN CGIFD" << std::endl;
+			//std::cerr << "FAIL TO OPEN CGIFD" << std::endl;
 			_status_code = 500;
 			return (1);
 		}
@@ -1102,7 +1108,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	try
 	{
 		int status = 0;
-		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName);
+		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName, _req->getQuery().c_str());
 		waitpid(cgi.getPid(), &status, 0);
 		if (WIFEXITED(status))
 			if (WEXITSTATUS(status) != 0)

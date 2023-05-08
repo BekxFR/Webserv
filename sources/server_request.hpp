@@ -38,9 +38,9 @@ class server_request
 		std::string							_contentLength;
 		std::string							_body;
 		bool								_isBody;
-		server_request();
 
 	public:
+		server_request();
 		server_request(std::string ServerRequest);
 		server_request(server_request const &obj);
 		~server_request();
@@ -61,6 +61,7 @@ class server_request
 		bool		getIsBody() const { return (_isBody); }
 		std::string	getQuery() const { return (_argsBrutes); }
 
+		void		setRequest(std::string r) { _ServerRequest = r; }
 		//OTHER
 		std::string			findRequestURI();
 		std::string			findMethod();

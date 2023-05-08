@@ -14,6 +14,7 @@
 
 server_request::server_request()
 {
+	_isBody = 0;
 	std::cout << "server_request Default Constructor called" << std::endl;
 }
 

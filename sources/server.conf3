@@ -20,7 +20,7 @@ server {
 
 			cgi .php /usr/bin/php-cgi ;
 
-			upload_store /site/upload/;
+			upload_store ./site/upload/;
 		}
 
 		location /password/ {
@@ -67,6 +67,7 @@ server {
 
 		root ./site/;
 		index index.html
+		upload_store /site/upload/;
 
 		allow_methods GET;
 }

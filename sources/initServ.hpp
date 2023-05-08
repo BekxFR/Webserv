@@ -15,7 +15,6 @@
 
 #include "lib.hpp"
 
-int													setnonblocking(int sockfd);
 server_configuration*								getGoodServer(std::vector<server_configuration*> servers, server_request *ServerRequest, int Port);
 void												handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus);
 void												ChangePort(std::map<int, int>&	StorePort, int conn_sock, int listen_sock);

@@ -23,7 +23,6 @@ class Cgi
 	private:
 		int				_input_fd;
 		int				_output_fd;
-		int				_pdes[2];
 		int				_status;
 		pid_t			_pid;
 		FILE*			_fp;
@@ -35,18 +34,18 @@ class Cgi
 		Cgi();
 
 	public:
-		Cgi(std::string& cgi_path, std::string& file_path, std::vector<std::string> & env, int input_fd, std::string);
+		Cgi(std::string& cgi_path, std::string& file_path, std::vector<std::string> & env, int input_fd, std::string filen, const char* pythonArg);
 		Cgi(const Cgi & o);
 		~Cgi();
 		Cgi & operator=(const Cgi & o);
 
 	// GETTERS
-		const int*	getPdes() const { return (_pdes); }
 		pid_t	getPid() const { return (_pid); }
 		int	getInputFd() const { return (_input_fd); }
 		char**	getCmd() const { return (_cmd); }
 		char**	getEnvp() const { return (_envp); }
 		int	getStatus() const { return (_status); }
+		char*	getPythonArg() const { return (_cmd[2]); }
 		server_request*	getRequest() const { return (_request); }
 
 	// OTHER
@@ -54,7 +53,6 @@ class Cgi
 		void	setStatus(int); // setter
 		void	setPid();
 		void	setPid(pid_t); // setter
-		void	setPdes();
 		void	dupping();
 		void	closePdes();
 		void	del();
