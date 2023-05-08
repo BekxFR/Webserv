@@ -530,6 +530,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 		}
 	}
 	for (;;) {
+		std::cerr << "CONN_SOCK = " << conn_sock << std::endl;
 		CodeStatus = 200; // a voir comment on gère le code status après envoi ds le handle connection
 		nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
 		if (nfds == -1) {
