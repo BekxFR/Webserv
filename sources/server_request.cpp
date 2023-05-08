@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 15:41:27 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/08 19:47:36 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,12 @@ server_request::server_request(std::string ServerRequest) :
 	_ServerRequest(ServerRequest) //, _Method(findMethod()), _RequestURI(findRequestURI())
 {
 	_isBody = 0;
+}
+
+void server_request::setHost(std::string host)
+{
+	this->_host = host;
+	return ;
 }
 
 std::string server_request::findMethod()
@@ -172,12 +178,16 @@ void server_request::request_parser()
 	std::string::size_type version_end = _ServerRequest.find("\r\n", path_end + 1);
 	this->_version = _ServerRequest.substr(path_end + 1, version_end - path_end - 1);
 
+	std::cout << "Host : " << this->_host << std::endl;
+	std::cout << "Host : " << this->_host << std::endl;
+	std::cout << "Host : " << this->_host << std::endl;
+	std::cout << "Host : " << this->_host << std::endl;
 	// Extraire l'en-tête Host (www.example.com)
-	this->_host = "";
-	std::string::size_type host_start = _ServerRequest.find("Host: ");
-	std::string::size_type host_end = _ServerRequest.find("\r\n", host_start);
-	if (host_start != host_end)
-		this->_host = _ServerRequest.substr(host_start + 6, host_end - host_start - 6);
+	// this->_host = "";
+	// std::string::size_type host_start = _ServerRequest.find("Host: ");
+	// std::string::size_type host_end = _ServerRequest.find("\r\n", host_start);
+	// if (host_start != host_end)
+	// 	this->_host = _ServerRequest.substr(host_start + 6, host_end - host_start - 6);
 
 	// Extraire le type de connexion (keep-alive)
 	this->_connectionType = "";
