@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/08 17:17:13 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/08 18:01:24 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -322,19 +322,25 @@ int handle_connection(std::vector<server_configuration *> servers, int conn_sock
 		// std::cout << "\nSOCKET TEST 2: " << conn_sock << std::endl;
 		if (SocketUploadFile[conn_sock].first.empty())
 		{
-			std::string temp_filename = ".up" + itos(SocketUploadFile.find(conn_sock)->first);
+			srand(time(0));
+			int random_num = rand() % 100000000 + 1;
+			std::string temp_filename = ".up" + itos(random_num);
 			std::ofstream temp_file(temp_filename.c_str(), std::ios::binary);
 			if (!temp_file.is_open())
 			{
-				// handle error
+				SocketUploadFile.erase(SocketUploadFile.find(conn_sock));
+				return 1;
 			}
 			// Store the temporary file path in the map
 			SocketUploadFile[conn_sock].first = temp_filename;
 		}
+		
 		std::ofstream temp_file(SocketUploadFile[conn_sock].first.c_str(), std::ios::binary | std::ios::app);
 		if (!temp_file.is_open())
 		{
-			// handle error
+			std::remove(SocketUploadFile[conn_sock].first.c_str());
+			SocketUploadFile.erase(SocketUploadFile.find(conn_sock));
+			return 1;
 		}
 
 		size_t pos = 0;
@@ -355,7 +361,6 @@ int handle_connection(std::vector<server_configuration *> servers, int conn_sock
 				size_t SaveFilePos = request.find("\r\n\r\n", request.find("filename=\""));
 				if (SaveFilePos != std::string::npos)
 				{
-					
 					int FileNamePos = request.find("filename=\"") + strlen("filename=\"");
 					// std::cout << "\nREQUEST FOR FILENAME : " << request << std::endl;
 					// std::cout << "\nFILENAMEPOS : " << FileNamePos << std::endl;
@@ -372,13 +377,15 @@ int handle_connection(std::vector<server_configuration *> servers, int conn_sock
 				temp_file.close();
 			}
 		}
-	
 
 		if (SocketUploadFile[conn_sock].second >= 3)
 		{
 			std::ifstream file(SocketUploadFile[conn_sock].first.c_str());
 			if (!file.is_open())
 			{
+				std::remove(SocketUploadFile[conn_sock].first.c_str());
+				SocketUploadFile.erase(SocketUploadFile.find(conn_sock));
+				return 1;
 			}
 
 
@@ -393,11 +400,13 @@ int handle_connection(std::vector<server_configuration *> servers, int conn_sock
 			int result = std::rename(SocketUploadFile[conn_sock].first.c_str(), FileName[conn_sock].c_str());
 			if (result != 0)
 			{
-				std::perror("Error renaming file");
+				std::remove(SocketUploadFile[conn_sock].first.c_str());
+				SocketUploadFile.erase(SocketUploadFile.find(conn_sock));
 				return 1;
 			}
+			// MsgToSent->insert(std::make_pair(conn_sock, std::make_pair("HTTP/1.1 200 OK\nContent-Length: 0\n\n", "")));
+			MsgToSent->insert(std::make_pair(conn_sock, std::make_pair("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: 312\r\n\r\n<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>200 OK</title></head><body style=\"background: #0e0e0e; height: 100%;text-align:center;color:white;\"><h1>200 OK</h1><img src=\"https://http.cat/200\" style=\"display: block;margin: auto;\" alt=\"200 OK\"g><p>webserv</p></body></html>", "")));
 
-			MsgToSent->insert(std::make_pair(conn_sock, std::make_pair("HTTP/1.1 200 OK\nContent-Length: 0\n\n", "")));
 			SocketUploadFile.erase(SocketUploadFile.find(conn_sock));
 		}
 	}
