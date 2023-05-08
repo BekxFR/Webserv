@@ -49,7 +49,7 @@ server_configuration*	getGoodServer(std::vector<server_configuration*> servers, 
 }
 
 int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
+{
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))

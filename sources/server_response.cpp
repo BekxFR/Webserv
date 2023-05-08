@@ -257,6 +257,7 @@ std::string server_response::getRealPath(std::string MethodUsed, server_configur
 	dans une location */
 	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
 		return (server->getRoot() + "/" + RequestURI);
+	std::cerr << "methode = " << MethodUsed << std::endl;
 	_status_code = 501;
 	return ("");
 }
