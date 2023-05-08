@@ -1108,7 +1108,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	try
 	{
 		int status = 0;
-		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName);
+		Cgi cgi(cgiPath, toexec, _env, _cgiFd, _fileName, _req->getQuery().c_str());
 		waitpid(cgi.getPid(), &status, 0);
 		if (WIFEXITED(status))
 			if (WEXITSTATUS(status) != 0)

@@ -14,7 +14,7 @@
 
 extern volatile std::sig_atomic_t	g_code;
 
-Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string filen): _input_fd(input_fd), _status(0) 
+Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::string> & env, int input_fd, std::string filen, const char* pythonArg): _input_fd(input_fd), _status(0) 
 {
 	_cmd = NULL;
 	_envp = NULL;
@@ -23,10 +23,11 @@ Cgi::Cgi(std::string & cgi_path, std::string & file_path, std::vector<std::strin
 	_output_fd = -1;
 	_fp = NULL;
 	try {
-		_cmd = new char*[3];
+		_cmd = new char*[4];
 		_cmd[0] = &(cgi_path[0]);
 		_cmd[1] = &(file_path[0]);
-		_cmd[2] = NULL;
+		_cmd[2] = (char *)pythonArg;
+		_cmd[3] = NULL;
 		_envp = new char* [env.size() + 1];	
 		size_t	i = 0;
 		for (std::vector<std::string>::iterator it = env.begin(); it != env.end(); it++, i++)
@@ -57,18 +58,19 @@ Cgi	&Cgi::operator=(Cgi const &o)
 		return (*this);
 	try {
 		_pid = o.getPid();
+		_status = o.getStatus();
 		_input_fd = o.getInputFd();
 		_cmd = new char*[3];
 		_cmd[0] = o.getCmd()[0];
 		_cmd[1] = o.getCmd()[1];
-		_cmd[2] = NULL;
+		_cmd[2] = o.getCmd()[2];
+		_cmd[3] = NULL;
 		size_t	i = 0;
 		for (; o.getEnvp()[i]; i++) {}
 		_envp = new char* [i + 1];
 		for (i = 0; o.getEnvp()[i]; i++)
 			_envp[i] = o.getEnvp()[i];
 		_envp[i + 1] = NULL;
-		_status = o.getStatus();
 	}
 	catch (std::exception& e)
 	{
@@ -158,6 +160,13 @@ void	Cgi::dupping()
 	//	_pdes[1] = -1;
 	//	close (_pdes[0]);
 	//	_pdes[0] = -1;
-	if (execve(_cmd[0], _cmd, _envp) == -1) // si execve rate, on laisse passer pour appeler les destructeurs mais en changeant le code global pour sortir une 500
+	std::cerr << " _cmd[0] = " << _cmd[0] << " _cmd[1] = " << _cmd[1] << " _cmd[2] = " << _cmd[2] << " _cmd[3] = " << _cmd[3] << std::endl;
+	if (std::strcmp(_cmd[0], "python"))
+	{
+		// _cmd[2] = _pythonArg;
+		if (execve(_cmd[0], _cmd, NULL) == -1)
+			g_code = 1;
+	}
+	else if (execve(_cmd[0], _cmd, _envp) == -1) // si execve rate, on laisse passer pour appeler les destructeurs mais en changeant le code global pour sortir une 500
 		g_code = 1;
 }

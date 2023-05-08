@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Formulaire d'upload de fichier</title>
+</head>
+<body>
+    <h1>Upload de fichier</h1>
+	<form method="post" enctype="multipart/form-data">
+	<div>
+		<label for="image_uploads">Sélectionner des images à uploader (PNG, JPG)</label>
+		<input type="file" id="image_uploads" name="image_uploads" accept=".jpg, .jpeg, .png" multiple>
+	</div>
+	<div class="preview">
+		<p>Aucun fichier sélectionné pour le moment</p>
+	</div>
+	<div>
+		<button>Envoyer</button>
+	</div>
+	</form>
+    <h2>Liste des fichiers présents dans le répertoire d'upload :</h2>
+    <ul>
+    </ul>
+</body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html>
+   <head>
+      <title>Formulaire d'upload et de suppression de fichiers</title>
+   </head>
+   <body>
+      <h1>Formulaire d'upload et de suppression de fichiers</h1>
+      <form method="post" enctype="multipart/form-data">
+         <input type="file" name="fichier">
+         <button type="submit">Uploader le fichier</button>
+      </form>
+      
+      <h2>Fichiers existants :</h2>
+      <ul>
+         <li><a href="fichier1.pdf">fichier1.pdf</a> <button onclick="supprimerFichier('fichier1.pdf')">Supprimer</button></li>
+         <li><a href="fichier2.jpg">fichier2.jpg</a> <button onclick="supprimerFichier('fichier2.jpg')">Supprimer</button></li>
+         <li><a href="fichier3.txt">fichier3.txt</a> <button onclick="supprimerFichier('fichier3.txt')">Supprimer</button></li>
+      </ul>
+      
+      <script>
+         function supprimerFichier(nomFichier) {
+            if (confirm("Êtes-vous sûr de vouloir supprimer " + nomFichier + " ?")) {
+               // Code pour supprimer le fichier ici, par exemple :
+               // fetch("/supprimer-fichier", {method: "POST", body: JSON.stringify({nomFichier})})
+               alert(nomFichier + " a été supprimé.");
+            }
+         }
+      </script>
+   </body>
+  
+   </html> -->
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>Upload de fichier</title>
+</head>
+<body>
+    <h2>Upload de fichier</h2>
+    <form action="upload.php" method="post" enctype="multipart/form-data">
+        <input type="file" name="fileToUpload" id="fileToUpload">
+        <input type="submit" value="Uploader le fichier" name="submit">
+    </form>
+
+    <h2>Liste des fichiers uploades</h2>
+    <ul>
+	<?php
+		$dir = "./uploads";
+		$files = glob("$dir/*");
+		foreach ($files as $file)
+		{
+			// Récupérer seulement le nom de fichier sans le chemin d'accès complet
+			$filename = basename($file);
+			echo "<li>$filename <a href=\"download.php?file=$filename\">Telecharger</a> | <a href=\"delete.php?file=$filename\">Supprimer</a></li>";
+		}
+	?>
+    </ul>
+</body>
+</html> -->

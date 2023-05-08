@@ -34,7 +34,7 @@ class Cgi
 		Cgi();
 
 	public:
-		Cgi(std::string& cgi_path, std::string& file_path, std::vector<std::string> & env, int input_fd, std::string);
+		Cgi(std::string& cgi_path, std::string& file_path, std::vector<std::string> & env, int input_fd, std::string filen, const char* pythonArg);
 		Cgi(const Cgi & o);
 		~Cgi();
 		Cgi & operator=(const Cgi & o);
@@ -45,6 +45,7 @@ class Cgi
 		char**	getCmd() const { return (_cmd); }
 		char**	getEnvp() const { return (_envp); }
 		int	getStatus() const { return (_status); }
+		char*	getPythonArg() const { return (_cmd[2]); }
 		server_request*	getRequest() const { return (_request); }
 
 	// OTHER
