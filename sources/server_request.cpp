@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/05 18:28:12 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/03 15:41:27 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 server_request::server_request()
 {
+	_isBody = 0;
 	std::cout << "server_request Default Constructor called" << std::endl;
 }
 
@@ -37,15 +38,12 @@ server_request &server_request::operator=(server_request const &obj)
 	_RequestURI = obj.getRequestURI();
 	_path = obj.getPath();
 	_type = obj.getType();
-	_query = obj.getQuery();
-	_argsBrutes = obj.getQuery();
 	_version = obj.getVersion();
 	_host = obj.getHost();
 	_connectionType = obj.getConnectionType();
 	_mimeType = obj.getMimeType();
 	_contentType = obj.getContentType();
 	_body = obj.getBody();
-	_isBody = obj.getIsBody();
 	std::cout << "server_request Copy assignment operator called" << std::endl;
 	return *this;
 }

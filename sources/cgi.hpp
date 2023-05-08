@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:06 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/04 12:30:57 by chillion         ###   ########.fr       */
+/*   Updated: 2023/04/25 19:11:23 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@ class Cgi
 	private:
 		int				_input_fd;
 		int				_output_fd;
-		int				_pdes[2];
 		int				_status;
 		pid_t			_pid;
 		FILE*			_fp;
@@ -31,7 +30,6 @@ class Cgi
 		char**			_envp;
 		std::string		_fileName;
 		server_request*	_request;
-		char*			_pythonArg;
 
 		Cgi();
 
@@ -42,13 +40,12 @@ class Cgi
 		Cgi & operator=(const Cgi & o);
 
 	// GETTERS
-		const int*	getPdes() const { return (_pdes); }
 		pid_t	getPid() const { return (_pid); }
 		int	getInputFd() const { return (_input_fd); }
 		char**	getCmd() const { return (_cmd); }
 		char**	getEnvp() const { return (_envp); }
 		int	getStatus() const { return (_status); }
-		char*	getPythonArg() const { return (_pythonArg); }
+		char*	getPythonArg() const { return (_cmd[2]); }
 		server_request*	getRequest() const { return (_request); }
 
 	// OTHER
@@ -56,7 +53,6 @@ class Cgi
 		void	setStatus(int); // setter
 		void	setPid();
 		void	setPid(pid_t); // setter
-		void	setPdes();
 		void	dupping();
 		void	closePdes();
 		void	del();

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 15:00:01 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/05 12:16:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -616,13 +616,12 @@ std::map<std::string, class server_location_configuration*>	server_configuration
 	
 	for (std::map<std::string, std::string>::iterator it = _Location.begin(); it != _Location.end(); it++)
 	{
-		pair_location.first = it->first;
-		server_location_configuration* tmp = new server_location_configuration(it->second);
-		pair_location.second = tmp;
-		map_location.insert(pair_location);
+			pair_location.first = it->first;
+			server_location_configuration* tmp = new server_location_configuration(it->second);
+			pair_location.second = tmp;
+			map_location.insert(pair_location);
 	}
 	return (map_location);
-	
 }
 
 std::ostream&	server_configuration::printLoc(std::ostream &out)
@@ -653,7 +652,8 @@ std::ostream&	server_configuration::printLoc(std::ostream &out)
 std::ostream&	operator<<(std::ostream &out, server_configuration &ServConfig)
 {
 	out << "Server name : " << ServConfig.getServerName() \
-		<< "\nRoot : " << ServConfig.getRoot();
+		<< "\nRoot : " << ServConfig.getRoot() \
+		<< "\nIndex : " << ServConfig.getIndex();
 		for (size_t i = 0; i < ServConfig.getPort().size(); i++)
 			out << "\nPort : " << ServConfig.getPort()[i];
 		for (size_t i = 0; i < ServConfig.getHost().size(); i++)

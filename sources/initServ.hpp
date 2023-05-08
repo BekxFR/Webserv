@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:45 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 14:58:58 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/04 12:22:14 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,6 @@
 
 #include "lib.hpp"
 
-//grosso merdo ce qu'il y avait dans main UwU
-
-int													setnonblocking(int sockfd);
 server_configuration*								getGoodServer(std::vector<server_configuration*> servers, server_request *ServerRequest, int Port);
 void												handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus);
 void												ChangePort(std::map<int, int>&	StorePort, int conn_sock, int listen_sock);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/04 16:40:30 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/08 12:34:05 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,37 +62,95 @@ server_response	&server_response::operator=(server_response const &obj)
 // https://techcommunity.microsoft.com/t5/image/serverpage/image-id/456929i280730750B92FE12/
 void	server_response::addType()
 {
-	_contentType.insert(std::make_pair<std::string, std::string>("html", "Content-Type: text/html; charset=utf-8\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("htm", "Content-Type: text/html\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("shtml", "Content-Type: text/html\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("aac", "Content-Type: audio/aac\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("abw", "Content-Type: application/x-abiword\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("arc", "Content-Type: application/x-freearc\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("atom", "Content-Type: application/atom+xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("avi", "Content-Type: video/x-msvideo\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("avif", "Content-Type: image/avif\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("azw", "Content-Type: application/vnd.amazon.ebook\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("bin", "Content-Type: application/octet-stream\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("bmp", "Content-Type: image/x-ms-bmp\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("bz", "Content-Type: application/x-bzip\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("bz2", "Content-Type: application/x-bzip2\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("cda", "Content-Type: application/x-cdf\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("csh", "Content-Type: application/x-csh\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("css", "Content-Type: text/css\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("xml", "Content-Type: text/xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("csv", "Content-Type: text/csv\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("doc", "Content-Type: application/msword\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("docx", "Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("eot", "Content-Type: application/vnd.ms-fontobject\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("epub", "Content-Type: application/epub+zip\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("font", "Content-Type: font/woff2\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("font", "Content-Type: font/woff\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("gz", "Content-Type: application/gzip\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("gif", "Content-Type: image/gif\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("htc", "Content-Type: text/x-component\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("htm", "Content-Type: text/html\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("html", "Content-Type: text/html; charset=utf-8\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("ico", "Content-Type: image/x-icon\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("ics", "Content-Type: text/calendar\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("iso", "Content-Type: multipart/form-data; boundary=----WebKitFormBoundarybC2GrDJYSRCSriwe\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("jad", "Content-Type: text/vnd.sun.j2me.app-descriptor\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("jar", "Content-Type: application/java-archive\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("jng", "Content-Type: image/x-jng\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("jpeg", "Content-Type: image/jpeg\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("jpg", "Content-Type: image/jpeg\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("js", "Content-Type: image/jpeg\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("json", "Content-Type: application/json\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("jsonld", "Content-Type: application/ld+json\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("mid", "Content-Type: audio/midi\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("midi", "Content-Type: audio/x-midi\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("mjs", "Content-Type: application/javascript\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("atom", "Content-Type: application/atom+xml\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("rss", "Content-Type: application/rss+xml\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("mp4", "Content-Type: video/mp4\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("iso", "Content-Type: multipart/form-data; boundary=----WebKitFormBoundarybC2GrDJYSRCSriwe\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("mml", "Content-Type: text/mathml\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("txt", "Content-Type: text/plain\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("jad", "Content-Type: text/vnd.sun.j2me.app-descriptor\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("wml", "Content-Type: text/vnd.wap.wml\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("htc", "Content-Type: text/x-component\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("avif", "Content-Type: image/avif\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("mp3", "Content-Type: audio/mpeg\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("mp4", "Content-Type: video/mp4\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("mpeg", "Content-Type: video/mpeg\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("mpkg", "Content-Type: application/vnd.apple.installer+xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("odp", "Content-Type: application/vnd.oasis.opendocument.presentation\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("ods", "Content-Type: application/vnd.oasis.opendocument.spreadsheet\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("odt", "Content-Type: application/vnd.oasis.opendocument.text\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("oga", "Content-Type: audio/ogg\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("ogv", "Content-Type: video/ogg\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("ogx", "Content-Type: application/ogg\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("opus", "Content-Type: audio/opus\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("otf", "Content-Type: font/otf\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("png", "Content-Type: image/png\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("pdf", "Content-Type: application/pdf\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("php", "Content-Type: application/x-httpd-php\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("ppt", "Content-Type: application/vnd.ms-powerpoint\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("pptx", "Content-Type: application/vnd.openxmlformats-officedocument.presentationml.presentation\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("rar", "Content-Type: application/vnd.rar\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("rss", "Content-Type: application/rss+xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("rtf", "Content-Type: application/rtf\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("sh", "Content-Type: application/x-sh\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("shtml", "Content-Type: text/html\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("svg", "Content-Type: image/svg+xml\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("svgz", "Content-Type: image/svg+xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("tar", "Content-Type: application/x-tar\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("tif", "Content-Type: image/tiff\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("tiff", "Content-Type: image/tiff\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("ts", "Content-Type: video/mp2t\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("ttf", "Content-Type: font/ttf\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("txt", "Content-Type: text/plain\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("vsd", "Content-Type: application/vnd.visio\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("wav", "Content-Type: audio/wav\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("wbmp", "Content-Type: image/vnd.wap.wbmp\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("weba", "Content-Type: audio/webm\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("webm", "Content-Type: video/webm\r\n"));
 	_contentType.insert(std::make_pair<std::string, std::string>("webp", "Content-Type: image/webp\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("ico", "Content-Type: image/x-icon\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("jng", "Content-Type: image/x-jng\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("bmp", "Content-Type: image/x-ms-bmp\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("font", "Content-Type: font/woff\r\n"));
-	_contentType.insert(std::make_pair<std::string, std::string>("font", "Content-Type: font/woff2\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("wml", "Content-Type: text/vnd.wap.wml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("woff", "Content-Type: font/woff\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("woff2", "Content-Type: font/woff2\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("xhtml", "Content-Type: application/xhtml+xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("xls", "Content-Type: application/vnd.ms-excel\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("xlsx", "Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("xml", "Content-Type: text/xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("xul", "Content-Type: application/vnd.mozilla.xul+xml\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("zip", "Content-Type: application/zip\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("3gp", "Content-Type: video/3gpp\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("3g2", "Content-Type: video/3gpp2\r\n"));
+	_contentType.insert(std::make_pair<std::string, std::string>("7z", "Content-Type: application/x-7z-compressed\r\n"));
 }
 
 std::string server_response::getType(std::string type)
@@ -101,17 +159,14 @@ std::string server_response::getType(std::string type)
 	for (std::map<std::string, std::string>::iterator it = _contentType.begin(); it != _contentType.end(); it++)
 		if (type == it->first)
 			return (it->second);
-	return ("Content-Type: text/html; charset=utf-8\r\n");
+	return ("Content-Type: application/octet-stream\r\n");
 }
 
 std::string findFileName(std::string FinalPath)
 {
-
 	size_t pos = 0;
 	while (FinalPath.find("/", pos + 1) != std::string::npos)
-	{
 		pos = FinalPath.find("/", pos + 1);
-	}
 	return (FinalPath.substr(pos + 1));
 }
 
@@ -124,7 +179,7 @@ std::string	server_response::list_dir(std::string path)
 	std::string	testDir;
 	std::string	route;
 
-	std::cout << "PATH : '" << path << "'" << std::endl;
+	//std::cout << "PATH : '" << path << "'" << std::endl;
 	while (path.find("//") != std::string::npos)
 		path = path.erase(path.find("//"), 1);
 	errno = 0;
@@ -150,7 +205,7 @@ std::string	server_response::list_dir(std::string path)
 		closedir(dir);
 		return ("");
 	}
-	response << "<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>" << path << "</title></head><body style=\"height: 100%;\"><h1 style=\"padding-top:0.5em;font-size:3em;\">Index of " << path << "</h1></br><ul style=\"margin-top:10px;margin-bottom:10px;padding-top:10px;padding-bottom:10px;border-size:0.5em;border-top-style:solid;border-bottom-style:solid;\">";
+	response << "<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>" << path << "</title></head><body style=\"padding:0;margin:0;\"><main style=\"margin-top:62px;padding-bottom:60px\"><h1 style=\"padding-top:0.5em;font-size:3em;\">Index of " << path << "</h1></br><ul style=\"margin-top:10px;margin-bottom:10px;padding-top:10px;padding-bottom:10px;border-size:0.5em;border-top-style:solid;border-bottom-style:solid;\">";
 	while (send)
 	{
 		testDir = path + send->d_name;
@@ -167,7 +222,7 @@ std::string	server_response::list_dir(std::string path)
 		send = readdir(dir);
 	}
 	closedir(dir);
-	response << "</ul><footer style=\"position:fixed;bottom:0;left:0;right:0;background-color:#111;color:white;text-align:center;padding:10px 0;font-size:0.8em;\">Site web créé par Nicolas, Mathieu et Cyril</footer></body></html>";
+	response << "</ul></main><footer style=\"position:fixed;bottom:0;left:0;right:0;background-color:#111;color:white;text-align:center;padding:10px 0;font-size:0.8em;\">🐑 Site web créé par Nicolas, Mathieu et Cyril 🐑</footer></body></html>";
 	return (response.str());
 }
 
@@ -354,7 +409,7 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 		int j = 0;
 		while (infile >> j)
 			SessionIdGiven.push_back(j);
-		for (size_t i = 0; i <= SessionIdGiven.size(); i++)
+		for (size_t i = 0; i < SessionIdGiven.size(); i++)
 		{
 			// std::cout << "i : " << i << std::endl;
 			// std::cout << "SessionIdGiven.size() : " << SessionIdGiven.size() << std::endl;
@@ -377,14 +432,14 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 
 bool	server_response::manageCgi(const server_request& Server_Request, server_configuration *server)
 {
-	std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
+	// std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
 	if (access(server->getCgi().find("." + Server_Request.getType())->second.data(), X_OK))
 		_status_code = 502;
 	else
 	{
 		std::stringstream buffer;
 		if (_fileName == "")
-			_fileName = ".cgi-tmp.txt";
+			_fileName = ".cgi-tmp";
 		if (!doCgi(_finalPath,server))
 		{
 			std::ifstream	cgiContent(_fileName.data());
@@ -405,12 +460,12 @@ bool	server_response::manageCgi(const server_request& Server_Request, server_con
 	return (0);
 }
 
-bool	server_response::AnswerGet(const server_request& Server_Request, server_configuration *server)
+int	server_response::AnswerGet(const server_request& Server_Request, server_configuration *server)
 {
 	if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
 	{
 		// std::cout << "d0 " << std::endl;
-		std::cerr << _finalPath << std::endl;
+		//std::cerr << _finalPath << std::endl;
 		_status_code = 404;
 	}
 	else
@@ -430,34 +485,28 @@ bool	server_response::AnswerGet(const server_request& Server_Request, server_con
 			std::ifstream file(_finalPath.c_str());
 			if (!file.is_open())
 				_status_code = 403;
-			else
-			{
-				std::size_t chunk_size = 4096;
-				char chunk[chunk_size];
-				while(true)
-				{
-					file.read(chunk, chunk_size);
-					std::streamsize bytes_read = file.gcount();
-        			if (bytes_read == 0) {
-        			    break; // end of file
-        			}
-        			buffer.write(chunk, bytes_read);
-					if (g_code == 42)
-						return (1);
-				}
-				// buffer << file.rdbuf();
-			}
+			file.seekg(0, std::ios::end);
+			int FileSize = file.tellg();
+			file.seekg(0, std::ios::beg);
+			if (FileSize < 500000)
+				buffer << file.rdbuf();
+			else 
+				return FileSize;
 		}
 		_content = buffer.str();
 	}
-	return (1);
+	return (0);
 }
 
-void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp, std::vector<std::pair<int, std::string> >* MsgToSent)
+void	server_response::SendingResponse(const server_request& Server_Request, int conn_sock, server_configuration *server,  int StatusCodeTmp, std::map<int, std::pair<std::string, std::string> >* MsgToSent)
 {
 	if (StatusCodeTmp != 200)
 		_status_code = StatusCodeTmp;
 
+	
+	// std::cout << "\nTEST CONFIG" << std::endl;
+	// std::cout << *server << std::endl;
+	// std::cout << "FIN" << std::endl; 
 	/*	Ci-dessous, on genere un ID de session pour chaque nouvel utilisateur
 		et on verifie que si un ID est recu, c'est bien nous qui l'avons emis
 		pour renvoyer sinon une erreur 401 et un id_session a zero (a savoir 
@@ -472,14 +521,15 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	
 	/*Si l'on se situe, ds une location et qu'il y a une HTTP redir alors
 	il faut pouvoir renvoyer la redir */
-	if (isRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) > 0)
+	if (isRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) > 0 && checkStatus(_status_code))
 	{
 		std::stringstream response;
 			response << "HTTP/1.1 301 Moved Permanently\r\nLocation: " \
 			<< getRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) << "\r\n";
 			std::string response_str = response.str();
 			errno = 0;
-			MsgToSent->push_back(std::pair<int, std::string>(conn_sock, response_str)); // remplace sent
+			MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(response_str, "")));
+			// MsgToSent->push_back(std::pair<int, std::string>(conn_sock, response_str)); // remplace sent
 			errno = 0;
 	}
 	/*********************************************************************/
@@ -509,7 +559,7 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	un message erreur */
 	struct stat path_info;
 	bool dir;
-	if (stat(RealPath.c_str(), &path_info) != 0) {
+	if (stat(RealPath.c_str(), &path_info) != 0 && checkStatus(_status_code)) {
 		/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		_status_code = 404;
@@ -544,40 +594,48 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	/************************************************/
 
 	/* Gestion des CGI pour ensuite repondre à la requete*/
-	if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end() && _status_code == 200)
+	if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end() && checkStatus(_status_code))
 	{
-		std::cerr << "cgi" << std::endl;
+		//std::cerr << "cgi" << std::endl;
 		manageCgi(Server_Request, server);
 	}
 	
+	std::map<int, std::pair<std::string, std::string> > MsgToSentTmp; // Je cree un TMP pour envoyer tout d'un coup apres au vrai objet.
+	MsgToSentTmp.insert(std::make_pair(conn_sock, std::make_pair("", ""))); // Ici, j'ajoute la conn_sock car on sait deja;
+	int MsgSize = 0;
 	// std::cout << "\n TEST : " << Server_Request.getMethod() << std::endl;
 	std::stringstream response;
-	if ((Server_Request.getMethod() == "GET" || Server_Request.getMethod() == "POST") && _status_code != 500)
+	if ((Server_Request.getMethod() == "GET" || Server_Request.getMethod() == "POST") && checkStatus(_status_code))
 	{
 		// std::cout << "\nGETMETHOD SERVER_RESPONSE\n" << std::endl;
 		if (_status_code == 200)
-			AnswerGet(Server_Request, server);
-		createResponse(server, _content, Server_Request, id_session);
-		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
+		{
+			MsgSize = AnswerGet(Server_Request, server);
+			if (MsgSize)	
+				MsgToSentTmp[conn_sock].second = _finalPath;
+		}
+		createResponse(server, _content, Server_Request, id_session, MsgSize);
+		MsgToSentTmp[conn_sock].first = _ServerResponse;
+		std::map<int, std::pair<std::string, std::string> >::iterator it = MsgToSentTmp.find(conn_sock);
+		if (it != MsgToSentTmp.end())
+			MsgToSent->insert(*it);
 		return ;
 	}
-	else if (Server_Request.getMethod() == "DELETE" && _status_code != 500)
+	else if (Server_Request.getMethod() == "DELETE" && checkStatus(_status_code))
 	{
 		if (_status_code == 200)
 			this->delete_dir(_finalPath.c_str());
 		if (_status_code == 200)
 			_content = server->getErrorPage()[STATUS200].second;
-		createResponse(server, _content, Server_Request, id_session);
-		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
-
+		createResponse(server, _content, Server_Request, id_session, 0);
+		MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(_ServerResponse, "")));
 		return ;
 	}
 	else
 	{
-		response << addHeader(STATUS500, server->getErrorPage().find(STATUS500)->second, Server_Request, server, id_session);
-		response << addBody(server->getErrorPage()[STATUS500].second);
-		_ServerResponse = response.str();
-		MsgToSent->push_back(std::pair<int, std::string>(conn_sock, _ServerResponse)); // remplace sent
+		createResponse(server, "", Server_Request, id_session, 0);
+	//	std::cerr << "ServerResponse = '" << _ServerResponse << "'" << std::endl;
+		MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(_ServerResponse, "")));
 		return ;
 	}
 	if (_isCgi)
@@ -622,7 +680,12 @@ std::string	server_response::addHeader(std::string statusMsg, std::pair<std::str
 			response << this->getType(statusContent.first.substr(statusContent.first.find('.', 0) + 1));
 	}
 	else
-		response << this->getType(Server_Request.getType());
+	{
+		if (checkStatus(_status_code))
+			response << this->getType(Server_Request.getType());
+		else
+			response << this->getType("html");
+	}
 	if (Server_Request.getServerRequest().find("IdSession=") == std::string::npos && _status_code != 401)
 		response << "Set-Cookie: " << "IdSession=" << IdSession << "\n"; // tentative d'implementation des cookies
 	if (server->getCookieHeader().size() != 0)
@@ -663,7 +726,7 @@ void	server_response::addLength()
 	_content.insert(0, tmp);
 }
 
-void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request, int IdSession)
+void	server_response::createResponse(server_configuration * server, std::string file, const server_request& Server_Request, int IdSession, int MsgSize)
 {
 	std::stringstream	response;
 	enum	status { INFO, SUCCESS, REDIRECTION, CLIENT, SERVER };
@@ -700,10 +763,18 @@ void	server_response::createResponse(server_configuration * server, std::string 
 				{
 					if (_isCgi == 0)
 						response << addHeader(STATUS200, server->getErrorPage().find(STATUS200)->second, Server_Request, server, IdSession);
-					// std::cout <<"\nTEST PR WARNING" << std::endl;
-					response << addBody(file);
-					// std::cout <<"\nTEST FIN" << std::endl;
-					break;
+					if (MsgSize == 0)
+					{
+						response << addBody(file);
+						break;
+					}
+					else
+					{
+						response << "Content-Length: " << MsgSize << "\r\n\r\n";
+						_ServerResponse = response.str();
+						return ;
+					}
+					
 				}
 				case 201:
 				{
@@ -999,24 +1070,22 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	_env.push_back("DOCUMENT_ROOT=" + cwd);
 	_env.push_back("REQUEST_METHOD=" + _req->getMethod());
 	_env.push_back("SCRIPT_FILENAME=" + cwd + toexec.substr(1));
-	std::cerr << "SCRIPT_FILENAME = '" << cwd << toexec.substr(1) << "'" << std::endl;
 	cgiPath = server->getCgi().find("." + _req->getType())->second;
 	_env.push_back("SCRIPT_NAME=" + toexec.substr(1));
-	std::cerr << "SCRIPT_NAME = '" << toexec.substr(1) << "'" << std::endl;
 	_env.push_back("QUERY_STRING=" + _req->getQuery());
 	_env.push_back("PATH_INFO=/");
 	_env.push_back("REQUEST_URI=" + _req->getRequestURI());
 	_env.push_back("REDIRECT_STATUS=1");
 	if (_body.find(std::string("content-length")) != std::string::npos)
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
-	// std::cerr << std::endl << "E = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
+	// std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
 	if (this->getType(_req->getType()) != "")
 	 	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
-	// _env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
-	std::cerr << "_body = '" << _body << "'" << std::endl;
+	//_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+	// std::cerr << "_body = '" << _body << "'" << std::endl;
 	if (_req->getIsBody())
 	{
-		std::cerr << "PPPPPP" << std::endl;
+		// std::cerr << "PPPPPP" << std::endl;
 		std::ofstream file(getBodyName().c_str());
 		if (file) {
 			file << _req->getBody();
@@ -1029,11 +1098,12 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 		_cgiFd = open(getBodyName().data(), O_RDONLY);
 		if (_cgiFd < 0)
 		{
-			std::cerr << "FAIL TO OPEN CGIFD" << std::endl;
+			//std::cerr << "FAIL TO OPEN CGIFD" << std::endl;
 			_status_code = 500;
 			return (1);
 		}
-		std::cerr << "cgi fd = '" << _cgiFd << "'" << "_req->getBody().size() = " << _req->getBody().size() << std::endl;
+		std::remove(getBodyName().data());
+		// std::cerr << "cgi fd = '" << _cgiFd << "'" << "_req->getBody().size() = " << _req->getBody().size() << std::endl;
 	}
 	try
 	{

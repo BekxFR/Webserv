@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:29:37 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/05 18:12:47 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/03 15:02:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ class server_request
 		bool		getIsBody() const { return (_isBody); }
 		std::string	getQuery() const { return (_argsBrutes); }
 
+		void		setRequest(std::string r) { _ServerRequest = r; }
 		//OTHER
 		std::string			findRequestURI();
 		std::string			findMethod();

@@ -3,15 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:20:43 by nflan             #+#    #+#             */
-/*   Updated: 2023/04/26 19:35:33 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/05 15:15:47 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils.hpp"
 
+extern std::vector<int> open_ports;
+extern std::vector<int> sockets;
 
 std::string	itos(int nb)
 {
@@ -48,21 +50,15 @@ void PrintServer(std::vector<server_configuration*> servers)
 	for (size_t i = 0; i < servers.size(); i++)
 	{
 		server_configuration* server = servers[i];
-		std::cout << "Server " << i << ":" << std::endl;
-		std::cout << *server << std::endl;
+		std::cout << "Server " << i << ":" << std::endl << *server << std::endl;
 	}
 }
 
-void	CloseSockets(int *listen_sock, sockaddr_in *addr, std::vector<int> Ports)
+void	CloseListenSockets(std::vector<int> listen_sock)
 {
-	int tablen = Ports.size();
-	
-	for (int i = 0; i < tablen; i++)
-	{
-		close(listen_sock[i]);
-		close(Ports[i]);
-		close(addr[i].sin_port);
-	}
+	for (std::vector<int>::iterator it = listen_sock.begin(); it != listen_sock.end(); it++)
+		if (*it != -1)
+			close(*it);
 }
 
 void	DeleteServers(std::vector<server_configuration*> servers)
@@ -75,6 +71,29 @@ void	DeleteServers(std::vector<server_configuration*> servers)
 	}
 }
 
+void	closeSockets()
+{
+	for (size_t i = 0; i < open_ports.size(); i++)
+		if (open_ports[i] != -1)
+			close(open_ports[i]);
+	for (size_t i = 0; i < sockets.size(); i++)
+		if (sockets[i] != -1)
+			close(sockets[i]);
+}
+
+bool	checkStatus(int status)
+{
+	if (status >= 200 && status <= 206)
+		return (1);
+	return (0);
+}
+
+bool	isMethodPossible(std::string method)
+{
+	if (method == "POST" || method == "GET" || method == "DELETE")
+		return (1);
+	return (0);
+}
 
 bool	is_dir(const char* path, server_response& sr)
 {
