@@ -1,0 +1,25 @@
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./webserv sources/server.conf3
+Host 0 : mathieu
+Host 1 : [::]
+Host 2 : 
+Host 3 : localhost
+Host 4 : 127.0.0.1
+Host 5 : 0.0.0.0
+Host 6 : localhost
+Host 7 : 127.0.0.1
+[1;32mPort 8083 is listening[0m
+
+[1;32mPort 8080 is listening[0m
+
+[1;31mPort 8083 is already listening[0m
+
+[1;31mPort 8083 is already listening[0m
+
+[1;32mPort 8099 is listening[0m
+
+[1;32mPort 8086 is listening[0m
+
+[1;31mPort 8086 is already listening[0m
+
+[1;32mPort 8088 is listening[0m
+

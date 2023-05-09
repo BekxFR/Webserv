@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/09 16:09:58 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 17:16:46 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -762,45 +762,55 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 
 			memset(&addr[i], 0, sizeof(addr[i]));
 			addr[i].sin_family = AF_INET;
-			
+	
 			/****Ci-dessous, tentative de bien lier les adresses IP**********/
-			if (Hosts[i].size() == 0 || Hosts[i] == "[::]")
+			int error_pton = 42;
+			if (Hosts[i].size() == 0 || Hosts[i] == "localhost")
+			{
 				addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
+				error_pton = 1;
+			}
 			else
-				inet_pton(AF_INET, Hosts[i].c_str(), &addr[i].sin_addr);
-			/****************************************************************/
+				error_pton = inet_pton(AF_INET, Hosts[i].c_str(), &addr[i].sin_addr);
 			
-			addr[i].sin_port = htons(Ports[i]);
-			// StorePort.insert(std::pair<int, int>(Ports[i], listen_sock));
-			int val = 1;
-			if (setsockopt(socktmp, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0) {
+			if (error_pton != 1)
+			{
 				close(socktmp);
-				std::cerr << "Error: setsockopt() failed: " << strerror(errno) << std::endl;
+				std::cout << "\033[1;31m" << "Host " << Hosts[i] << " is not good" << "\033[0m\n" << std::endl;
 			}
 			else
 			{
-				if (bind(socktmp, (struct sockaddr *) &addr[i], addrlen[i]) == -1)
-				{
-					if (errno == EADDRINUSE) // changer
-					{
-						if (1)
-							std::cout << "\033[1;31m" << "Port " << Ports[i] << " is already listening" << "\033[0m\n" << std::endl;
-						// std::fprintf(stderr, "Error: bind failed: %s\n", strerror(errno));
-						// return(CloseListenSockets(listen_sock), EXIT_FAILURE);
-					}
+				addr[i].sin_port = htons(Ports[i]);
+				// StorePort.insert(std::pair<int, int>(Ports[i], listen_sock));
+				int val = 1;
+				if (setsockopt(socktmp, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0) {
 					close(socktmp);
+					std::cerr << "Error: setsockopt() failed: " << strerror(errno) << std::endl;
 				}
 				else
 				{
-					std::cout << "\033[1;32m" << "Port " << Ports[i] << " is listening" << "\033[0m\n" << std::endl;
-					if (listen(socktmp, SOMAXCONN) == -1) {
+					if (bind(socktmp, (struct sockaddr *) &addr[i], addrlen[i]) == -1)
+					{
+						if (errno == EADDRINUSE) // changer
+						{
+							std::cout << "\033[1;31m" << "Port " << Ports[i] << " is already listening" << "\033[0m\n" << std::endl;
+							// std::fprintf(stderr, "Error: bind failed: %s\n", strerror(errno));
+							// return(CloseListenSockets(listen_sock), EXIT_FAILURE);
+						}
 						close(socktmp);
-						std::cerr << "Error: listen failed: " << strerror(errno) << std::endl;
 					}
 					else
 					{
-						listen_sock.push_back(socktmp);
-						StorePort.insert(std::make_pair(Ports[i], socktmp));
+						std::cout << "\033[1;32m" << "Port " << Ports[i] << " is listening" << "\033[0m\n" << std::endl;
+						if (listen(socktmp, SOMAXCONN) == -1) {
+							close(socktmp);
+							std::cerr << "Error: listen failed: " << strerror(errno) << std::endl;
+						}
+						else
+						{
+							listen_sock.push_back(socktmp);
+							StorePort.insert(std::make_pair(Ports[i], socktmp));
+						}
 					}
 				}
 			}
