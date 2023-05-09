@@ -103,3 +103,35 @@ server {
 
 		allow_methods GET;
 }
+
+server {
+	server_name wb1.com;
+		listen localhost:8089;
+
+		root ./site3/;
+		index indeex.html
+		autoindex on;
+
+		allow_methods GET;
+}
+
+server {
+	server_name wb1.com;
+		listen localhost:8090;
+
+		root ./site3/;
+		index indeex.html
+		autoindex off;
+
+		allow_methods GET;
+}
+
+server {
+	server_name wb1.com;
+		listen localhost:8091;
+
+		root ./site3/;
+		index indeex.html
+
+		allow_methods GET;
+}

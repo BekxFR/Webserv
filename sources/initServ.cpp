@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/09 13:24:40 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 16:43:21 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -418,7 +418,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 	memset(buffer, 0, n);
 	while (n >= 2048)
 	{
-				if (g_code == 42)
+		if (g_code == 42)
 			break ;
 		// std::cout << "\nN VALUE : " << n << std::endl;
 		n = recv(conn_sock, buffer, n, MSG_DONTWAIT);
@@ -715,9 +715,8 @@ std::multimap<int, int> ChangeOrKeepPort(std::multimap<int, int> *StorePort, int
 	return (*StorePort);
 }
 
-int isNotPort(int fd, std::vector<int> listen_sock, size_t len)
+int isNotPort(int fd, std::vector<int> listen_sock)
 {
-	(void)len;
 	for (size_t i = 0; i < listen_sock.size(); i++)
 	{
 		// std::cout << "LISTEN IS NOT PORT " << listen_sock[i] << std::endl;
@@ -832,13 +831,11 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 		}
 	}
 	for (;;) {
+		if (g_code == 42)
+			return(CloseListenSockets(listen_sock), EXIT_FAILURE);
 	//	std::cerr << "CONN_SOCK = " << conn_sock << std::endl;
 		nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
-		if (nfds == -1) {
-			std::cerr << "Error: epoll_wait: " << strerror(errno) << std::endl;
-			return(CloseListenSockets(listen_sock), EXIT_FAILURE);
-		}
-		if (g_code == 42) //check ctrl c
+		if (nfds == -1 || g_code == 42)
 			return(CloseListenSockets(listen_sock), EXIT_FAILURE);
 		// std::cout << "\nWAIT TIME" << std::endl;
 		for (int n = 0; n < nfds; ++n)
@@ -883,7 +880,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 						return(CloseListenSockets(listen_sock), EXIT_FAILURE);
 				}
 			}
-			if ((events[n].events & EPOLLIN) && isNotPort(events[n].data.fd, listen_sock, listen_sock.size()))
+			if ((events[n].events & EPOLLIN) && isNotPort(events[n].data.fd, listen_sock))
 			{
 				// std::cout << "\nEPOLLIN : " << events[n].data.fd << " + " << events[n].data.fd << std::endl;
 				// std::cout << "\nSENT : " << events[n].data.fd << std::endl;
@@ -909,7 +906,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 				// 	perror("epoll_ctl1");
 				// }
 			}
-			if ((events[n].events & EPOLLOUT) && isNotPort(events[n].data.fd, listen_sock, listen_sock.size()))
+			if ((events[n].events & EPOLLOUT) && isNotPort(events[n].data.fd, listen_sock))
 			{
 				// epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &ev);
 				// std::cout << "\nEPOLLOUT : " << events[n].data.fd << std::endl;
@@ -925,7 +922,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 							// std::cout << "\nSENT THE HEADER OF A BIG MESSAGE" << std::endl;
 							// std::cout.write(it->second.first.c_str() , it->second.first.size());
 							// std::cout << "\nFIN" << std::endl;
-							if (send(it->first, it->second.first.c_str() , it->second.first.size(), 0) == -1)
+							if (send(it->first, it->second.first.c_str() , it->second.first.size(), MSG_NOSIGNAL | MSG_DONTWAIT) <= 0)
 							{
 								// std::cout << "\nsend 1 pb" << std::endl;
 								for (std::vector < int >::iterator it2 = sockets.begin(); it2 != sockets.end(); it2++)
@@ -933,7 +930,6 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 									if (*it2 == it->first)
 									{
 										sockets.erase(it2);
-										close(conn_sock);
 										break;
 									}
 								}
@@ -956,7 +952,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 								// std::cout << "bytes_read : " << bytes_read << std::endl;
 								if (bytes_read == 0)
 								{
-									if (send(it->first, "\r\n\r\n", 4, 0) == -1)
+									if (send(it->first, "\r\n\r\n", 4 , MSG_NOSIGNAL | MSG_DONTWAIT) <= 0)
 									{
 										// std::cout << "\nsend 2 pb" << std::endl;
 										for (std::vector < int >::iterator it2 = sockets.begin(); it2 != sockets.end(); it2++)
@@ -964,7 +960,6 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 											if (*it2 == it->first)
 											{
 												sockets.erase(it2);
-												close(conn_sock);
 												break;
 											}
 										}
@@ -978,7 +973,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 								}
 								else
 								{
-									if (send(it->first, chunk, bytes_read, 0) == -1)
+									if (send(it->first, chunk, bytes_read, MSG_NOSIGNAL | MSG_DONTWAIT) <= 0)
 									{
 										// std::cout << "\nsend 3 pb" << std::endl;
 										for (std::vector < int >::iterator it2 = sockets.begin(); it2 != sockets.end(); it2++)
@@ -986,7 +981,6 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 											if (*it2 == it->first)
 											{
 												sockets.erase(it2);
-												close(conn_sock);
 												break;
 											}
 										}
@@ -999,17 +993,41 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 							}
 							else //file not open
 							{
-								send(it->first, it->second.first.c_str() , it->second.first.size(), 0);
+								if (send(it->first, it->second.first.c_str() , it->second.first.size(), MSG_NOSIGNAL | MSG_DONTWAIT) <= 0)
+								{
+									for (std::vector < int >::iterator it2 = sockets.begin(); it2 != sockets.end(); it2++)
+									{
+										if (*it2 == it->first)
+										{
+											sockets.erase(it2);
+											break;
+										}
+									}
+									epoll_ctl(epollfd, EPOLL_CTL_DEL, it->first, &ev);
+									close (it->first);
+								}
 								MsgToSent.erase(it);
 							}
 						}
 					}
 					else
 					{
-				//		std::cout << "\nTEST SEND PETIT FICHIER" << std::endl;
-				//		std::cout.write(it->second.first.c_str(), it->second.first.size());
-				//		std::cout << "\n FIN TEST SEND PETIT FICHIER" << std::endl;
-						send(it->first, it->second.first.c_str() , it->second.first.size(), 0);
+						std::cout << "\nTEST SEND PETIT FICHIER" << std::endl;
+						std::cout.write(it->second.first.c_str(), it->second.first.size());
+						std::cout << "\n FIN TEST SEND PETIT FICHIER" << std::endl;
+						if (send(it->first, it->second.first.c_str() , it->second.first.size(), MSG_NOSIGNAL | MSG_DONTWAIT) <= 0)
+						{
+							for (std::vector < int >::iterator it2 = sockets.begin(); it2 != sockets.end(); it2++)
+							{
+								if (*it2 == it->first)
+								{
+									sockets.erase(it2);
+									break;
+								}
+							}
+							epoll_ctl(epollfd, EPOLL_CTL_DEL, it->first, &ev);
+							close (it->first);
+						}
 						MsgToSent.erase(it);
 					}
 				}
