@@ -509,9 +509,9 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		// std::cout << ServerRequest << std::endl;
 		// std::cout << "\nFIN REQUEST PARSED" << std::endl;
 
-		std::cout << "\nCONF HANDLE\n" << std::endl; 
-		std::cout << *GoodServerConf << std::endl;
-		std::cout << "\nFIN CONF" << std::endl;
+		// std::cout << "\nCONF HANDLE\n" << std::endl; 
+		// std::cout << *GoodServerConf << std::endl;
+		// std::cout << "\nFIN CONF" << std::endl;
 		// exit(0);
 
 		/* Ci-dessous, on vérifie que la méthode est autorisée. On le fait ici
