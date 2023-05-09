@@ -1,0 +1,24 @@
+Content-type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<title>Uploader un fichier</title>
+</head>
+<body>
+	<h1>Uploader un fichier</h1>
+	<form action="upload.php" method="POST" enctype="multipart/form-data">
+		<label for="file">Choisissez un fichier :</label>
+		<input type="file" name="file" id="file"><br><br>
+		<input type="submit" value="Uploader le fichier">
+	</form>
+
+	<hr>
+
+	<h2>Liste des fichiers uploadés :</h2>
+	<ul>
+		<li>".$file." - <a href="download.php?file=teSTEUR.txt">Télécharger</a> - <a href="delete.php?file=teSTEUR.txt">Supprimer</a></li>	</ul>
+
+</body>
+</html>

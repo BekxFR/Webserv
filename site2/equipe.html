@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>WebServ</title>
+	<style>
+		body {
+			background-color: #97f15a;
+			margin: 0;
+			padding: 0;
+		}
+
+		header {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			z-index: 999;
+			background-color: #97f15a;
+			text-align: center;
+			font-size: 2em;
+			font-weight: bold;
+			box-shadow: 0px 2px 5px rgba(255, 255, 255, 0.3);
+		}
+
+		header a {
+			color: white;
+			width: 100%;
+			height: 100%;
+			padding: 10px 0;
+			display: block;
+			text-decoration: none;
+		}
+
+		footer {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			background-color: #111;
+			color: white;
+			text-align: center;
+			padding: 10px 0;
+			font-size: 0.8em;
+		}
+
+		main {
+			margin-top: 62px;
+			padding-bottom: 60px;
+			text-align: center;
+		}
+
+		img {
+			width: 20%;
+			height: 20%;
+			display: block;
+			margin: 10% auto 0; /* centrage de l'image */
+			animation: rotate 4s linear infinite; /* animation rotation */
+			transform-origin: center;
+		}
+
+		img:hover {
+			display: block;
+			animation-play-state: paused;
+		}
+
+		article {
+			background-color: #a5a5a5;
+			border: 1px solid #ddd;
+			padding: 20px;
+			margin: 20px auto;
+			max-width: 800px;
+		}
+
+        @keyframes rotate { /* définition de l'animation rotation */
+            from {
+                transform: rotate(0deg) scale(1);
+            }
+			25%{
+                transform: rotate(90deg) scale(1.5);
+			}
+			50%{
+                transform: rotate(180deg) scale(1);
+			}
+			75%{
+                transform: rotate(270deg) scale(1.5);
+			}
+            to {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+        @keyframes rotate_full_speed { /* définition de l'animation rotation */
+            from {
+                transform: rotate(0deg) scale(1);
+            }
+            to {
+                transform: rotate(4800deg) scale(0);
+            }
+        }
+
+	</style>
+</head>
+
+<body>
+	<header>
+		<a href="/index.html">WebServ</a>
+	</header>
+	<main>
+		<article>
+			<h1>Le plaisir de travailler en équipe</h1>
+			<p>Travailler en équipe peut être très gratifiant, que ce soit dans un contexte professionnel ou personnel. En effet, cela permet de combiner les compétences et les connaissances de plusieurs personnes pour atteindre un objectif commun.</p>
+			<p>En travaillant en équipe, chacun peut apporter sa propre perspective et ses idées. Cela peut conduire à des solutions créatives et innovantes, que personne n'aurait pu trouver seul. De plus, travailler en équipe permet de partager la charge de travail et de s'entraider en cas de besoin.</p>
+			<p>Le travail d'équipe peut également favoriser le développement personnel et professionnel. En travaillant avec d'autres personnes, il est possible d'apprendre de nouvelles compétences, d'améliorer sa communication et sa capacité à résoudre des problèmes. En outre, cela peut renforcer la confiance en soi et la motivation pour atteindre des objectifs communs.</p>
+			<p>Cependant, pour que le travail d'équipe soit efficace, il est important de bien communiquer et de respecter les idées et les opinions de chacun. Il est également important de définir clairement les rôles et les responsabilités de chacun et de maintenir une communication ouverte et transparente tout au long du projet.</p>
+			<p>En somme, travailler en équipe peut être une expérience enrichissante et valorisante, tant sur le plan personnel que professionnel. En combinant les compétences et les connaissances de chacun, il est possible d'atteindre des objectifs ambitieux et de relever des défis complexes.</p>
+			<p>Pour en savoir plus sur l'utilité d'un serveur web, vous pouvez consulter la page suivante :</p>
+			<a href="/websrv.html">L'utilité d'un serveur web</a>
+		</article>
+	</main>
+	<img id="sheep" src="happysheep.gif" alt="Sheep Happy">
+	<footer>🐑 Site web créé par Nicolas, Mathieu et Cyril 🐑</footer>
+	<script>
+		let sheep = document.querySelector('#sheep')
+		document.querySelector('#sheep').addEventListener("click", () => {
+			sheep.style = "animation: rotate_full_speed 4s linear;"
+			setTimeout(() => {
+				sheep.style = "display: none;"
+			}, 3998);
+			console.log("⠀ ⠀⠀⠀⠀⠀⠀⢀⡔⠋⢉⠩⡉⠛⠛⠛⠉⣉⣉⠒⠒⡦⣄⠀⠀⠀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠀⠀⢀⠎⠀⠀⠠⢃⣉⣀⡀⠂⠀⠀⠄⠀⠀⠀⠀⢱⠀⠀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠀⡰⠟⣀⢀⣒⠐⠛⡛⠳⢭⠆⠀⠤⡶⠿⠛⠂⠀⢈⠳⡀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⢸⢈⢘⢠⡶⢬⣉⠉⠀⠀⡤⠄⠀⠀⠣⣄⠐⠚⣍⠁⢘⡇⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠈⢫⡊⠀⠹⡦⢼⣍⠓⢲⠥⢍⣁⣒⣊⣀⡬⢴⢿⠈⡜⠀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠀⠀⠹⡄⠀⠘⢾⡉⠙⡿⠶⢤⣷⣤⣧⣤⣷⣾⣿⠀⡇⠀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠀⠀⠀⠘⠦⡠⢀⠍⡒⠧⢄⣀⣁⣀⣏⣽⣹⠽⠊⠀⡇⠀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠪⢔⡁⠦⠀⢀⡤⠤⠤⠄⠀⠠⠀⡇");
+		})
+		</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>WebServ</title>
+	<style>
+		body {
+			background-color: #fa94b6;
+			margin: 0;
+			padding: 0;
+		}
+
+		header {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			z-index: 999;
+			background-color: #fa94b6;
+			text-align: center;
+			font-size: 2em;
+			font-weight: bold;
+			box-shadow: 0px 2px 5px rgba(255, 255, 255, 0.3);
+		}
+
+		header a {
+			color: white;
+			width: 100%;
+			height: 100%;
+			padding: 10px 0;
+			display: block;
+			text-decoration: none;
+		}
+
+		footer {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			background-color: #111;
+			color: white;
+			text-align: center;
+			padding: 10px 0;
+			font-size: 0.8em;
+		}
+
+		main {
+			margin-top: 62px;
+			padding-bottom: 60px;
+			text-align: center;
+		}
+
+		img {
+			width: 20%;
+			height: 20%;
+			display: block;
+			margin: 10% auto 0; /* centrage de l'image */
+			animation: rotate 4s linear infinite; /* animation rotation */
+			transform-origin: center;
+		}
+
+		img:hover {
+			display: block;
+			animation-play-state: paused;
+		}
+
+		article {
+			background-color: #a5a5a5;
+			border: 1px solid #ddd;
+			padding: 20px;
+			margin: 20px auto;
+			max-width: 800px;
+		}
+
+        @keyframes rotate { /* définition de l'animation rotation */
+            from {
+                transform: rotate(0deg) scale(1);
+            }
+			25%{
+                transform: rotate(90deg) scale(1.5);
+			}
+			50%{
+                transform: rotate(180deg) scale(1);
+			}
+			75%{
+                transform: rotate(270deg) scale(1.5);
+			}
+            to {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+        @keyframes rotate_full_speed { /* définition de l'animation rotation */
+            from {
+                transform: rotate(0deg) scale(1);
+            }
+            to {
+                transform: rotate(4800deg) scale(0);
+            }
+        }
+
+	</style>
+</head>
+
+<body>
+	<header>
+		<a href="/index.html">WebServ</a>
+	</header>
+	<main>
+		<article>
+			<h1>L'utilité d'un serveur web</h1>
+			<p>Un serveur web est un logiciel qui permet de répondre aux requêtes HTTP en renvoyant des pages web aux utilisateurs. Cela permet de rendre des sites web accessibles sur internet et de servir des contenus statiques ou dynamiques aux utilisateurs. Grâce à un serveur web, les développeurs peuvent publier leur site sur internet et les utilisateurs peuvent y accéder depuis n'importe quel navigateur web.</p>
+			<p>Pour en savoir plus sur le plaisir de travailler en équipe, vous pouvez consulter la page suivante :</p>
+			<a href="/equipe.html">Travailler en équipe pour plus de plaisir</a>
+		</article>
+	</main>
+	<img id="sheep" src="happysheep.gif" alt="Sheep Happy">
+	<footer>🐑 Site web créé par Nicolas, Mathieu et Cyril 🐑</footer>
+	<script>
+		let sheep = document.querySelector('#sheep')
+		document.querySelector('#sheep').addEventListener("click", () => {
+			sheep.style = "animation: rotate_full_speed 4s linear;"
+			setTimeout(() => {
+				sheep.style = "display: none;"
+			}, 3998);
+			console.log("⠀ ⠀⠀⠀⠀⠀⠀⢀⡔⠋⢉⠩⡉⠛⠛⠛⠉⣉⣉⠒⠒⡦⣄⠀⠀⠀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠀⠀⢀⠎⠀⠀⠠⢃⣉⣀⡀⠂⠀⠀⠄⠀⠀⠀⠀⢱⠀⠀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠀⡰⠟⣀⢀⣒⠐⠛⡛⠳⢭⠆⠀⠤⡶⠿⠛⠂⠀⢈⠳⡀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⢸⢈⢘⢠⡶⢬⣉⠉⠀⠀⡤⠄⠀⠀⠣⣄⠐⠚⣍⠁⢘⡇⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠈⢫⡊⠀⠹⡦⢼⣍⠓⢲⠥⢍⣁⣒⣊⣀⡬⢴⢿⠈⡜⠀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠀⠀⠹⡄⠀⠘⢾⡉⠙⡿⠶⢤⣷⣤⣧⣤⣷⣾⣿⠀⡇⠀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠀⠀⠀⠘⠦⡠⢀⠍⡒⠧⢄⣀⣁⣀⣏⣽⣹⠽⠊⠀⡇⠀⠀⠀⠀⠀", '\n',
+			"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠪⢔⡁⠦⠀⢀⡤⠤⠤⠄⠀⠠⠀⡇");
+		})
+		</script>
+</body>
+</html>

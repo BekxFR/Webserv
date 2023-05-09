@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:29:37 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 15:02:21 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 12:06:23 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ class server_request
 
 		void		setRequest(std::string r) { _ServerRequest = r; }
 		//OTHER
+		void				add_Host_Value(const std::string& str);
 		std::string			findRequestURI();
 		std::string			findMethod();
 		unsigned long long	getContentLength() const ;

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:03:12 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/04 18:41:47 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/09 12:37:31 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ class server_configuration
 		std::string													_ConfigFile;
 		std::string													_ServerName;
 		std::string													_Root;
+		std::string													_UploadStore;
 		std::string													_Index;
 		std::vector<std::string>									_HttpMethodAccepted;
 		std::map<std::string, std::string>							_cgi;
@@ -67,6 +68,7 @@ class server_configuration
 		std::vector<std::string> 										getCookieHeader() { return _CookieHeader;}
 		int																getStatusCode()	const { return (_StatusCode); }
 		std::string														getDirectoryListing() { return (_DirectoryListing);}
+		std::string														getUploadStore() const { return _UploadStore;}
 
 		// SETTER
 		void														setCgi();

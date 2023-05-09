@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/09 14:59:33 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/09 15:19:56 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,7 +257,6 @@ std::string server_response::getRealPath(std::string MethodUsed, server_configur
 	dans une location */
 	if (isGenerallyAuthorised(MethodUsed, server, "NOT INDICATED"))
 		return (server->getRoot() + "/" + RequestURI);
-	std::cerr << "methode = " << MethodUsed << std::endl;
 	_status_code = 501;
 	return ("");
 }
@@ -546,14 +545,10 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPathIndex.find("//") != std::string::npos)
 		RealPathIndex = RealPathIndex.erase(RealPathIndex.find("//"), 1);
-	// PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
-	// while (PathToStore.find("//") != std::string::npos)
-	// 	PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
-	if (0)
+	if (1)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
-		std::cout << "PathToStore : " << PathToStore << std::endl;
 	}
 	/*Ensuite, on check si c'est le path donné est un directory ou non.
 	Une fosis que l'on sait cela, on peut renvoyer un index ou 
@@ -1064,7 +1059,6 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 			servNameEnv += "localhost";
 	}
 	_env.push_back(servNameEnv);
-	_env.push_back("AUTH_TYPE=");
 	_env.push_back("SERVER_PROTOCOL=" + _req->getVersion());
 	_env.push_back("SERVER_PORT=" + itos(server->getPort()[0]));
 	std::string	cwd = getcwd(buff, 256);
@@ -1081,7 +1075,7 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
 	// std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
 	if (this->getType(_req->getType()) != "")
-	 	_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
+		_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
 	//_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
 	// std::cerr << "_body = '" << _body << "'" << std::endl;
 	if (_req->getIsBody())

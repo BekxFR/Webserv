@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   initServ.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/08 18:38:58 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/09 13:24:40 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,9 @@ server_configuration*	getGoodServer(std::vector<server_configuration*> servers, 
 
 int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {
+	std::cout << "\nMethodUsed : " << MethodUsed << std::endl;
+	std::cout << "\nSERVER CONF : " << std::endl;
+	std::cout << *server << std::endl;
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
@@ -91,6 +94,10 @@ std::string getPathToStore(std::string MethodUsed, server_configuration *server,
 				}
 			}
 		}
+	}
+	if (server->getUploadStore().size() != 0)
+	{
+		return (server->getUploadStore());
 	}
 	return (server->getRoot());
 }
@@ -200,7 +207,6 @@ int check_Host_Line(const std::string& str)
 					status = 1;
 				}
 				if (count == 1 && status == 1){
-					std::cerr << "\nTWO HOST STRINGs\n" << std::endl;
 					return(0);}
 				count++;
 			}
@@ -450,10 +456,10 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 
 		// std::ifstream infile(str);
 		// if file.open() {
-		// 	std::string buffer
+		// 	std::string buffer\
 		// 	buffer << file;
 		// 	buffer.find("/r/n/r/n")
-		// 	file << request;
+		// 	// file << request;
 		// 	file.close();
 		// }
 		server_request ServerRequest;
@@ -473,6 +479,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			std::string fullRequest;
 			fullRequest = get_file_contents(conn_sock);
 			ServerRequest.setRequest(fullRequest);
+			ServerRequest.add_Host_Value(fullRequest);
 			ServerRequest.request_parser();
 			remove(str);
 			RequestSocketStatus.erase(conn_sock);
@@ -506,7 +513,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		// std::cout << ServerRequest << std::endl;
 		// std::cout << "\nFIN REQUEST PARSED" << std::endl;
 
-		// std::cout << "\nCONF\n" << std::endl; 
+		// std::cout << "\nCONF HANDLE\n" << std::endl; 
 		// std::cout << *GoodServerConf << std::endl;
 		// std::cout << "\nFIN CONF" << std::endl;
 		// exit(0);
@@ -540,15 +547,20 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		}
 		else if (ServerRequest.getMethod() == "POST" && checkStatus(CodeStatus))
 		{
-			// std::cout << "\na1.5\n" << std::endl;
-			// std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
+
 			if (GoodServerConf->getClientMaxBodySize() > ServerRequest.getContentLength())
 			{
 				SocketUploadFile.insert(std::make_pair(conn_sock, std::make_pair("", 0)));
 				std::string PathToStore = getPathToStore(ServerRequest.getMethod(), GoodServerConf, ServerRequest.getRequestURI());
-				std::cout << "\nPathToStore : " << PathToStore << std::endl;
 				while (PathToStore.find("//") != std::string::npos)
 					PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
+				struct stat path_info;
+				stat(PathToStore.c_str(), &path_info);
+				int dir = S_ISDIR(path_info.st_mode);
+				if (!dir)
+				{
+					PathToStore = GoodServerConf->getRoot();
+				}
 				UploadFilePath.insert(std::pair<int, std::string>(conn_sock, PathToStore));
 			}
 			else
@@ -689,55 +701,17 @@ void ChangePort(std::map<int, int> &StorePort, int conn_sock, int listen_sock)
 	}
 }
 
-std::multimap<int, int> ChangeOrKeepPort(std::multimap<int, int> *StorePort, int conn_sock, int Port)
+std::multimap<int, int> ChangeOrKeepPort(std::multimap<int, int> *StorePort, int NewConnSock, int PortSock)
 {
-	// std::cout << "\nINSIDE CHANGE OR KEEP\n" << std::endl;
 
 	for (std::multimap<int, int>::iterator it = StorePort->begin(); it != StorePort->end(); it++)
 	{
-		// std::cout << "\nChangeOrKeep normal : " << std::endl;
-		// std::cout << "it->second con sock : " << it->second << std::endl;
-		// std::cout << "Port : " << Port << std::endl;
-		// std::cout << "conn_sock : " << conn_sock << std::endl;
-		/* DERNIERE MODIFICATION */
-		// if (it->first == Port)
-		// {
-		// 	it->second = conn_sock;
-		// 	return ;
-		// }
-		/*************************/
-		if (it->second == conn_sock)
+		if (it->second == PortSock)
 		{
-			// std::cout << "RETURN CHANGE OR KEEP" << std::endl;
+			StorePort->insert(std::make_pair(it->first, NewConnSock));
 			return (*StorePort);
 		}
 	}
-	// std::cout << "shoud insert" << std::endl;
-	StorePort->insert(std::pair<int, int>(Port, conn_sock));
-
-	// std::cout << "\nSTART TEST" << std::endl;
-	// int i = 0;
-	for (std::multimap<int, int>::iterator it = StorePort->begin(); it != StorePort->end(); it++)
-	{
-		// std::cout << "\n TEST ChangeOrKeep element : " << i << std::endl;
-		// std::cout << "it->second con sock : " << it->second << std::endl;
-		// std::cout << "Port : " << Port << std::endl;
-		// std::cout << "conn_sock : " << conn_sock << std::endl;
-		/* DERNIERE MODIFICATION */
-		// if (it->first == Port)
-		// {
-		// 	it->second = conn_sock;
-		// 	return ;
-		// }
-		/*************************/
-		if (it->second == conn_sock)
-		{
-			// std::cout << "RETURN CHANGE OR KEEP" << std::endl;
-			// return (*StorePort);
-		}
-	}
-	// std::cout << "\nEND TEST" << std::endl;
-
 	return (*StorePort);
 }
 
@@ -819,7 +793,10 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 						std::cerr << "Error: listen failed: " << strerror(errno) << std::endl;
 					}
 					else
+					{
 						listen_sock.push_back(socktmp);
+						StorePort.insert(std::make_pair(Ports[i], socktmp));
+					}
 				}
 			}
 		}
@@ -878,6 +855,9 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					{
 						close(*(sockets.begin()));
 						sockets.erase(sockets.begin());
+						for (std::multimap<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
+							if (it->second == *(sockets.begin()))
+								StorePort.erase(it);
 					}
 					conn_sock = accept(events[n].data.fd, (struct sockaddr *) &addr[i], &addrlen[i]);
 					if (conn_sock != -1)
@@ -893,7 +873,8 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 						else
 						{
 							sockets.push_back(conn_sock);
-							StorePort = ChangeOrKeepPort(&StorePort, conn_sock, Ports[i]);
+							std::cout << "ACCEPT PORT : " << Ports[i] << " SOCK : " << conn_sock << std::endl;
+							StorePort = ChangeOrKeepPort(&StorePort, conn_sock, events[n].data.fd);
 						}
 					}
 					else
