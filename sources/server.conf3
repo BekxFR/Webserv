@@ -96,6 +96,17 @@ server {
 }
 
 server {
+	server_name wb3.com;
+	listen 0.0.0.0:8087;
+
+	root ./site2/;
+
+	allow_methods GET POST DELETE;
+	cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
+	client_max_body_size 5;
+}
+
+server {
 	server_name wb1.com;
 		listen localhost:8086;
 		listen 127.0.0.1:8088;

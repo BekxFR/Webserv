@@ -1,8 +1,15 @@
 curl -X GET --connect-to webserv.com:80:127.0.0.0:8083 http://webserv.com/cgi-bin/t2.py
 
 curl -X POST 127.0.0.1:8083 -H "Content-Type: plain/text" --data "ZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZs"
+
 curl -X POST 127.0.0.1:8087 -H "Content-Type: plain/text" --data "ZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZs"
 curl -X POST 127.0.0.1:8087 -H "Content-Type: plain/text" --data "ZsZs"
+
+curl -X GET 127.0.0.1:8087 -H "Content-Type: plain/text" --data "ZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZsZs"
+curl -X GET 127.0.0.1:8087 -H "Content-Type: plain/text" --data "ZsZs"
+
+curl -X GET 127.0.0.1:8087/index.html -H "Content-Type: plain/text" --data "ZsZs"
+curl -X GET 127.0.0.1:8087/index.html -H "Content-Type: plain/text" --data "ZsZscgfb"
 
 curl -X GET --connect-to webserv2.com:80:127.0.0.0:8083 http://webserv2.com/cgi-bin/part.py
 curl -X GET --connect-to webserv2.com:80:127.0.0.0:8086 http://webserv2.com/cgi-bin/part.py
