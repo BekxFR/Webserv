@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   initServ.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/09 12:03:50 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/09 13:24:40 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,10 @@ std::string getPathToStore(std::string MethodUsed, server_configuration *server,
 				}
 			}
 		}
+	}
+	if (server->getUploadStore().size() != 0)
+	{
+		return (server->getUploadStore());
 	}
 	return (server->getRoot());
 }
@@ -543,15 +547,20 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		}
 		else if (ServerRequest.getMethod() == "POST" && checkStatus(CodeStatus))
 		{
-			// std::cout << "\na1.5\n" << std::endl;
-			// std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
+
 			if (GoodServerConf->getClientMaxBodySize() > ServerRequest.getContentLength())
 			{
 				SocketUploadFile.insert(std::make_pair(conn_sock, std::make_pair("", 0)));
 				std::string PathToStore = getPathToStore(ServerRequest.getMethod(), GoodServerConf, ServerRequest.getRequestURI());
-				std::cout << "\nPathToStore : " << PathToStore << std::endl;
 				while (PathToStore.find("//") != std::string::npos)
 					PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
+				struct stat path_info;
+				stat(PathToStore.c_str(), &path_info);
+				int dir = S_ISDIR(path_info.st_mode);
+				if (!dir)
+				{
+					PathToStore = GoodServerConf->getRoot();
+				}
 				UploadFilePath.insert(std::pair<int, std::string>(conn_sock, PathToStore));
 			}
 			else

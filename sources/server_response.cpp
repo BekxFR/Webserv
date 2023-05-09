@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/09 12:13:15 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/09 12:35:06 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -545,14 +545,10 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPathIndex.find("//") != std::string::npos)
 		RealPathIndex = RealPathIndex.erase(RealPathIndex.find("//"), 1);
-	// PathToStore = getPathToStore(Server_Request.getMethod(), server, Server_Request.getRequestURI());
-	// while (PathToStore.find("//") != std::string::npos)
-	// 	PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
 	if (1)
 	{
 		std::cout << "RealPath : " << RealPath << std::endl;
 		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
-		std::cout << "PathToStore : " << PathToStore << std::endl;
 	}
 	/*Ensuite, on check si c'est le path donné est un directory ou non.
 	Une fosis que l'on sait cela, on peut renvoyer un index ou 
