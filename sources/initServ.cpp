@@ -459,7 +459,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		}
 	}
 
-	//std::cout << "CON SOCK " << conn_sock << std::endl;
+	// std::cout << "CON SOCK " << conn_sock << std::endl;
 	// static int k = 0;
 	// if (k < 5)
 	// {
@@ -501,7 +501,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			remove(str);
 			RequestSocketStatus.clear();
 			RequestSocketStatus.erase(conn_sock);
-			return 0;
+			return 1;
 		}
 		if (status == 1)
 		{
@@ -666,14 +666,32 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 					FileName.insert(std::make_pair(SocketUploadFile.find(conn_sock)->first, request.substr(FileNamePos, request.find("\"", FileNamePos) - FileNamePos)));
 					std::cout << "\nFILENAME : " << FileName[conn_sock] << std::endl;
 					request = request.substr(SaveFilePos + 4);
+					if (request.find("------WebKitFormBoundary") != std::string::npos)
+					{
+						size_t end_pos = request.size() - request.find("------WebKitFormBoundary");
+						temp_file.write(request.c_str(), end_pos);
+						temp_file.close();
+					}
+					else
+					{
 					temp_file.write(request.c_str(), request.size());
 					temp_file.close();
+					}
 				}
 			}
 			else
 			{
-				temp_file.write(request.c_str(), request.size());
-				temp_file.close();
+					if (request.find("------WebKitFormBoundary") != std::string::npos)
+					{
+						size_t end_pos = request.size() - request.find("------WebKitFormBoundary");
+						temp_file.write(request.c_str(), end_pos);
+						temp_file.close();
+					}
+					else
+					{
+					temp_file.write(request.c_str(), request.size());
+					temp_file.close();
+					}
 			}
 		}
 

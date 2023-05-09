@@ -1,0 +1,7 @@
+------WebKitFormBoundarykexRoEZIeYlS7P7g
+Content-Disposition: form-data; name=file; filename=teSTEUR.txt; Content-Type: text/plain
+
+TEST
+ 
+------WebKitFormBoundarykexRoEZIeYlS7P7g--
+ http://127.0.0.1:8083/filephp.php

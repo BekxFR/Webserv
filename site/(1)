@@ -1,0 +1,39 @@
+POST /filephp.php HTTP/1.1
+Host: 127.0.0.1:8083
+User-Agent: curl/7.81.0
+Accept: */*
+------WebKitFormBoundary7b4l7bI7fLnURxFG
+Content-Disposition: form-data; name=/file/; filename=/teSTEUR.txt/
+Content-Type: text/plain
+
+TEST
+------WebKitFormBoundary7b4l7bI7fLnURxFG--
+
+
+curl -X POST -d "------WebKitFormBoundarykexRoEZIeYlS7P7g
+Content-Disposition: form-data; name="file"; filename="teSTEUR.txt"
+Content-Type: text/plain \ \
+
+TEST \
+------WebKitFormBoundarykexRoEZIeYlS7P7g--" http://127.0.0.1:8083/filephp.php 
+
+echo -e "Hello,\r\nworld!"
+
+CURL : 
+
+POST /filephp.php HTTP/1.1
+Host: 127.0.0.1:8083
+User-Agent: curl/7.81.0
+Accept: */*
+Content-Length: 178
+Content-Type: application/x-www-form-urlencoded
+
+------WebKitFormBoundarykexRoEZIeYlS7P7g
+Content-Disposition: form-data; name=file; filename=teSTEUR.txt
+Content-Type: text/plain
+
+TEST
+------WebKitFormBoundarykexRoEZIeYlS7P7g--
+
+WEBSERV : 
+
