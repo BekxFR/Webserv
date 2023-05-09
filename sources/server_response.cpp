@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/09 15:19:56 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/09 16:34:52 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -308,7 +308,9 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 }
 
 bool server_response::autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
+{
+	bool autoindex = false;
+	
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
@@ -317,18 +319,21 @@ bool server_response::autoindex_is_on(std::string MethodUsed, server_configurati
 			{
 				/*	Cela permet de verifier si l'autoindex est on, pour sinon renvoyer une erreur 403 car on 
 					ne peut pas lister le directory si c'est off, ds le cas où il n'y aurait pas d'index */
-				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
+				if (MethodUsed == *ite)
 				{
+					std::cout << "listing test" << std::endl;
 					if (it->second->getDirectoryListing() == "on")
 						return (1);
+					else if (it->second->getDirectoryListing() == "off")
+						return (0);
+					autoindex = true;
 				}
 			}
 		}
 	}
-	if (server->getDirectoryListing() == "on")
+	if (server->getDirectoryListing() == "on" && !autoindex)
 		return (1);
 	return (0);
-
 }
 
 bool server_response::isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI)

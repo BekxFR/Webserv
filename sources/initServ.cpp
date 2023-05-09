@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/09 13:24:40 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 16:09:58 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,18 +53,23 @@ int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std
 	std::cout << "\nMethodUsed : " << MethodUsed << std::endl;
 	std::cout << "\nSERVER CONF : " << std::endl;
 	std::cout << *server << std::endl;
+
+	bool loc = false;
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
+				if (MethodUsed == *ite)
 				{
 					// s'il passe ici c'est que la méthode est autorisée et qu'une loc a été trouvée
 					return (200);
 				}
+				loc = true;
 			}
+			if (loc == true)
+				return (405);
 		}
 	}
 	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
