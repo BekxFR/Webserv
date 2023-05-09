@@ -4,7 +4,7 @@
 	<title>Page des fichiers uploadés</title>
     <style>
         body {
-            background-color: #fa94b6;
+            background-color: #97f15a;
             margin: 0;
             padding: 0;
         }
@@ -15,7 +15,7 @@
             left: 0;
             right: 0;
             z-index: 999;
-            background-color: #fa94b6;
+            background-color: #97f15a;
             text-align: center;
             font-size: 2em;
             font-weight: bold;
@@ -192,7 +192,7 @@
 			sheep.style = "animation: rotate_full_speed 4s linear;"
 			setTimeout(() => {
 				sheep.style = "display: none;"
-			}, 4000);
+			}, 3998);
 			console.log("⠀ ⠀⠀⠀⠀⠀⠀⢀⡔⠋⢉⠩⡉⠛⠛⠛⠉⣉⣉⠒⠒⡦⣄⠀⠀⠀⠀⠀⠀⠀", '\n',
 			"⠀⠀⠀⠀⠀⠀⢀⠎⠀⠀⠠⢃⣉⣀⡀⠂⠀⠀⠄⠀⠀⠀⠀⢱⠀⠀⠀⠀⠀⠀", '\n',
 			"⠀⠀⠀⠀⠀⡰⠟⣀⢀⣒⠐⠛⡛⠳⢭⠆⠀⠤⡶⠿⠛⠂⠀⢈⠳⡀⠀⠀⠀⠀", '\n',

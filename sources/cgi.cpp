@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/27 15:47:23 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/03 19:16:50 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 15:12:14 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,9 +161,8 @@ void	Cgi::dupping()
 	//	close (_pdes[0]);
 	//	_pdes[0] = -1;
 	std::cerr << " _cmd[0] = " << _cmd[0] << " _cmd[1] = " << _cmd[1] << " _cmd[2] = " << _cmd[2] << " _cmd[3] = " << _cmd[3] << std::endl;
-	if (std::strcmp(_cmd[0], "python"))
+	if (std::strcmp(_cmd[2], ""))
 	{
-		// _cmd[2] = _pythonArg;
 		if (execve(_cmd[0], _cmd, NULL) == -1)
 			g_code = 1;
 	}

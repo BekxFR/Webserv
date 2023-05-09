@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/09 12:35:06 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 15:19:56 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1059,7 +1059,6 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 			servNameEnv += "localhost";
 	}
 	_env.push_back(servNameEnv);
-	_env.push_back("AUTH_TYPE=");
 	_env.push_back("SERVER_PROTOCOL=" + _req->getVersion());
 	_env.push_back("SERVER_PORT=" + itos(server->getPort()[0]));
 	std::string	cwd = getcwd(buff, 256);
