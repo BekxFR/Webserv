@@ -1,0 +1,299 @@
+[1;32mPort 8083 is listening[0m
+
+[1;32mPort 8080 is listening[0m
+
+[1;31mPort 8083 is already listening[0m
+
+[1;32mPort 8084 is listening[0m
+
+[1;32mPort 8099 is listening[0m
+
+ACCEPT PORT : 8083 SOCK : 8
+ACCEPT PORT : 8083 SOCK : 9
+
+a1.1
+
+server_request Default Constructor called
+
+IN MAP8 - 0
+
+CONF HANDLE
+
+Server name : webserv2.com
+Root : ./
+Index : index.html
+Port : 8084
+Port : 8099
+Host : localhost
+Host : 127.0.0.1
+Cliend Body Limit : 1048576
+CGI (first = extension, second = root):
+
+
+***
+
+Location : 
+
+***
+
+
+
+FIN CONF
+
+MethodUsed : GET
+
+SERVER CONF : 
+Server name : webserv2.com
+Root : ./
+Index : index.html
+Port : 8084
+Port : 8099
+Host : localhost
+Host : 127.0.0.1
+Cliend Body Limit : 1048576
+CGI (first = extension, second = root):
+
+
+***
+
+Location : 
+
+***
+
+
+ACCEPT PORT : 8080 SOCK : 10
+ACCEPT PORT : 8080 SOCK : 12
+
+a1.1
+
+server_request Default Constructor called
+
+IN MAP10 - 0
+
+CONF HANDLE
+
+Server name : webserv.com
+Root : ./site
+Index : index.html
+Port : 8083
+Port : 8080
+Host : 
+Host : [::]
+Cliend Body Limit : 1783793664
+CGI (first = extension, second = root):
+- first = '.php' && second = '/usr/bin/php-cgi'
+- first = '.py' && second = '/usr/bin/python3'
+
+
+***
+
+Location : 
+
+Location configurations  for /download/
+HttpMethodAccepted : POST
+HttpMethodAccepted : 
+HttpRedirection 
+Root : ./site/
+DirectoryListing : off
+DirectoryRequest : indexr.html
+UploadStore : 
+
+Location configurations  for /password/
+HttpMethodAccepted : NOT INDICATED
+HttpRedirection https://www.example.com/new-page.html
+Root : ./site/upload/
+DirectoryListing : on
+DirectoryRequest : index2.html
+CGI : 
+path : .php
+conf : /usr/bin/php-cgi
+UploadStore : /var/www/uploads
+
+Location configurations  for /upload/
+HttpMethodAccepted : NOT INDICATED
+HttpRedirection 
+Root : ./site/upload/
+DirectoryListing : on
+DirectoryRequest : index2.html
+CGI : 
+path : .php
+conf : /usr/bin/php-cgi
+UploadStore : ./site/upload/
+
+***
+
+
+
+FIN CONF
+
+MethodUsed : GET
+
+SERVER CONF : 
+Server name : webserv.com
+Root : ./site
+Index : index.html
+Port : 8083
+Port : 8080
+Host : 
+Host : [::]
+Cliend Body Limit : 1783793664
+CGI (first = extension, second = root):
+- first = '.php' && second = '/usr/bin/php-cgi'
+- first = '.py' && second = '/usr/bin/python3'
+
+
+***
+
+Location : 
+
+Location configurations  for /download/
+HttpMethodAccepted : POST
+HttpMethodAccepted : 
+HttpRedirection 
+Root : ./site/
+DirectoryListing : off
+DirectoryRequest : indexr.html
+UploadStore : 
+
+Location configurations  for /password/
+HttpMethodAccepted : NOT INDICATED
+HttpRedirection https://www.example.com/new-page.html
+Root : ./site/upload/
+DirectoryListing : on
+DirectoryRequest : index2.html
+CGI : 
+path : .php
+conf : /usr/bin/php-cgi
+UploadStore : /var/www/uploads
+
+Location configurations  for /upload/
+HttpMethodAccepted : NOT INDICATED
+HttpRedirection 
+Root : ./site/upload/
+DirectoryListing : on
+DirectoryRequest : index2.html
+CGI : 
+path : .php
+conf : /usr/bin/php-cgi
+UploadStore : ./site/upload/
+
+***
+
+
+
+a1.1
+
+server_request Default Constructor called
+
+IN MAP12 - 0
+
+CONF HANDLE
+
+Server name : webserv.com
+Root : ./site
+Index : index.html
+Port : 8083
+Port : 8080
+Host : 
+Host : [::]
+Cliend Body Limit : 1783793664
+CGI (first = extension, second = root):
+- first = '.php' && second = '/usr/bin/php-cgi'
+- first = '.py' && second = '/usr/bin/python3'
+
+
+***
+
+Location : 
+
+Location configurations  for /download/
+HttpMethodAccepted : POST
+HttpMethodAccepted : 
+HttpRedirection 
+Root : ./site/
+DirectoryListing : off
+DirectoryRequest : indexr.html
+UploadStore : 
+
+Location configurations  for /password/
+HttpMethodAccepted : NOT INDICATED
+HttpRedirection https://www.example.com/new-page.html
+Root : ./site/upload/
+DirectoryListing : on
+DirectoryRequest : index2.html
+CGI : 
+path : .php
+conf : /usr/bin/php-cgi
+UploadStore : /var/www/uploads
+
+Location configurations  for /upload/
+HttpMethodAccepted : NOT INDICATED
+HttpRedirection 
+Root : ./site/upload/
+DirectoryListing : on
+DirectoryRequest : index2.html
+CGI : 
+path : .php
+conf : /usr/bin/php-cgi
+UploadStore : ./site/upload/
+
+***
+
+
+
+FIN CONF
+
+MethodUsed : GET
+
+SERVER CONF : 
+Server name : webserv.com
+Root : ./site
+Index : index.html
+Port : 8083
+Port : 8080
+Host : 
+Host : [::]
+Cliend Body Limit : 1783793664
+CGI (first = extension, second = root):
+- first = '.php' && second = '/usr/bin/php-cgi'
+- first = '.py' && second = '/usr/bin/python3'
+
+
+***
+
+Location : 
+
+Location configurations  for /download/
+HttpMethodAccepted : POST
+HttpMethodAccepted : 
+HttpRedirection 
+Root : ./site/
+DirectoryListing : off
+DirectoryRequest : indexr.html
+UploadStore : 
+
+Location configurations  for /password/
+HttpMethodAccepted : NOT INDICATED
+HttpRedirection https://www.example.com/new-page.html
+Root : ./site/upload/
+DirectoryListing : on
+DirectoryRequest : index2.html
+CGI : 
+path : .php
+conf : /usr/bin/php-cgi
+UploadStore : /var/www/uploads
+
+Location configurations  for /upload/
+HttpMethodAccepted : NOT INDICATED
+HttpRedirection 
+Root : ./site/upload/
+DirectoryListing : on
+DirectoryRequest : index2.html
+CGI : 
+path : .php
+conf : /usr/bin/php-cgi
+UploadStore : ./site/upload/
+
+***
+
+
