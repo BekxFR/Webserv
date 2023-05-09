@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/09 16:43:21 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/09 18:46:28 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,21 +50,26 @@ server_configuration*	getGoodServer(std::vector<server_configuration*> servers, 
 
 int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {
-	std::cout << "\nMethodUsed : " << MethodUsed << std::endl;
-	std::cout << "\nSERVER CONF : " << std::endl;
+	// std::cout << "\nMethodUsed : " << MethodUsed << std::endl;
+	// std::cout << "\nSERVER CONF : " << std::endl;
 	std::cout << *server << std::endl;
+
+	bool loc = false;
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
-				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
+				if (MethodUsed == *ite)
 				{
 					// s'il passe ici c'est que la méthode est autorisée et qu'une loc a été trouvée
 					return (200);
 				}
+				loc = true;
 			}
+			if (loc == true)
+				return (405);
 		}
 	}
 	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
@@ -418,7 +423,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 	memset(buffer, 0, n);
 	while (n >= 2048)
 	{
-		if (g_code == 42)
+				if (g_code == 42)
 			break ;
 		// std::cout << "\nN VALUE : " << n << std::endl;
 		n = recv(conn_sock, buffer, n, MSG_DONTWAIT);
@@ -725,7 +730,6 @@ int isNotPort(int fd, std::vector<int> listen_sock)
 	}
 	return 1;
 }
-
 int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Ports, std::vector<std::string> Hosts)
 {
 	struct sockaddr_in addr[Ports.size()];
@@ -756,45 +760,55 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 
 			memset(&addr[i], 0, sizeof(addr[i]));
 			addr[i].sin_family = AF_INET;
-			
+	
 			/****Ci-dessous, tentative de bien lier les adresses IP**********/
-			if (Hosts[i].size() == 0 || Hosts[i] == "[::]")
+			int error_pton = 42;
+			if (Hosts[i].size() == 0 || Hosts[i] == "localhost")
+			{
 				addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
+				error_pton = 1;
+			}
 			else
-				inet_pton(AF_INET, Hosts[i].c_str(), &addr[i].sin_addr);
-			/****************************************************************/
+				error_pton = inet_pton(AF_INET, Hosts[i].c_str(), &addr[i].sin_addr);
 			
-			addr[i].sin_port = htons(Ports[i]);
-			// StorePort.insert(std::pair<int, int>(Ports[i], listen_sock));
-			int val = 1;
-			if (setsockopt(socktmp, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0) {
+			if (error_pton != 1)
+			{
 				close(socktmp);
-				std::cerr << "Error: setsockopt() failed: " << strerror(errno) << std::endl;
+				std::cout << "\033[1;31m" << "Host " << Hosts[i] << " is not good" << "\033[0m\n" << std::endl;
 			}
 			else
 			{
-				if (bind(socktmp, (struct sockaddr *) &addr[i], addrlen[i]) == -1)
-				{
-					if (errno == EADDRINUSE) // changer
-					{
-						if (1)
-							std::cout << "\033[1;31m" << "Port " << Ports[i] << " is already listening" << "\033[0m\n" << std::endl;
-						// std::fprintf(stderr, "Error: bind failed: %s\n", strerror(errno));
-						// return(CloseListenSockets(listen_sock), EXIT_FAILURE);
-					}
+				addr[i].sin_port = htons(Ports[i]);
+				// StorePort.insert(std::pair<int, int>(Ports[i], listen_sock));
+				int val = 1;
+				if (setsockopt(socktmp, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0) {
 					close(socktmp);
+					std::cerr << "Error: setsockopt() failed: " << strerror(errno) << std::endl;
 				}
 				else
 				{
-					std::cout << "\033[1;32m" << "Port " << Ports[i] << " is listening" << "\033[0m\n" << std::endl;
-					if (listen(socktmp, SOMAXCONN) == -1) {
+					if (bind(socktmp, (struct sockaddr *) &addr[i], addrlen[i]) == -1)
+					{
+						if (errno == EADDRINUSE) // changer
+						{
+							std::cout << "\033[1;31m" << "Port " << Ports[i] << " is already listening" << "\033[0m\n" << std::endl;
+							// std::fprintf(stderr, "Error: bind failed: %s\n", strerror(errno));
+							// return(CloseListenSockets(listen_sock), EXIT_FAILURE);
+						}
 						close(socktmp);
-						std::cerr << "Error: listen failed: " << strerror(errno) << std::endl;
 					}
 					else
 					{
-						listen_sock.push_back(socktmp);
-						StorePort.insert(std::make_pair(Ports[i], socktmp));
+						std::cout << "\033[1;32m" << "Port " << Ports[i] << " is listening" << "\033[0m\n" << std::endl;
+						if (listen(socktmp, SOMAXCONN) == -1) {
+							close(socktmp);
+							std::cerr << "Error: listen failed: " << strerror(errno) << std::endl;
+						}
+						else
+						{
+							listen_sock.push_back(socktmp);
+							StorePort.insert(std::make_pair(Ports[i], socktmp));
+						}
 					}
 				}
 			}
@@ -837,7 +851,6 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 		nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
 		if (nfds == -1 || g_code == 42)
 			return(CloseListenSockets(listen_sock), EXIT_FAILURE);
-		// std::cout << "\nWAIT TIME" << std::endl;
 		for (int n = 0; n < nfds; ++n)
 		{
 			for (size_t i = 0; i < listen_sock.size(); i++)
@@ -930,6 +943,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 									if (*it2 == it->first)
 									{
 										sockets.erase(it2);
+										// close(conn_sock);
 										break;
 									}
 								}
@@ -960,6 +974,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 											if (*it2 == it->first)
 											{
 												sockets.erase(it2);
+												// close(conn_sock);
 												break;
 											}
 										}
@@ -981,6 +996,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 											if (*it2 == it->first)
 											{
 												sockets.erase(it2);
+												// close(conn_sock);
 												break;
 											}
 										}
@@ -1012,9 +1028,9 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					}
 					else
 					{
-						std::cout << "\nTEST SEND PETIT FICHIER" << std::endl;
-						std::cout.write(it->second.first.c_str(), it->second.first.size());
-						std::cout << "\n FIN TEST SEND PETIT FICHIER" << std::endl;
+					// 	std::cout << "\nTEST SEND PETIT FICHIER" << std::endl;
+					// 	std::cout.write(it->second.first.c_str(), it->second.first.size());
+					// 	std::cout << "\n FIN TEST SEND PETIT FICHIER" << std::endl;
 						if (send(it->first, it->second.first.c_str() , it->second.first.size(), MSG_NOSIGNAL | MSG_DONTWAIT) <= 0)
 						{
 							for (std::vector < int >::iterator it2 = sockets.begin(); it2 != sockets.end(); it2++)

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/09 13:17:55 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 16:31:44 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -655,6 +655,7 @@ std::ostream&	operator<<(std::ostream &out, server_configuration &ServConfig)
 	out << "Server name : " << ServConfig.getServerName() \
 		<< "\nRoot : " << ServConfig.getRoot() \
 		<< "\nIndex : " << ServConfig.getIndex() \
+		<< "\nDirectory listing : " << ServConfig.getDirectoryListing() \
 		<< "\nUpload store : " << ServConfig.getUploadStore();
 		for (size_t i = 0; i < ServConfig.getPort().size(); i++)
 			out << "\nPort : " << ServConfig.getPort()[i];
