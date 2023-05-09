@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/08 20:02:09 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/09 11:45:38 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,7 +157,7 @@ bool check_End_Line(const std::string& str)
 	return (0);
 }
 
-int check_Host_Line(const std::string& str, std::string tmp, server_request *ServerRequest)
+int check_Host_Line(const std::string& str)
 {
     std::string word;
     std::string tmpStr;
@@ -195,9 +195,6 @@ int check_Host_Line(const std::string& str, std::string tmp, server_request *Ser
 				{
 					if (word.size() > 5 && word.substr(0, 5) == "host:")
 					{
-						tmp = word.substr(word.find(":"));
-						ServerRequest->setHost(tmp);
-						std::cout << "NAME DE TMP = " << tmp << " - NAME DE Host = " << ServerRequest->getHost() << std::endl;
 						return (0);
 					}
 					if (word.size() == 5 && word.substr(0, 5) == "host:")
@@ -205,10 +202,6 @@ int check_Host_Line(const std::string& str, std::string tmp, server_request *Ser
 					status = 1;
 				}
 				if (count == 1 && status == 1){
-					tmp = word;
-					ServerRequest->setHost(tmp);
-					std::cout << "NAME DE TMP = " << tmp << " - NAME DE Host = " << ServerRequest->getHost() << std::endl;
-					std::cerr << "\nTWO HOST STRINGs\n" << std::endl;
 					return(0);}
 				count++;
 			}
@@ -256,20 +249,20 @@ int check_First_Line(const std::string& str)
 	return (1);
 }
 
-int check_Request_Value(const std::string& request, const int status, std::string tmp, server_request *ServerRequest)
+int check_Request_Value(const std::string& request, const int status)
 {
 	int status_Ref = 0;
 
 	if (status == 0){
-		status_Ref = check_First_Line(request);}
-		std::cerr << "\nWARNING 1\n" << status_Ref << std::endl;
+		status_Ref = check_First_Line(request);
+		std::cerr << "\nWARNING 1\n" << status_Ref << std::endl;}
 	if (status == 1){
-		status_Ref = check_Host_Line(request, tmp, ServerRequest);
+		status_Ref = check_Host_Line(request);
 		std::cerr << "\nWARNING 2\n" << status_Ref << std::endl;
 	}
 	if (status == 2){
-		status_Ref = check_End_Line(request);}
-		std::cerr << "\nWARNING 3\n" << status_Ref << std::endl;
+		status_Ref = check_End_Line(request);
+		std::cerr << "\nWARNING 3\n" << status_Ref << std::endl;}
 	// if (status == 1 && request.find("Host: ") == std::string::npos)
 	// 	return (1);
 	return (status_Ref);
@@ -303,7 +296,7 @@ std::string get_file_contents(int conn_sock)
     return content;
 }
 
-int pre_Request_Parser(std::map<int, int>& RequestSocketStatus, int conn_sock, std::string request, std::string tmp, server_request *ServerRequest)
+int pre_Request_Parser(std::map<int, int>& RequestSocketStatus, int conn_sock, std::string request)
 {
 	int status_Ref = 0;
 	int index_Status = 0;
@@ -319,7 +312,7 @@ int pre_Request_Parser(std::map<int, int>& RequestSocketStatus, int conn_sock, s
 			new_Request = get_file_contents(conn_sock);
 			if (check_Header_Size(new_Request) == 1)
 				return (2);
-			status_Ref = check_Request_Value(new_Request, it->second, tmp, ServerRequest);
+			status_Ref = check_Request_Value(new_Request, it->second);
 			if (status_Ref == 0)
 			{
 				std::cerr << "\nPHASE 1 IS OK\n" << std::endl;
@@ -336,7 +329,7 @@ int pre_Request_Parser(std::map<int, int>& RequestSocketStatus, int conn_sock, s
 			new_Request = get_file_contents(conn_sock);
 			if (check_Header_Size(new_Request) == 1)
 				return (2);
-			status_Ref = check_Request_Value(new_Request, it->second, tmp, ServerRequest);
+			status_Ref = check_Request_Value(new_Request, it->second);
 			if (status_Ref == 0)
 			{
 				std::cerr << "\nPHASE 2 IS OK\n" << std::endl;
@@ -352,7 +345,7 @@ int pre_Request_Parser(std::map<int, int>& RequestSocketStatus, int conn_sock, s
 			new_Request = get_file_contents(conn_sock);
 			if (check_Header_Size(new_Request) == 1)
 				return (2);
-			status_Ref = check_Request_Value(new_Request, it->second, tmp, ServerRequest);
+			status_Ref = check_Request_Value(new_Request, it->second);
 			if (status_Ref == 0)
 			{
 				std::cerr << "\nPHASE 3 IS OK\n" << std::endl;
@@ -399,7 +392,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 	int n = 0;
 	int Port = 0;
 	int status = 0;
-	std::string tmp;
+
 	static std::map<int, int> RequestSocketStatus;
 	static std::map<int, std::pair<std::string, int> > SocketUploadFile;
 	static std::map<int, std::string> UploadFilePath;
@@ -469,8 +462,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		server_request ServerRequest;
 		add_To_map(RequestSocketStatus, conn_sock);
 		print_Map(RequestSocketStatus);
-		status = pre_Request_Parser(RequestSocketStatus, conn_sock, request, tmp, &ServerRequest);
-		std::cout << "REPAIRE TMP = " << tmp << " - HOST NAME = " << ServerRequest.getHost() << std::endl;
+		status = pre_Request_Parser(RequestSocketStatus, conn_sock, request);
 		if (status == 2)
 		{
 			MsgToSent->insert(std::make_pair(conn_sock, std::make_pair("HTTP/1.1 400 Bad Request\nContent-Type: text/html\nContent-Length: 353\r\n\r\n<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>400 Bad Request</title></head><body style=\"background: #0e0e0e; height: 100%;text-align:center;color:white;\"><h1>400 Bad Request</h1><img src=\"https://http.cat/400\" style=\"display: block;margin: auto;\" alt=\"400 Bad Request\"><p>webserv</p></body></html>",""))); // remplace sent
@@ -486,6 +478,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 
 			
 			ServerRequest.setRequest(fullRequest);
+			ServerRequest.add_Host_Value(fullRequest);
 			ServerRequest.request_parser();
 			remove(str);
 			RequestSocketStatus.erase(conn_sock);
