@@ -8,8 +8,8 @@ server {
 		client_max_body_size 500000000000;
 		error_page 404 site/42.jpg 405 error.html 406 e;
 		cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
-		autoindex on;
 
+		autoindex on;
 		location /upload/ {
 
 			root ./site/upload/;
@@ -20,7 +20,7 @@ server {
 
 			cgi .php /usr/bin/php-cgi ;
 
-			upload_store ./site/upload/;
+			upload_store /site/upload/;
 		}
 
 		location /password/ {
@@ -51,50 +51,18 @@ server {
 
 server {
 	server_name webserv2;
-	listen 8083;
-
-	root ./site;
-	index index.html;
-
-	allow_methods POST GET;
-}
-
-server {
-	server_name webserv2.com;
-		listen localhost:8081;
-		listen 127.0.0.1:8099;
-
-		root ./site;
-		index index.html
-		autoindex on;
-		location /site/upload/ {
-			limit_except GET POST {
-				deny all;
-			}
-			index indexr2.html;
-			root ./site/upload/;
-			upload_store ./site/upload/upload_file/;
-			autoindex on;
-		}
-		cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
-		allow_methods GET POST DELETE;
-		client_max_body_size 500000000000;
-}
-
-server {
-	server_name wb2.com;
 	listen 0.0.0.0:8086;
 
-	root ./site/;
+	root ./;
 	index index.html;
 
-	allow_methods GET POST DELETE;
+	allow_methods GET POST;
 	cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
 }
 
 server {
-	server_name wb1.com;
-		listen localhost:8086;
+	server_name webserv2.com;
+		listen localhost:8084;
 		listen 127.0.0.1:8099;
 
 		root ./site/;

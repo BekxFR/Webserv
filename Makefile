@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+         #
+#    By: chillion <chillion@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/01 12:07:22 by chillion          #+#    #+#              #
-#    Updated: 2023/05/04 12:08:43 by mgruson          ###   ########.fr        #
+#    Updated: 2023/05/08 18:47:37 by chillion         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -88,6 +88,9 @@ t2 : all
 
 t3 : all
 	$(VAL) ./${SOFT_NAME} sources/server.conf3
+
+t4 : all
+	$(VAL) ./${SOFT_NAME} sources/server.conf31
 
 t5 : all
 	$(VAL) ./${SOFT_NAME} sources/server.conf5

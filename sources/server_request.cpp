@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/03 15:41:27 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 12:05:56 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,56 @@ std::string url_decode(const std::string& encoded_string)
 	return decoded_stream.str();
 }
 
+void server_request::add_Host_Value(const std::string& str)
+{
+    std::string word;
+    std::string tmpStr;
+    std::string line;
+    int count = 0;
+    int status = 0;
+
+	std::string::size_type host_start = str.find("HTTP/1.1\r\n");
+	std::string::size_type host_end = str.find("\r\n\r\n", host_start);
+	tmpStr = str.substr(host_start + 8, host_end);
+	std::transform(tmpStr.begin(), tmpStr.end(), tmpStr.begin(), ::tolower);
+
+	std::istringstream ss(tmpStr);
+	std::istringstream iss(tmpStr);
+	while (std::getline(ss, line)) {
+		// if (line.size() < 3)
+		// 	return (2);
+		if (line.size() >= 5 && line.substr(0, 5) == "host:")
+		{
+			std::getline(iss, line);
+			while (iss >> word)
+			{
+				if (count == 2)
+					break ;
+				if (count == 0)
+				{
+					if (word.size() > 5 && word.substr(0, 5) == "host:")
+					{
+						this->_host = word.substr(word.find(":") + 1);
+						return ;
+					}
+					if (word.size() == 5 && word.substr(0, 5) == "host:")
+						status = 1;
+					status = 1;
+				}
+				if (count == 1 && status == 1)
+				{
+					this->_host = word;
+					return ;
+				}
+				count++;
+			}
+			count = 0;
+		}
+		count = 0;
+	}
+	return ;
+}
+
 void server_request::request_parser()
 {
 	// Extraire la méthode HTTP (GET/POST/DELETE)
@@ -173,11 +223,11 @@ void server_request::request_parser()
 	this->_version = _ServerRequest.substr(path_end + 1, version_end - path_end - 1);
 
 	// Extraire l'en-tête Host (www.example.com)
-	this->_host = "";
-	std::string::size_type host_start = _ServerRequest.find("Host: ");
-	std::string::size_type host_end = _ServerRequest.find("\r\n", host_start);
-	if (host_start != host_end)
-		this->_host = _ServerRequest.substr(host_start + 6, host_end - host_start - 6);
+	// this->_host = "";
+	// std::string::size_type host_start = _ServerRequest.find("Host: ");
+	// std::string::size_type host_end = _ServerRequest.find("\r\n", host_start);
+	// if (host_start != host_end)
+	// 	this->_host = _ServerRequest.substr(host_start + 6, host_end - host_start - 6);
 
 	// Extraire le type de connexion (keep-alive)
 	this->_connectionType = "";

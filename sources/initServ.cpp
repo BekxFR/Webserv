@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   initServ.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
+/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/09 10:49:12 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 12:03:50 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,7 +203,6 @@ int check_Host_Line(const std::string& str)
 					status = 1;
 				}
 				if (count == 1 && status == 1){
-					std::cerr << "\nTWO HOST STRINGs\n" << std::endl;
 					return(0);}
 				count++;
 			}
@@ -476,6 +475,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			std::string fullRequest;
 			fullRequest = get_file_contents(conn_sock);
 			ServerRequest.setRequest(fullRequest);
+			ServerRequest.add_Host_Value(fullRequest);
 			ServerRequest.request_parser();
 			remove(str);
 			RequestSocketStatus.erase(conn_sock);
