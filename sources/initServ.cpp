@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/09 17:16:46 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 17:38:42 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,8 @@ server_configuration*	getGoodServer(std::vector<server_configuration*> servers, 
 
 int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
 {
-	std::cout << "\nMethodUsed : " << MethodUsed << std::endl;
-	std::cout << "\nSERVER CONF : " << std::endl;
+	// std::cout << "\nMethodUsed : " << MethodUsed << std::endl;
+	// std::cout << "\nSERVER CONF : " << std::endl;
 	std::cout << *server << std::endl;
 
 	bool loc = false;
@@ -492,7 +492,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		else if (status == 0)
 			return 0;
 
-		// std::cout << "\nTEST SERVER REQUEST : " << ServerRequest.getServerRequest() << std::endl;
+		std::cout << "\nTEST SERVER REQUEST : " << ServerRequest.getServerRequest() << std::endl;
 		
 		/*	Cette partie permet de parser la requete afin de pouvoir travailler
 			sur chaque élément indépendemment */

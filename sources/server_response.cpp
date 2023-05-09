@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/09 16:34:52 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 17:46:19 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -414,22 +414,22 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 		int j = 0;
 		while (infile >> j)
 			SessionIdGiven.push_back(j);
+		infile.close();
 		for (size_t i = 0; i < SessionIdGiven.size(); i++)
 		{
-			// std::cout << "i : " << i << std::endl;
-			// std::cout << "SessionIdGiven.size() : " << SessionIdGiven.size() << std::endl;
-			// std::cout << "SessionID : " << SessionID << std::endl;
-			
+			std::cout << "i : " << i << std::endl;
+			std::cout << "SessionIdGiven.size() : " << SessionIdGiven.size() << std::endl;
+			std::cout << "SessionID : " << SessionID << std::endl;
+			std::cout << "SessionID[i] : " << SessionIdGiven[i] << std::endl;
 			if (SessionIdGiven.size() > 0 && SessionIdGiven[i] == SessionID)
 			{
 				break;
 			}
-			else if (i == SessionIdGiven.size())
+			else if (i == SessionIdGiven.size() - 1)
 			{
-				// std::cout << "ID SESSION UNKNOWN" << std::endl;
+				std::cout << "ID SESSION UNKNOWN" << std::endl;
 				_status_code = 401;
 			}
-			infile.close();
 		}
 	}
 	return (0);
@@ -518,9 +518,11 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		default d authorisation)*/
 	int id_session = 0;
 	if (_status_code == 200)
+	{
 		id_session = getIdSessionOrSetError401(Server_Request);
-	// std::cout << "_status_code : " << _status_code << std::endl;
-	// std::cout << "id_session : " << id_session << std::endl;
+		std::cout << "_status_code : " << _status_code << std::endl;
+		std::cout << "id_session : " << id_session << std::endl;
+	}
 	/*********************************************************************/
 
 	
