@@ -450,10 +450,10 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 
 		// std::ifstream infile(str);
 		// if file.open() {
-		// 	std::string buffer\
+		// 	std::string buffer
 		// 	buffer << file;
 		// 	buffer.find("/r/n/r/n")
-		// 	// file << request;
+		// 	file << request;
 		// 	file.close();
 		// }
 		server_request ServerRequest;

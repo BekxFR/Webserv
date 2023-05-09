@@ -163,7 +163,6 @@ void	Cgi::dupping()
 	std::cerr << " _cmd[0] = " << _cmd[0] << " _cmd[1] = " << _cmd[1] << " _cmd[2] = " << _cmd[2] << " _cmd[3] = " << _cmd[3] << std::endl;
 	if (std::strcmp(_cmd[0], "python"))
 	{
-		// _cmd[2] = _pythonArg;
 		if (execve(_cmd[0], _cmd, NULL) == -1)
 			g_code = 1;
 	}
