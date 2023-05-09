@@ -67,6 +67,7 @@ server {
 		root ./site;
 		index index.html
 		autoindex on;
+		upload_store ./site/upload/upoad_file/;
 		location /site/upload/ {
 			limit_except GET POST {
 				deny all;

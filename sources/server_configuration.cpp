@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 11:06:26 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/05 12:16:21 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/09 13:17:55 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ server_configuration::server_configuration(std::string ConfigFile) :
 _ConfigFile(ConfigFile),
 _ServerName(findElement("server_name")),
 _Root(findElement("root")),
+_UploadStore(findElement("upload_store")),
 _Index(findElement("index")),
 _HttpMethodAccepted(findHttpMethodAccepted()),
 _Port(findPort()),
@@ -653,7 +654,8 @@ std::ostream&	operator<<(std::ostream &out, server_configuration &ServConfig)
 {
 	out << "Server name : " << ServConfig.getServerName() \
 		<< "\nRoot : " << ServConfig.getRoot() \
-		<< "\nIndex : " << ServConfig.getIndex();
+		<< "\nIndex : " << ServConfig.getIndex() \
+		<< "\nUpload store : " << ServConfig.getUploadStore();
 		for (size_t i = 0; i < ServConfig.getPort().size(); i++)
 			out << "\nPort : " << ServConfig.getPort()[i];
 		for (size_t i = 0; i < ServConfig.getHost().size(); i++)
