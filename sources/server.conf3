@@ -85,7 +85,7 @@ server {
 	server_name wb2.com;
 	listen 0.0.0.0:8086;
 
-	root ./site/;
+	root ./site2/;
 	index index.html;
 
 	allow_methods GET POST DELETE;
@@ -95,9 +95,9 @@ server {
 server {
 	server_name wb1.com;
 		listen localhost:8086;
-		listen 127.0.0.1:8099;
+		listen 127.0.0.1:8088;
 
-		root ./site/;
+		root ./site3/;
 		index index.html
 
 		allow_methods GET;
