@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/09 11:45:38 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/09 12:03:50 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,10 @@ server_configuration*	getGoodServer(std::vector<server_configuration*> servers, 
 }
 
 int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
+{
+	std::cout << "\nMethodUsed : " << MethodUsed << std::endl;
+	std::cout << "\nSERVER CONF : " << std::endl;
+	std::cout << *server << std::endl;
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
@@ -194,9 +197,7 @@ int check_Host_Line(const std::string& str)
 				if (count == 0)
 				{
 					if (word.size() > 5 && word.substr(0, 5) == "host:")
-					{
 						return (0);
-					}
 					if (word.size() == 5 && word.substr(0, 5) == "host:")
 						status = 1;
 					status = 1;
@@ -254,15 +255,15 @@ int check_Request_Value(const std::string& request, const int status)
 	int status_Ref = 0;
 
 	if (status == 0){
-		status_Ref = check_First_Line(request);
-		std::cerr << "\nWARNING 1\n" << status_Ref << std::endl;}
+		status_Ref = check_First_Line(request);}
+		std::cerr << "\nWARNING 1\n" << status_Ref << std::endl;
 	if (status == 1){
 		status_Ref = check_Host_Line(request);
 		std::cerr << "\nWARNING 2\n" << status_Ref << std::endl;
 	}
 	if (status == 2){
-		status_Ref = check_End_Line(request);
-		std::cerr << "\nWARNING 3\n" << status_Ref << std::endl;}
+		status_Ref = check_End_Line(request);}
+		std::cerr << "\nWARNING 3\n" << status_Ref << std::endl;
 	// if (status == 1 && request.find("Host: ") == std::string::npos)
 	// 	return (1);
 	return (status_Ref);
@@ -385,14 +386,12 @@ void print_Map(std::map<int, int>& RequestSocketStatus)
 }
 
 int	handle_connection(std::vector<server_configuration*> servers, int conn_sock, std::multimap<int, int> StorePort, int CodeStatus, std::map<int, std::pair<std::string, std::string> >* MsgToSent)
-
 {
 	server_configuration *GoodServerConf = NULL;
 	char buffer[2048];
 	int n = 0;
 	int Port = 0;
 	int status = 0;
-
 	static std::map<int, int> RequestSocketStatus;
 	static std::map<int, std::pair<std::string, int> > SocketUploadFile;
 	static std::map<int, std::string> UploadFilePath;
@@ -427,7 +426,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		}
 	}
 
-	std::cout << "CON SOCK " << conn_sock << std::endl;
+	//std::cout << "CON SOCK " << conn_sock << std::endl;
 	// static int k = 0;
 	// if (k < 5)
 	// {
@@ -475,8 +474,6 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		{
 			std::string fullRequest;
 			fullRequest = get_file_contents(conn_sock);
-
-			
 			ServerRequest.setRequest(fullRequest);
 			ServerRequest.add_Host_Value(fullRequest);
 			ServerRequest.request_parser();
@@ -486,7 +483,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		else if (status == 0)
 			return 0;
 
-		std::cout << "\nTEST SERVER REQUEST : " << ServerRequest.getServerRequest() << std::endl;
+		// std::cout << "\nTEST SERVER REQUEST : " << ServerRequest.getServerRequest() << std::endl;
 		
 		/*	Cette partie permet de parser la requete afin de pouvoir travailler
 			sur chaque élément indépendemment */
@@ -512,7 +509,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		// std::cout << ServerRequest << std::endl;
 		// std::cout << "\nFIN REQUEST PARSED" << std::endl;
 
-		// std::cout << "\nCONF\n" << std::endl; 
+		// std::cout << "\nCONF HANDLE\n" << std::endl; 
 		// std::cout << *GoodServerConf << std::endl;
 		// std::cout << "\nFIN CONF" << std::endl;
 		// exit(0);
@@ -550,9 +547,9 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			// std::cout << "\nSOCKET TEST 1: " << conn_sock << std::endl;
 			if (GoodServerConf->getClientMaxBodySize() > ServerRequest.getContentLength())
 			{
-				// std::cout << "\na1.5.1\n" << std::endl;
 				SocketUploadFile.insert(std::make_pair(conn_sock, std::make_pair("", 0)));
 				std::string PathToStore = getPathToStore(ServerRequest.getMethod(), GoodServerConf, ServerRequest.getRequestURI());
+				std::cout << "\nPathToStore : " << PathToStore << std::endl;
 				while (PathToStore.find("//") != std::string::npos)
 					PathToStore = PathToStore.erase(PathToStore.find("//"), 1);
 				UploadFilePath.insert(std::pair<int, std::string>(conn_sock, PathToStore));
@@ -629,7 +626,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 					// std::cout << "\nREQUEST FOR FILENAME : " << request << std::endl;
 					// std::cout << "\nFILENAMEPOS : " << FileNamePos << std::endl;
 					FileName.insert(std::make_pair(SocketUploadFile.find(conn_sock)->first, request.substr(FileNamePos, request.find("\"", FileNamePos) - FileNamePos)));
-					// std::cout << "\nFILENAME : " << FileName[conn_sock] << std::endl;
+					std::cout << "\nFILENAME : " << FileName[conn_sock] << std::endl;
 					request = request.substr(SaveFilePos + 4);
 					temp_file.write(request.c_str(), request.size());
 					temp_file.close();
@@ -649,10 +646,11 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			{
 				std::remove(SocketUploadFile[conn_sock].first.c_str());
 				SocketUploadFile.erase(SocketUploadFile.find(conn_sock));
+				FileName.erase(FileName.find(conn_sock));
 				return 1;
 			}
 
-
+			std::cout << "\nAVANT NOUVEAU NOM : " << FileName[conn_sock].c_str() << std::endl;
 			if (UploadFilePath.find(conn_sock) != UploadFilePath.end())
 			{
 				FileName[conn_sock] = UploadFilePath[conn_sock] + "/" + FileName[conn_sock];
@@ -666,12 +664,15 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			{
 				std::remove(SocketUploadFile[conn_sock].first.c_str());
 				SocketUploadFile.erase(SocketUploadFile.find(conn_sock));
+				FileName.erase(FileName.find(conn_sock));
 				return 1;
 			}
-			// MsgToSent->insert(std::make_pair(conn_sock, std::make_pair("HTTP/1.1 200 OK\nContent-Length: 0\n\n", "")));
+			std::cout << "\nPASSE ICI" << std::endl;
 			MsgToSent->insert(std::make_pair(conn_sock, std::make_pair("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: 312\r\n\r\n<html><head><meta name=\"viewport\" content=\"width=device-width, minimum-scale=0.1\"><title>200 OK</title></head><body style=\"background: #0e0e0e; height: 100%;text-align:center;color:white;\"><h1>200 OK</h1><img src=\"https://http.cat/200\" style=\"display: block;margin: auto;\" alt=\"200 OK\"g><p>webserv</p></body></html>", "")));
-
 			SocketUploadFile.erase(SocketUploadFile.find(conn_sock));
+			FileName.erase(FileName.find(conn_sock));
+			UploadFilePath.erase(UploadFilePath.find(conn_sock));
+
 		}
 	}
 
@@ -691,55 +692,17 @@ void ChangePort(std::map<int, int> &StorePort, int conn_sock, int listen_sock)
 	}
 }
 
-std::multimap<int, int> ChangeOrKeepPort(std::multimap<int, int> *StorePort, int conn_sock, int Port)
+std::multimap<int, int> ChangeOrKeepPort(std::multimap<int, int> *StorePort, int NewConnSock, int PortSock)
 {
-	// std::cout << "\nINSIDE CHANGE OR KEEP\n" << std::endl;
 
 	for (std::multimap<int, int>::iterator it = StorePort->begin(); it != StorePort->end(); it++)
 	{
-		// std::cout << "\nChangeOrKeep normal : " << std::endl;
-		// std::cout << "it->second con sock : " << it->second << std::endl;
-		// std::cout << "Port : " << Port << std::endl;
-		// std::cout << "conn_sock : " << conn_sock << std::endl;
-		/* DERNIERE MODIFICATION */
-		// if (it->first == Port)
-		// {
-		// 	it->second = conn_sock;
-		// 	return ;
-		// }
-		/*************************/
-		if (it->second == conn_sock)
+		if (it->second == PortSock)
 		{
-			// std::cout << "RETURN CHANGE OR KEEP" << std::endl;
+			StorePort->insert(std::make_pair(it->first, NewConnSock));
 			return (*StorePort);
 		}
 	}
-	// std::cout << "shoud insert" << std::endl;
-	StorePort->insert(std::pair<int, int>(Port, conn_sock));
-
-	// std::cout << "\nSTART TEST" << std::endl;
-	// int i = 0;
-	for (std::multimap<int, int>::iterator it = StorePort->begin(); it != StorePort->end(); it++)
-	{
-		// std::cout << "\n TEST ChangeOrKeep element : " << i << std::endl;
-		// std::cout << "it->second con sock : " << it->second << std::endl;
-		// std::cout << "Port : " << Port << std::endl;
-		// std::cout << "conn_sock : " << conn_sock << std::endl;
-		/* DERNIERE MODIFICATION */
-		// if (it->first == Port)
-		// {
-		// 	it->second = conn_sock;
-		// 	return ;
-		// }
-		/*************************/
-		if (it->second == conn_sock)
-		{
-			// std::cout << "RETURN CHANGE OR KEEP" << std::endl;
-			// return (*StorePort);
-		}
-	}
-	// std::cout << "\nEND TEST" << std::endl;
-
 	return (*StorePort);
 }
 
@@ -821,7 +784,10 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 						std::cerr << "Error: listen failed: " << strerror(errno) << std::endl;
 					}
 					else
+					{
 						listen_sock.push_back(socktmp);
+						StorePort.insert(std::make_pair(Ports[i], socktmp));
+					}
 				}
 			}
 		}
@@ -880,6 +846,9 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					{
 						close(*(sockets.begin()));
 						sockets.erase(sockets.begin());
+						for (std::multimap<int, int>::iterator it = StorePort.begin(); it != StorePort.end(); it++)
+							if (it->second == *(sockets.begin()))
+								StorePort.erase(it);
 					}
 					conn_sock = accept(events[n].data.fd, (struct sockaddr *) &addr[i], &addrlen[i]);
 					if (conn_sock != -1)
@@ -895,7 +864,8 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 						else
 						{
 							sockets.push_back(conn_sock);
-							StorePort = ChangeOrKeepPort(&StorePort, conn_sock, Ports[i]);
+							std::cout << "ACCEPT PORT : " << Ports[i] << " SOCK : " << conn_sock << std::endl;
+							StorePort = ChangeOrKeepPort(&StorePort, conn_sock, events[n].data.fd);
 						}
 					}
 					else

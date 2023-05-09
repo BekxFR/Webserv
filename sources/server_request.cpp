@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/09 11:52:34 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/09 12:05:56 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,12 +52,6 @@ server_request::server_request(std::string ServerRequest) :
 	_ServerRequest(ServerRequest) //, _Method(findMethod()), _RequestURI(findRequestURI())
 {
 	_isBody = 0;
-}
-
-void server_request::setHost(std::string host)
-{
-	this->_host = host;
-	return ;
 }
 
 std::string server_request::findMethod()

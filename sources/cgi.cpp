@@ -71,7 +71,6 @@ Cgi	&Cgi::operator=(Cgi const &o)
 		for (i = 0; o.getEnvp()[i]; i++)
 			_envp[i] = o.getEnvp()[i];
 		_envp[i + 1] = NULL;
-
 	}
 	catch (std::exception& e)
 	{

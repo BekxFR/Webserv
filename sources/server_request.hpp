@@ -6,7 +6,7 @@
 /*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:29:37 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/09 11:52:42 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/09 12:06:23 by chillion         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,6 @@ class server_request
 		bool		getIsBody() const { return (_isBody); }
 		std::string	getQuery() const { return (_argsBrutes); }
 
-		void		setHost(std::string host);
 		void		setRequest(std::string r) { _ServerRequest = r; }
 		//OTHER
 		void				add_Host_Value(const std::string& str);
