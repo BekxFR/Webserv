@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/09 19:00:28 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/10 10:52:19 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -684,6 +684,7 @@ std::string	server_response::addHeader(std::string statusMsg, std::pair<std::str
 	}
 	else
 	{
+		//std::cout << "\nSTATUS : " << _status_code << std::endl;
 		if (checkStatus(_status_code))
 			response << this->getType(Server_Request.getType());
 		else

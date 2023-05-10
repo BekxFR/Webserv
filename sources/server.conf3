@@ -1,6 +1,6 @@
 server {
 	server_name webserv.com;
-		listen mathieu:8083;
+		listen 8083;
 		listen [::]:8080;
 
 		root ./site;
@@ -11,7 +11,12 @@ server {
 		autoindex on;
 		upload_store /sgoinfre/goinfre/Perso/mgruson/webserv_mgruson/site/upload/upload_file/;
 		add_header Set-Cookie "unboncorrecteur=mgruson; Path=/; MBAPPE=BALLONDOR;";
+
 		location /upload/ {
+
+			limit_except GET POST {
+				deny all;
+			}
 
 			root ./site/upload/;
 
@@ -19,8 +24,7 @@ server {
 
 			index index2.html;
 
-			cgi .php /usr/bin/php-cgi ;
-
+			cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
 		}
 
 		location /password/ {
@@ -112,6 +116,16 @@ server {
 		listen 127.0.0.1:8088;
 
 		root ./site3/;
+		index index.html
+
+		allow_methods GET;
+}
+
+server {
+	server_name wb1.com;
+		listen localhost:8079;
+
+		root .;
 		index index.html
 
 		allow_methods GET;
