@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_response.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/09 15:19:56 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/09 18:44:21 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -308,7 +308,9 @@ std::string server_response::getRealPathIndex(std::string MethodUsed, server_con
 }
 
 bool server_response::autoindex_is_on(std::string MethodUsed, server_configuration *server, std::string RequestURI)
-{	
+{
+	bool autoindex = false;
+	
 	for (std::map<std::string, class server_location_configuration*>::reverse_iterator it = server->getLoc().rbegin(); it != server->getLoc().rend(); it++)
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
@@ -317,18 +319,21 @@ bool server_response::autoindex_is_on(std::string MethodUsed, server_configurati
 			{
 				/*	Cela permet de verifier si l'autoindex est on, pour sinon renvoyer une erreur 403 car on 
 					ne peut pas lister le directory si c'est off, ds le cas où il n'y aurait pas d'index */
-				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
+				if (MethodUsed == *ite)
 				{
+					std::cout << "listing test" << std::endl;
 					if (it->second->getDirectoryListing() == "on")
 						return (1);
+					else if (it->second->getDirectoryListing() == "off")
+						return (0);
+					autoindex = true;
 				}
 			}
 		}
 	}
-	if (server->getDirectoryListing() == "on")
+	if (server->getDirectoryListing() == "on" && !autoindex)
 		return (1);
 	return (0);
-
 }
 
 bool server_response::isRedir(std::string MethodUsed, server_configuration *server, std::string RequestURI)
@@ -409,22 +414,22 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 		int j = 0;
 		while (infile >> j)
 			SessionIdGiven.push_back(j);
+		infile.close();
 		for (size_t i = 0; i < SessionIdGiven.size(); i++)
 		{
-			// std::cout << "i : " << i << std::endl;
-			// std::cout << "SessionIdGiven.size() : " << SessionIdGiven.size() << std::endl;
-			// std::cout << "SessionID : " << SessionID << std::endl;
-			
+			std::cout << "i : " << i << std::endl;
+			std::cout << "SessionIdGiven.size() : " << SessionIdGiven.size() << std::endl;
+			std::cout << "SessionID : " << SessionID << std::endl;
+			std::cout << "SessionID[i] : " << SessionIdGiven[i] << std::endl;
 			if (SessionIdGiven.size() > 0 && SessionIdGiven[i] == SessionID)
 			{
 				break;
 			}
-			else if (i == SessionIdGiven.size())
+			else if (i == SessionIdGiven.size() - 1)
 			{
-				// std::cout << "ID SESSION UNKNOWN" << std::endl;
+				std::cout << "ID SESSION UNKNOWN" << std::endl;
 				_status_code = 401;
 			}
-			infile.close();
 		}
 	}
 	return (0);
@@ -513,9 +518,11 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		default d authorisation)*/
 	int id_session = 0;
 	if (_status_code == 200)
+	{
 		id_session = getIdSessionOrSetError401(Server_Request);
-	// std::cout << "_status_code : " << _status_code << std::endl;
-	// std::cout << "id_session : " << id_session << std::endl;
+		// std::cout << "_status_code : " << _status_code << std::endl;
+		// std::cout << "id_session : " << id_session << std::endl;
+	}
 	/*********************************************************************/
 
 	
