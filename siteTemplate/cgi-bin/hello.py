@@ -14,4 +14,8 @@ def hello_world():
         return f"<p>Hello {username}!</p>"
     return f"<p>Hello World!</p>"
 
+@app.route("/test")
+def test():
+    return "<p>This is a test!</p>"
+
 CGIHandler().run(app)

@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/10 10:32:00 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/10 11:04:49 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,8 @@ int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
+			// std::cout << "REQUEST 405 " << RequestURI.substr(0, it->first.size()) << std::endl;
+			// std::cout << "REQUEST 405 TOTAL " << RequestURI << std::endl;
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
 				if (MethodUsed == *ite)
@@ -69,7 +71,9 @@ int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std
 				loc = true;
 			}
 			if (loc == true)
+			{
 				return (405);
+			}
 		}
 	}
 	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
@@ -159,6 +163,27 @@ bool check_Header_Size(const std::string& str)
 	std::string header = str.substr(0, header_end);
 	if (header.size() >= 4096)
 		return (1);
+	return (0);
+}
+
+int nbr_Host_line(const std::string& request)
+{
+	int count = 0;
+	std::string tmpStr;
+	std::string line;
+	std::string::size_type host_start = request.find("HTTP/1.1\r\n");
+	std::string::size_type host_end = request.find("\r\n\r\n", host_start);
+
+	tmpStr = request.substr(host_start + 8, host_end);
+	std::transform(tmpStr.begin(), tmpStr.end(), tmpStr.begin(), ::tolower);
+	
+	std::istringstream ss(tmpStr);
+	while (std::getline(ss, line)) {
+		if (line.size() >= 5 && line.substr(0, 5) == "host:")
+			count++;
+		if (count == 2)
+			return (2);
+	}
 	return (0);
 }
 
@@ -264,19 +289,22 @@ int check_Request_Value(const std::string& request, const int status)
 	int status_Ref = 0;
 
 	if (status == 0){
-		status_Ref = check_First_Line(request);}
 		std::cerr << "\nWARNING 1\n" << status_Ref << std::endl;
+		status_Ref = check_First_Line(request);}
 	if (status == 1){
 		status_Ref = check_Host_Line(request);
 		std::cerr << "\nWARNING 2\n" << status_Ref << std::endl;
 	}
 	if (status == 2){
-		status_Ref = check_End_Line(request);}
 		std::cerr << "\nWARNING 3\n" << status_Ref << std::endl;
+		if (nbr_Host_line(request) == 2)
+			return (2);
+		status_Ref = check_End_Line(request);}
 	// if (status == 1 && request.find("Host: ") == std::string::npos)
 	// 	return (1);
 	return (status_Ref);
 }
+
 
 void	add_Request_To_File(int conn_sock, std::string request)
 {
@@ -435,7 +463,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 		}
 	}
 
-	//std::cout << "CON SOCK " << conn_sock << std::endl;
+	// std::cout << "CON SOCK " << conn_sock << std::endl;
 	// static int k = 0;
 	// if (k < 5)
 	// {
@@ -477,7 +505,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 			remove(str);
 			RequestSocketStatus.clear();
 			RequestSocketStatus.erase(conn_sock);
-			return 0;
+			return 1;
 		}
 		if (status == 1)
 		{
@@ -642,14 +670,32 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 					FileName.insert(std::make_pair(SocketUploadFile.find(conn_sock)->first, request.substr(FileNamePos, request.find("\"", FileNamePos) - FileNamePos)));
 					std::cout << "\nFILENAME : " << FileName[conn_sock] << std::endl;
 					request = request.substr(SaveFilePos + 4);
+					if (request.find("------WebKitFormBoundary") != std::string::npos)
+					{
+						size_t end_pos = request.size() - request.find("------WebKitFormBoundary");
+						temp_file.write(request.c_str(), end_pos);
+						temp_file.close();
+					}
+					else
+					{
 					temp_file.write(request.c_str(), request.size());
 					temp_file.close();
+					}
 				}
 			}
 			else
 			{
-				temp_file.write(request.c_str(), request.size());
-				temp_file.close();
+					if (request.find("------WebKitFormBoundary") != std::string::npos)
+					{
+						size_t end_pos = request.size() - request.find("------WebKitFormBoundary");
+						temp_file.write(request.c_str(), end_pos);
+						temp_file.close();
+					}
+					else
+					{
+					temp_file.write(request.c_str(), request.size());
+					temp_file.close();
+					}
 			}
 		}
 
@@ -730,6 +776,7 @@ int isNotPort(int fd, std::vector<int> listen_sock)
 	}
 	return 1;
 }
+
 int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Ports, std::vector<std::string> Hosts)
 {
 	struct sockaddr_in addr[Ports.size()];
@@ -746,8 +793,6 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	std::string PartialFileSent;
 	static std::map<int, int> PercentageSent;
 
-		std::cerr << "je passe la" << std::endl;
-		std::cerr << "Ports.size() = " << Ports.size() << std::endl;
 	signal(SIGPIPE, SIG_IGN);
 	for (size_t i = 0; i < Ports.size(); i++)
 	{
@@ -951,6 +996,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 								}
 								epoll_ctl(epollfd, EPOLL_CTL_DEL, it->first, &ev);
 								close (it->first);
+								MsgToSent.erase(it);
 							}
 							PercentageSent.insert(std::make_pair(it->first, 0));
 						}
@@ -1004,6 +1050,7 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 										}
 										epoll_ctl(epollfd, EPOLL_CTL_DEL, it->first, &ev);
 										close (it->first);
+										MsgToSent.erase(it);
 									}
 									PercentageSent[it->first] = PercentageSent[it->first] + bytes_read;
 									file.close();
@@ -1030,9 +1077,9 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 					}
 					else
 					{
-					// 	std::cout << "\nTEST SEND PETIT FICHIER" << std::endl;
-					// 	std::cout.write(it->second.first.c_str(), it->second.first.size());
-					// 	std::cout << "\n FIN TEST SEND PETIT FICHIER" << std::endl;
+					 	// std::cout << "\nTEST SEND PETIT FICHIER" << std::endl;
+					 	// std::cout.write(it->second.first.c_str(), it->second.first.size());
+					 	// std::cout << "\n FIN TEST SEND PETIT FICHIER" << std::endl;
 						if (send(it->first, it->second.first.c_str() , it->second.first.size(), MSG_NOSIGNAL | MSG_DONTWAIT) <= 0)
 						{
 							for (std::vector < int >::iterator it2 = sockets.begin(); it2 != sockets.end(); it2++)

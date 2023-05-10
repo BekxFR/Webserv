@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/10 10:36:14 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/10 11:18:33 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,11 @@ int main(int argc, char const **argv)
 		if (argc == 2)
 			config = std::string(argv[1]);
 		else
-			config = std::string("server {\n	listen 8080;\n	root ./;	allow_methods GET;\n}\n");
+			config = std::string("server {\n	listen 8080;\n	root ./;\n	allow_methods GET;}\n");
 		servers = SetupNewServers(config, argc);
 		if (servers.size() == 0)
 			return (1);
-		//PrintServer(servers);
+		// PrintServer(servers);
 		StartServer(servers, getPorts(servers), getHosts(servers));
 		DeleteServers(servers);
 		closeSockets();
