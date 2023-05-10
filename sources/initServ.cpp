@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/09 16:43:21 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/10 10:32:00 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -742,6 +742,8 @@ int	StartServer(std::vector<server_configuration*> servers, std::vector<int> Por
 	std::string PartialFileSent;
 	static std::map<int, int> PercentageSent;
 
+		std::cerr << "je passe la" << std::endl;
+		std::cerr << "Ports.size() = " << Ports.size() << std::endl;
 	signal(SIGPIPE, SIG_IGN);
 	for (size_t i = 0; i < Ports.size(); i++)
 	{
