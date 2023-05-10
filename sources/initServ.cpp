@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/09 18:58:24 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/10 11:04:49 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,8 @@ int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std
 	{
 		if (it->first == RequestURI.substr(0, it->first.size()))
 		{
+			// std::cout << "REQUEST 405 " << RequestURI.substr(0, it->first.size()) << std::endl;
+			// std::cout << "REQUEST 405 TOTAL " << RequestURI << std::endl;
 			for (std::vector<std::string>::reverse_iterator ite = it->second->getHttpMethodAccepted().rbegin(); ite != it->second->getHttpMethodAccepted().rend(); ite++)
 			{
 				if (MethodUsed == *ite)
@@ -69,7 +71,9 @@ int isMethodAuthorised(std::string MethodUsed, server_configuration *server, std
 				loc = true;
 			}
 			if (loc == true)
+			{
 				return (405);
+			}
 		}
 	}
 	/* Je rajoute cette verification car au-dessus ce n'est verifie que si la Request URI trouve son path
