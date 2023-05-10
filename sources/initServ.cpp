@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:32:29 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/10 11:04:49 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/10 12:38:51 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -673,7 +673,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 					if (request.find("------WebKitFormBoundary") != std::string::npos)
 					{
 						size_t end_pos = request.size() - request.find("------WebKitFormBoundary");
-						temp_file.write(request.c_str(), end_pos);
+						temp_file.write(request.c_str(), request.size() - end_pos);
 						temp_file.close();
 					}
 					else
@@ -688,7 +688,7 @@ int	handle_connection(std::vector<server_configuration*> servers, int conn_sock,
 					if (request.find("------WebKitFormBoundary") != std::string::npos)
 					{
 						size_t end_pos = request.size() - request.find("------WebKitFormBoundary");
-						temp_file.write(request.c_str(), end_pos);
+						temp_file.write(request.c_str(), request.size() - end_pos);
 						temp_file.close();
 					}
 					else
