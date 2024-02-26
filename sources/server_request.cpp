@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_request.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillion <chillion@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 14:31:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/09 12:05:56 by chillion         ###   ########.fr       */
+/*   Updated: 2023/05/10 13:29:18 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 server_request::server_request()
 {
 	_isBody = 0;
-	std::cout << "server_request Default Constructor called" << std::endl;
 }
 
 server_request::server_request(server_request const &obj)
@@ -25,8 +24,6 @@ server_request::server_request(server_request const &obj)
 
 server_request::~server_request()
 {
-	if (0)
-		std::cout << "server_request Destructor called" << std::endl;
 }
 
 server_request &server_request::operator=(server_request const &obj)
@@ -44,12 +41,11 @@ server_request &server_request::operator=(server_request const &obj)
 	_mimeType = obj.getMimeType();
 	_contentType = obj.getContentType();
 	_body = obj.getBody();
-	std::cout << "server_request Copy assignment operator called" << std::endl;
 	return *this;
 }
 
 server_request::server_request(std::string ServerRequest) :
-	_ServerRequest(ServerRequest) //, _Method(findMethod()), _RequestURI(findRequestURI())
+	_ServerRequest(ServerRequest)
 {
 	_isBody = 0;
 }
@@ -78,9 +74,6 @@ unsigned long long server_request::getContentLength() const
 {
 	char *endptr;
 	unsigned long long result = strtoull(_contentLength.c_str(), &endptr, 10);
-	if (*endptr != '\0') {
-		std::cout << "Invalid character : " << *endptr << std::endl; 
-	}
 	return (result);
 }
 
@@ -146,8 +139,6 @@ void server_request::add_Host_Value(const std::string& str)
 	std::istringstream ss(tmpStr);
 	std::istringstream iss(tmpStr);
 	while (std::getline(ss, line)) {
-		// if (line.size() < 3)
-		// 	return (2);
 		if (line.size() >= 5 && line.substr(0, 5) == "host:")
 		{
 			std::getline(iss, line);
@@ -222,13 +213,6 @@ void server_request::request_parser()
 	std::string::size_type version_end = _ServerRequest.find("\r\n", path_end + 1);
 	this->_version = _ServerRequest.substr(path_end + 1, version_end - path_end - 1);
 
-	// Extraire l'en-tête Host (www.example.com)
-	// this->_host = "";
-	// std::string::size_type host_start = _ServerRequest.find("Host: ");
-	// std::string::size_type host_end = _ServerRequest.find("\r\n", host_start);
-	// if (host_start != host_end)
-	// 	this->_host = _ServerRequest.substr(host_start + 6, host_end - host_start - 6);
-
 	// Extraire le type de connexion (keep-alive)
 	this->_connectionType = "";
 	std::string::size_type ctype_start = _ServerRequest.find("Connection: ");
@@ -260,8 +244,6 @@ void server_request::request_parser()
 	this->_body = "";
 	std::string::size_type body_start = _ServerRequest.find("\r\n\r\n", method_end + 1);
 	std::string::size_type body_end = _ServerRequest.find("\r\n", body_start + 4);
-	if (0)
-		std::cout << "\nbody_start : " << body_start << " body_end : " << body_end  << std::endl;
 	if (body_start != body_end)
 		this->_body = _ServerRequest.substr(body_start + 4);
 

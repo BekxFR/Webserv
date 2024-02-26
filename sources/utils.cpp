@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/26 15:20:43 by nflan             #+#    #+#             */
-/*   Updated: 2023/05/05 15:15:47 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/10 13:38:58 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,10 @@ std::string	readingFileEP( std::string file )
 		if (stat(file.c_str(), &sb) != -1 && S_ISDIR(sb.st_mode))
 			std::cerr << "Can't use a directory as Error Page (" << file << ")" << std::endl;
 		else
+		{
 			perror("Error when trying to open the file (access) -> using default error page");
+				std::cerr << file << std::endl;
+		}
 		return ("");
 	}
 	std::stringstream buffer;

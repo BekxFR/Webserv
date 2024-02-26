@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/20 15:09:46 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/10 10:52:19 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/10 16:07:24 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,10 @@ extern volatile std::sig_atomic_t	g_code;
 server_response::server_response() : _status_code(200), _cgiFd(-1), _header(""), _bodyName(".tmp-post.txt"), _body(""), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(), _req(NULL), _isCgi(0)
 {
 	this->addType();
-	if (0)
-		std::cout << "server_response Default Constructor called" << std::endl;
 }
 server_response::server_response(int stat, server_request* req) : _status_code(stat), _cgiFd(-1), _header(""), _bodyName(".tmp-post.txt"), _body(req->getBody()), _content(""), _contentLength(0), _ServerResponse(""), _finalPath(""), _env(), _req(req), _isCgi(0)
 {
 	this->addType();
-	if (0)
-		std::cout << "server_response int Constructor called" << std::endl;
 }
 
 server_response::server_response(server_response const &obj)
@@ -33,8 +29,6 @@ server_response::server_response(server_response const &obj)
 
 server_response::~server_response()
 {
-	if (0)
-		std::cout << "server_response Destructor called" << std::endl;
 }
 
 server_response	&server_response::operator=(server_response const &obj)
@@ -54,8 +48,6 @@ server_response	&server_response::operator=(server_response const &obj)
 	_env = obj.getEnv();
 	_isCgi = obj.getIsCgi();
 	_contentType = obj.getContentType();
-	if (0)
-		std::cout << "server_response Copy assignment operator called" << std::endl;
 	return *this;
 }
 
@@ -155,7 +147,6 @@ void	server_response::addType()
 
 std::string server_response::getType(std::string type)
 {
-	// std::cout << "TEST : " << type << std::endl;
 	for (std::map<std::string, std::string>::iterator it = _contentType.begin(); it != _contentType.end(); it++)
 		if (type == it->first)
 			return (it->second);
@@ -179,7 +170,6 @@ std::string	server_response::list_dir(std::string path)
 	std::string	testDir;
 	std::string	route;
 
-	//std::cout << "PATH : '" << path << "'" << std::endl;
 	while (path.find("//") != std::string::npos)
 		path = path.erase(path.find("//"), 1);
 	errno = 0;
@@ -321,7 +311,6 @@ bool server_response::autoindex_is_on(std::string MethodUsed, server_configurati
 					ne peut pas lister le directory si c'est off, ds le cas où il n'y aurait pas d'index */
 				if (MethodUsed == *ite)
 				{
-					std::cout << "listing test" << std::endl;
 					if (it->second->getDirectoryListing() == "on")
 						return (1);
 					else if (it->second->getDirectoryListing() == "off")
@@ -375,7 +364,6 @@ std::string server_response::getRedir(std::string MethodUsed, server_configurati
 			{
 				if (MethodUsed == *ite || isGenerallyAuthorised(MethodUsed, server, *ite))
 				{
-					/*	Ici, on renverra forcément ci-dessous, cela a ete verifiee ci-dessous */
 					if (it->second->getHttpRedirection().size() > 0)
 					{
 						return (it->second->getHttpRedirection());
@@ -394,11 +382,9 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 
 	if (Server_Request.getServerRequest().find("IdSession=") == std::string::npos)
 	{
-		// std::ofstream outfile(".session_management.txt", std::ios::app);
 		std::ofstream outfile(".session_management.txt", std::ios::out | std::ios::app);
 		srand(time(NULL));
 		id_session = rand() % INT_MAX;
-		// std::cout << "SESSION ID GENERATED : " << id_session << std::endl;
 		SessionIdGiven.push_back(id_session);
 		outfile << id_session << std::endl;
 		outfile.close();
@@ -417,17 +403,12 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 		infile.close();
 		for (size_t i = 0; i < SessionIdGiven.size(); i++)
 		{
-			// std::cout << "i : " << i << std::endl;
-			// std::cout << "SessionIdGiven.size() : " << SessionIdGiven.size() << std::endl;
-			// std::cout << "SessionID : " << SessionID << std::endl;
-			// std::cout << "SessionID[i] : " << SessionIdGiven[i] << std::endl;
 			if (SessionIdGiven.size() > 0 && SessionIdGiven[i] == SessionID)
 			{
 				break;
 			}
 			else if (i == SessionIdGiven.size() - 1)
 			{
-				std::cout << "ID SESSION UNKNOWN" << std::endl;
 				_status_code = 401;
 			}
 		}
@@ -437,7 +418,6 @@ int		server_response::getIdSessionOrSetError401(const server_request& Server_Req
 
 bool	server_response::manageCgi(const server_request& Server_Request, server_configuration *server)
 {
-	// std::cerr << "HELLO JE SUIS DANS LE CGI" << std::endl;
 	if (access(server->getCgi().find("." + Server_Request.getType())->second.data(), X_OK))
 		_status_code = 502;
 	else
@@ -469,19 +449,16 @@ int	server_response::AnswerGet(const server_request& Server_Request, server_conf
 {
 	if (access(_finalPath.c_str(), F_OK) && _finalPath != "./")
 	{
-		// std::cout << "d0 " << std::endl;
-		//std::cerr << _finalPath << std::endl;
 		_status_code = 404;
 	}
 	else
 	{
 		std::stringstream buffer;
-		if (is_dir(_finalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
+		if (is_dir(_finalPath.c_str(), *this) && autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI()))
 		{
-			// std::cout << "AUTOLISTING ON" << std::endl;
 			buffer << list_dir(_finalPath);
 		}
-		else if (is_dir(_finalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) // && auto index no specifie ou on --> demander a Mathieu comment gerer ce parsing dans le fichier de conf car le autoindex peut etre dans une location ou non
+		else if (is_dir(_finalPath.c_str(), *this) && !autoindex_is_on(Server_Request.getMethod(), server, Server_Request.getRequestURI())) 
 			_status_code = 403;
 		else if (_status_code == 200)
 		{
@@ -508,10 +485,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	if (StatusCodeTmp != 200)
 		_status_code = StatusCodeTmp;
 
-	
-	// std::cout << "\nTEST CONFIG" << std::endl;
-	// std::cout << *server << std::endl;
-	// std::cout << "FIN" << std::endl; 
 	/*	Ci-dessous, on genere un ID de session pour chaque nouvel utilisateur
 		et on verifie que si un ID est recu, c'est bien nous qui l'avons emis
 		pour renvoyer sinon une erreur 401 et un id_session a zero (a savoir 
@@ -520,8 +493,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	if (_status_code == 200)
 	{
 		id_session = getIdSessionOrSetError401(Server_Request);
-		// std::cout << "_status_code : " << _status_code << std::endl;
-		// std::cout << "id_session : " << id_session << std::endl;
 	}
 	/*********************************************************************/
 
@@ -532,12 +503,11 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	{
 		std::stringstream response;
 			response << "HTTP/1.1 301 Moved Permanently\r\nLocation: " \
-			<< getRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) << "\r\n";
+			<< getRedir(Server_Request.getMethod(), server, Server_Request.getRequestURI()) << "\r\n\r\n\r\n\r\n";
 			std::string response_str = response.str();
-			errno = 0;
 			MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(response_str, "")));
-			// MsgToSent->push_back(std::pair<int, std::string>(conn_sock, response_str)); // remplace sent
 			errno = 0;
+			return ;
 	}
 	/*********************************************************************/
 	
@@ -552,11 +522,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	RealPathIndex = getRealPathIndex(Server_Request.getMethod(), server, Server_Request.getRequestURI());
 	while (RealPathIndex.find("//") != std::string::npos)
 		RealPathIndex = RealPathIndex.erase(RealPathIndex.find("//"), 1);
-	if (1)
-	{
-		std::cout << "RealPath : " << RealPath << std::endl;
-		std::cout << "RealPathIndex : " << RealPathIndex << std::endl;
-	}
 	/*Ensuite, on check si c'est le path donné est un directory ou non.
 	Une fosis que l'on sait cela, on peut renvoyer un index ou 
 	un message erreur */
@@ -566,51 +531,33 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 		/* Si l'on va ici, cela signifie qu'il ne s'agit ni d'un directory, ni d'un file.
 		Autrement dit, le PATH n'est pas valide : il faut renvoyer un message d'erreur */
 		_status_code = 404;
-		// std::cout << " BOOL FALSE" << std::endl;
 	}
 	else if (_status_code == 200)
 	{
 		/* Si l'on va ici, c'est qu'il s'agit d'un PATH valide, donc soit un fichier, soit un directory 
 		C'est S_ISDIR qui va nous permettre de savoir si c'est un file ou un directory */
 		dir = S_ISDIR(path_info.st_mode);
-		// std::cout << " BOOL TRUE is_dir " << dir << std::endl;
-		// std::cout << " BOOL TEST " << RealPath.at(RealPath.size() - 1) << std::endl;
 		if (dir && RealPath.at(RealPath.size() - 1) != '/')
-		{
-			// std::cout << " BOOL 404 " << dir << std::endl;
 			_status_code = 404;
-		}
 		else if (dir)
-		{
-			// std::cout << " BOOL INDEX " << dir << std::endl;
 			_finalPath = RealPathIndex;
-		}
 		else
-		{
-			// std::cout << " BOOL DIR " << dir << std::endl;
 			_finalPath = RealPath;
-		}
 	}
-	/* A VOIR DEMAIN MAIS FINAL PATH ETAIT MAL INITIALISE DS ANSWER GET*/
-	// std::cout << "FinalPath : " << _finalPath << std::endl;
-	// std::cout << "StatusCode : " << _status_code << std::endl;
 	/************************************************/
 
 	/* Gestion des CGI pour ensuite repondre à la requete*/
 	if (server->getCgi().find("." + Server_Request.getType()) != server->getCgi().end() && checkStatus(_status_code))
 	{
-		//std::cerr << "cgi" << std::endl;
 		manageCgi(Server_Request, server);
 	}
 	
 	std::map<int, std::pair<std::string, std::string> > MsgToSentTmp; // Je cree un TMP pour envoyer tout d'un coup apres au vrai objet.
 	MsgToSentTmp.insert(std::make_pair(conn_sock, std::make_pair("", ""))); // Ici, j'ajoute la conn_sock car on sait deja;
 	int MsgSize = 0;
-	// std::cout << "\n TEST : " << Server_Request.getMethod() << std::endl;
 	std::stringstream response;
 	if ((Server_Request.getMethod() == "GET" || Server_Request.getMethod() == "POST") && checkStatus(_status_code))
 	{
-		// std::cout << "\nGETMETHOD SERVER_RESPONSE\n" << std::endl;
 		if (_status_code == 200)
 		{
 			MsgSize = AnswerGet(Server_Request, server);
@@ -637,7 +584,6 @@ void	server_response::SendingResponse(const server_request& Server_Request, int 
 	else
 	{
 		createResponse(server, "", Server_Request, id_session, 0);
-	//	std::cerr << "ServerResponse = '" << _ServerResponse << "'" << std::endl;
 		MsgToSent->insert(std::make_pair(conn_sock, std::make_pair(_ServerResponse, "")));
 		return ;
 	}
@@ -684,7 +630,6 @@ std::string	server_response::addHeader(std::string statusMsg, std::pair<std::str
 	}
 	else
 	{
-		//std::cout << "\nSTATUS : " << _status_code << std::endl;
 		if (checkStatus(_status_code))
 			response << this->getType(Server_Request.getType());
 		else
@@ -697,7 +642,6 @@ std::string	server_response::addHeader(std::string statusMsg, std::pair<std::str
 		std::vector<std::string> CookieHeader = server->getCookieHeader();
 		for (std::vector<std::string>::iterator it = CookieHeader.begin(); it != CookieHeader.end(); it++)
 		{
-			// std::cout << "Set-Cookie: " << *it << "\n"; 
 			response << "Set-Cookie: " << *it << "\n"; // tentative d'implementation des cookies
 		}
 	}
@@ -1034,21 +978,6 @@ void	server_response::createResponse(server_configuration * server, std::string 
 	_ServerResponse = response.str();
 }
 
-// ajouter dans l'env avant exec (source https://www.youtube.com/watch?v=37choLzDTgY) :
-// CONTENT_TYPE=
-// CONTENT_LENGTH=
-// HTTP_COOKIE=(askip dans le header)
-// HTTP_USER_AGENT=(web browser surement dans le header requete)
-// PATH_INFO=(path cgi script (on l'a))
-// QUERY_STRING=(the url-encoded information that is sent with GET method request)
-// REMOTE_ADDR=(the ip address of the remote host making the request. pour authentification)
-// REMOTE_HOST=(the fully qualified name of the host making the request, not mandatory)
-// REQUEST_MET_HOD=(the method used to make the request (GET / POST / DELETE))
-// SCRIPT_FILENAME=(the full path to the cgi script)
-// SCRIPT_NAME=(the name of the cgi script)
-// SERVER_NAME=(hostname or ip address)
-// SERVER_SOFWARE=(name and version of the software the server is running)
-
 //https://docstore.mik.ua/orelly/linux/cgi/ch03_02.htm
 int server_response::doCgi(std::string toexec, server_configuration * server) // envoyer path du cgi
 {
@@ -1081,32 +1010,22 @@ int server_response::doCgi(std::string toexec, server_configuration * server) //
 	_env.push_back("REDIRECT_STATUS=1");
 	if (_body.find(std::string("content-length")) != std::string::npos)
 		_env.push_back(std::string("CONTENT_LENGTH=") + itos(_contentLength));
-	// std::cerr << "CONTENT_TYPE = '" << this->getType(_req->getType()).substr(14, 500) << "'" << std::endl;
 	if (this->getType(_req->getType()) != "")
 		_env.push_back(std::string("CONTENT_TYPE=") + this->getType(_req->getType()).substr(14, 500));
-	//_env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
-	// std::cerr << "_body = '" << _body << "'" << std::endl;
 	if (_req->getIsBody())
 	{
-		// std::cerr << "PPPPPP" << std::endl;
 		std::ofstream file(getBodyName().c_str());
 		if (file) {
 			file << _req->getBody();
 			file.close();
 		}
-		//ecrire ce qu'il y a dans _body, dans _bodyName ?
-		//_cgiFd = open de _bodyName;
-		//--> check dans cgi si on ferme bien le fd
-		//supprimer _bodyName;
 		_cgiFd = open(getBodyName().data(), O_RDONLY);
 		if (_cgiFd < 0)
 		{
-			//std::cerr << "FAIL TO OPEN CGIFD" << std::endl;
 			_status_code = 500;
 			return (1);
 		}
 		std::remove(getBodyName().data());
-		// std::cerr << "cgi fd = '" << _cgiFd << "'" << "_req->getBody().size() = " << _req->getBody().size() << std::endl;
 	}
 	try
 	{

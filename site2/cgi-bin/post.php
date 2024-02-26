@@ -64,10 +64,10 @@
             // Affiche les valeurs dans les champs du formulaire
             echo '<form action="post.php" method="post">
                       <label for="nom">Nom :</label>
-                      <input type="text" name="nom" id="nom" value="' . htmlspecialchars($_POST['nom']) . '">
+                      <input type="text" name="nom" id="nom" value="' . htmlspecialchars($_GET['nom']) . '">
                       <br>
                       <label for="prenom">Prénom :</label>
-                      <input type="text" name="prenom" id="prenom" value="' . htmlspecialchars($_POST['prenom']) . '">
+                      <input type="text" name="prenom" id="prenom" value="' . htmlspecialchars($_GET['prenom']) . '">
                       <br>
                       <input type="submit" value="Envoyer">
                   </form>

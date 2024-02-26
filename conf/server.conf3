@@ -1,0 +1,156 @@
+server {
+	server_name webserv.com;
+		listen 8083;
+
+		root ./site;
+		index index.html;
+		client_max_body_size 500000000000;
+		error_page 404 errorpage/404.txt 405 errorpage/405.txt 406 errorpage/406.txt;
+		cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
+		autoindex on;
+		add_header Set-Cookie "unboncorrecteur=mgruson; Path=/; MBAPPE=BALLONDOR;";
+		upload_store ./site/upload_file/;
+
+		location /upload/ {
+
+			limit_except GET POST {
+				deny all;
+			}
+
+			root ./site/upload/;
+
+			autoindex on;
+
+			index index2.html;
+
+			cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
+		}
+
+		location /password/ {
+			limit_except GET POST {
+				deny all;
+			}
+			return 301 https://www.example.com/new-page.html;
+
+			root ./site/upload/;
+
+			autoindex on;
+
+			index index2.html;
+
+			cgi .php /usr/bin/php-cgi ;
+
+			upload_store /var/www/uploads;
+		}
+
+		location /download/ {
+			limit_except GET POST {
+				deny all;
+			}
+			index index.html;
+			root ./site/download/;
+			autoindex on;
+		}
+		allow_methods GET POST DELETE;
+}
+
+
+server {
+	server_name webserv2;
+	listen 8083;
+
+	root ./site;
+	index index.html;
+
+	allow_methods POST GET;
+}
+
+server {
+	server_name webserv2.com;
+		listen localhost:8083;
+		listen 127.0.0.1:8099;
+
+		root ./site2;
+		index index.html
+		autoindex on;
+		upload_store ./site/upload/upoad_file/;
+
+		location /site/upload/ {
+			limit_except POST {
+				deny all;
+			}
+			index indexr2.html;
+			root ./site/;
+			upload_store ./site/upload/upload_file/;
+			autoindex on;
+		}
+
+		cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
+		allow_methods GET POST DELETE;
+		client_max_body_size 500000000000;
+}
+
+server {
+	server_name wb2.com;
+	listen 0.0.0.0:8086;
+
+	root ./site2/;
+	index index.html;
+
+	allow_methods GET POST;
+	cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
+}
+
+server {
+	server_name wb1.com;
+		listen localhost:8086;
+
+		root ./site3/;
+		index index.html
+
+	allow_methods GET POST;
+	cgi .php /usr/bin/php-cgi .py /usr/bin/python3;
+}
+
+server {
+		listen localhost:8091;
+
+		root ./site3/;
+		index 91.html
+		autoindex on;
+
+		allow_methods GET;
+}
+
+server {
+		listen localhost:8092;
+
+		root ./site3/;
+		index 92.html
+		autoindex off;
+
+		allow_methods GET;
+}
+
+server {
+		listen localhost:8093;
+
+		root ./site3/;
+		index index.html
+		autoindex on;
+		client_max_body_size 20;
+
+		allow_methods GET POST;
+}
+
+server {
+		listen localhost:8094;
+
+		root ./site2/;
+		index index.html
+		autoindex on;
+		upload_store ./site2/upload/upoad_file/;
+		client_max_body_size 20;
+
+		allow_methods GET POST;
+}

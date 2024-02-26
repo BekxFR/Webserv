@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/04 17:07:36 by mgruson           #+#    #+#             */
-/*   Updated: 2023/04/25 19:28:01 by nflan            ###   ########.fr       */
+/*   Updated: 2023/05/10 13:20:10 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,11 +51,6 @@ class server_location_configuration
 		int							fillCgi(size_t pos, std::string location_conf);
 		void						setCgi(std::string location_conf);
 		std::string					findElement(std::string location_conf, std::string elem);
-//	 	std::string					findHttpRedirection(std::string location_conf);
-//		std::string					findRoot(std::string location_conf);
-//		std::string					findDirectoryListing(std::string location_conf);
-//		std::string					findDirectoryRequest(std::string location_conf);
-//		std::string					findUploadStore(std::string location_conf);
 		std::vector<std::string>	findHttpMethodAccepted(std::string location_conf);
 
 };

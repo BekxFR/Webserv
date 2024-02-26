@@ -6,7 +6,7 @@
 /*   By: mgruson <mgruson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:39:03 by mgruson           #+#    #+#             */
-/*   Updated: 2023/05/10 11:18:33 by mgruson          ###   ########.fr       */
+/*   Updated: 2023/05/10 13:49:28 by mgruson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,8 @@ volatile std::sig_atomic_t	g_code = 0;
 
 void sigint_handler(int signum)
 {
-    std::cerr << "\nSignal SIGINT (" << signum << ") received." << std::endl;
+	static_cast<void>(signum);
+    std::cerr << "\nFermeture du serveur Web." << std::endl;
 	closeSockets();
 	std::remove(".cgi-tmp");
 	std::remove(".upload");
@@ -58,6 +59,5 @@ int main(int argc, char const **argv)
 		std::cerr << "Webserv error : " << e.what() << '\n';
 		return (1);
 	}
-	//std::cout << "\nFIN DU PROGRAMME" << std::endl;
 	return 0;
 }
