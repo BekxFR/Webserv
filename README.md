@@ -1,6 +1,6 @@
 # Crafting Your Own Web Domain: Mastering HTTP Server Creation in C++
 
-### Introduction
+## Introduction
 
 The project revolves around creating your own HTTP server in C++, adhering to a specific set of rules. Here's a summary of the key points to consider:
 
@@ -28,6 +28,11 @@ The project revolves around creating your own HTTP server in C++, adhering to a 
 ### Bonus Part
 
 - You can add additional features such as support for cookies and session management, as well as handling multiple CGI.
-- Bonuses will only be evaluated if the mandatory part is perfectly implemented.
 
 In summary, you need to create an HTTP server in C++ that strictly adheres to the specified rules while ensuring stability, compatibility, and availability of the server.
+
+The web server is a custom implementation of an HTTP server using C++.   
+This entails creating a program capable of handling HTTP requests and responses according to the HTTP protocol standards.    
+The server should be able to listen for incoming connections, parse HTTP requests, process them accordingly (such as serving static files, executing CGI scripts, handling redirects, etc.), and generate appropriate HTTP responses.    
+Additionally, it must adhere to specific guidelines outlined in the project requirements, such as non-blocking I/O, support for multiple ports, error handling, and compatibility with various HTTP methods like GET, POST, and DELETE.    
+This endeavor offers a deep dive into understanding the intricacies of web communication protocols, bolstering proficiency in C++ programming, and honing skills in system-level development.
