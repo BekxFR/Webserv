@@ -1,5 +1,22 @@
 # Crafting Your Own Web Domain: Mastering HTTP Server Creation in C++
 
+|    Project Name    |                                                                       webserv                                                                      |
+| :----------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------: |
+|    Description     |       	A fully configurable home-made web server in C++ (following HTTP/1.1 RFC)                                       |
+|    Technologies    |  <img alt="C++" src="https://custom-icon-badges.demolab.com/badge/C++-9C033A.svg?logo=cpp2&logoColor=white"> <img alt="PHP" src="https://img.shields.io/badge/PHP-777BB4.svg?logo=php&logoColor=white"> <img alt="HTML" src="https://img.shields.io/badge/HTML-E34F26.svg?logo=html5&logoColor=white"> |
+
+## Install
+
+```bash
+  gcl https://github.com/BekxFR/Webserv.git
+  cd webserv
+  make
+  ./webserv conf/server.conf3
+```
+
+## Usage
+When its done compiling, you go to your chrome browser (firefox also works) and write on the URL bar "localhost:8083" to access to the website.
+
 ## Introduction
 
 The project revolves around creating your own HTTP server in C++, adhering to a specific set of rules. Here's a summary of the key points to consider:
